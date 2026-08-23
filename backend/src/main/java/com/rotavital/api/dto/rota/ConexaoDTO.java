@@ -6,6 +6,7 @@ public record ConexaoDTO(
         double distanciaKm,
         double tempoEstimadoMin
 )
+
 {
         
 }

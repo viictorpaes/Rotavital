@@ -10,6 +10,7 @@ public record NovaRequisicaoRequest(
         int quantidade,
         NivelUrgencia urgencia
 )
+
 {
         
 }

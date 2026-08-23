@@ -47,7 +47,6 @@ flowchart TD
 | [`MODULOS.md`](MODULOS.md) | Markdown + Mermaid | Catálogo dos 4 módulos cruzando domínio ↔ contrato | quiser uma visão geral rápida do sistema |
 | [`../RotaVital.fig`](../RotaVital.fig) | Figma | Protótipo visual | se for discutir UI/UX do frontend |
 
-
 <h2 align="left" id="2-dominio">🧬 2. Modelo de Domínio</h2>
 
 Documenta o pacote `com.rotavital.dominio` (`backend/src/main/java/com/rotavital/dominio/`) — a entrega de

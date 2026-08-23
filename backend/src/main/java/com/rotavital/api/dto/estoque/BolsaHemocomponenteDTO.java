@@ -17,6 +17,7 @@ public record BolsaHemocomponenteDTO(
         StatusBolsa status,
         String bancoOrigemId
 )
+
 {
         
 }

@@ -16,6 +16,7 @@ public record RequisicaoHospitalarDTO(
         LocalDateTime dataSolicitacao,
         StatusRequisicao status
 )
+
 {
         
 }

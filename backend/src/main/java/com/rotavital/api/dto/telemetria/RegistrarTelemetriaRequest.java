@@ -9,6 +9,7 @@ public record RegistrarTelemetriaRequest(
         double longitude,
         double temperaturaCelsius
 )
+
 {
 
 }

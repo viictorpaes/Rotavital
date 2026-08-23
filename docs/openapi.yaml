@@ -1,4 +1,5 @@
 openapi: 3.0.3
+
 info:
   title: Rotavital API
   description: >
@@ -11,6 +12,7 @@ info:
   contact:
     name: Equipe Rotavital
     url: https://github.com/viictorpaes/Rotavital
+
 tags:
   - name: Estoque
     description: Consulta consolidada do estoque por banco de sangue.
@@ -22,11 +24,14 @@ tags:
     description: Grafo de distribuição e cálculo de rota mínima com janela de tempo.
   - name: Telemetria
     description: Telemetria simulada da cadeia fria durante o transporte.
+
 servers:
   - url: http://localhost:8080/api
     description: Ambiente local (placeholder - Spring Boot ainda não integrado).
 
 paths:
+
+  # -- Estoque -----------------------------------------------------------
   /estoque/{bancoId}:
     get:
       tags: [Estoque]
@@ -60,6 +65,7 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  # -- Hemocomponentes -----------------------------------------------------
   /hemocomponentes:
     get:
       tags: [Hemocomponentes]
@@ -89,6 +95,7 @@ paths:
                 items: { $ref: '#/components/schemas/BolsaHemocomponente' }
         default:
           $ref: '#/components/responses/InternalServerError'
+
     post:
       tags: [Hemocomponentes]
       summary: Registra uma nova bolsa de hemocomponente no estoque
@@ -138,6 +145,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/InternalServerError'
+
     patch:
       tags: [Hemocomponentes]
       summary: Atualiza o status de uma bolsa (reservar, descartar, etc.)
@@ -163,6 +171,7 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         default:
           $ref: '#/components/responses/InternalServerError'
+
     delete:
       tags: [Hemocomponentes]
       summary: Remove o cadastro de uma bolsa (ex. erro de lançamento)
@@ -178,6 +187,7 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  # -- Requisições -----------------------------------------------------------
   /requisicoes:
     post:
       tags: [Requisicoes]
@@ -205,6 +215,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         default:
           $ref: '#/components/responses/InternalServerError'
+
     get:
       tags: [Requisicoes]
       summary: Lista requisições com filtros
@@ -253,7 +264,7 @@ paths:
       summary: Dispara o algoritmo de matching/alocação (compatibilidade ABO/Rh, priorização FEFO)
       description: >
         Busca bolsas compatíveis no estoque, prioriza a de vencimento mais
-        próximo (FEFO) e reserva-a para a requisição, equivalente ao fluxo
+        próximo (FEFO - First Expired, First Out) e reserva-a para a requisição, equivalente ao fluxo
         Estoque.buscarDisponiveis(...) + BolsaHemocomponente.reservar()
         demonstrado em TesteFluxo.
       operationId: alocarRequisicao
@@ -302,6 +313,7 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  # -- Rotas -----------------------------------------------------------------
   /rotas/pontos:
     get:
       tags: [Rotas]
@@ -373,6 +385,7 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  # -- Telemetria --------------------------------------------------------
   /telemetria/temperatura:
     post:
       tags: [Telemetria]
@@ -427,6 +440,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
 components:
+
+  # -- Parâmetros reutilizáveis ----------------------------------------------
   parameters:
     BancoIdPath:
       name: bancoId
@@ -434,12 +449,14 @@ components:
       required: true
       schema: { type: string }
       example: BS-01
+
     BolsaIdPath:
       name: id
       in: path
       required: true
       schema: { type: string }
       example: BOLSA-001
+
     RequisicaoIdPath:
       name: id
       in: path
@@ -447,10 +464,14 @@ components:
       schema: { type: string }
       example: 9f1c1e7e-2d3a-4b1a-8a1e-000000000001
 
+  # -- Schemas ---------------------------------------------------------------
   schemas:
+
+    # ---- Enums ----
     TipoComponente:
       type: string
       enum: [HEMACIAS, PLASMA, PLAQUETAS, CRIOPRECIPITADO]
+
     TipoSanguineo:
       type: string
       enum:
@@ -462,12 +483,15 @@ components:
         - AB_NEGATIVO
         - O_POSITIVO
         - O_NEGATIVO
+
     StatusBolsa:
       type: string
       enum: [DISPONIVEL, RESERVADA, EM_TRANSITO, ENTREGUE, DESCARTADA]
+
     StatusRequisicao:
       type: string
       enum: [PENDENTE, ALOCADA, EM_TRANSITO, ENTREGUE, CANCELADA]
+
     NivelUrgencia:
       type: string
       description: >
@@ -475,10 +499,12 @@ components:
         da requisição") mas ainda não existente em RequisicaoHospitalar no
         domínio Java - ver nota de gap em docs/CONTRATOS_DE_API.md.
       enum: [BAIXA, MEDIA, ALTA]
+
     TipoPontoRede:
       type: string
       enum: [HOSPITAL, BANCO_DE_SANGUE]
 
+    # ---- Hemocomponentes / Estoque ----
     BolsaHemocomponente:
       type: object
       properties:
@@ -527,6 +553,7 @@ components:
           items: { $ref: '#/components/schemas/BolsaHemocomponente' }
       required: [bancoDeSangueId, totalBolsas, bolsas]
 
+    # ---- Requisições ----
     RequisicaoHospitalar:
       type: object
       properties:
@@ -559,6 +586,7 @@ components:
         status: { $ref: '#/components/schemas/StatusRequisicao' }
       required: [requisicaoId, bolsaAlocadaId, dataAlocacao, status]
 
+    # ---- Rotas ----
     PontoRede:
       type: object
       properties:
@@ -600,6 +628,7 @@ components:
         dentroDaJanela: { type: boolean }
       required: [origemId, destinoId, nos, distanciaTotalKm, tempoEstimadoMin]
 
+    # ---- Telemetria ----
     RegistrarTelemetriaRequest:
       type: object
       properties:
@@ -630,6 +659,7 @@ components:
           items: { $ref: '#/components/schemas/LeituraTelemetria' }
       required: [entregaId, statusEntrega, leituras]
 
+    # ---- Erro (RFC 7807) ----
     Erro:
       type: object
       description: Problem Details for HTTP APIs (RFC 7807).
@@ -646,6 +676,7 @@ components:
           format: uri-reference
       required: [title, status]
 
+  # -- Respostas de erro reutilizáveis ---------------------------------------
   responses:
     BadRequest:
       description: Requisição malformada (campo ausente, tipo inválido, etc.).
@@ -658,6 +689,7 @@ components:
             status: 400
             detail: "O campo 'quantidade' é obrigatório e deve ser maior que zero."
             instance: /requisicoes
+
     NotFound:
       description: Recurso não encontrado.
       content:
@@ -669,6 +701,7 @@ components:
             status: 404
             detail: "Nenhuma bolsa encontrada com id BOLSA-999."
             instance: /hemocomponentes/BOLSA-999
+
     UnprocessableEntity:
       description: Requisição bem formada, mas que viola uma regra de negócio do domínio.
       content:
@@ -680,6 +713,7 @@ components:
             status: 422
             detail: "Bolsa BOLSA-002 está vencida e não pode ser reservada."
             instance: /hemocomponentes/BOLSA-002
+
     InternalServerError:
       description: Erro inesperado no servidor.
       content:

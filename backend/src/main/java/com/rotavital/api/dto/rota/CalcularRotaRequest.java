@@ -7,6 +7,7 @@ public record CalcularRotaRequest(
         String destinoId,
         LocalDateTime janelaEntregaLimite
 )
+
 {
         
 }

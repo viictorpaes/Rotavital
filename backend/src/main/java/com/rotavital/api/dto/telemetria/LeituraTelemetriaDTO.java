@@ -9,6 +9,7 @@ public record LeituraTelemetriaDTO(
         double longitude,
         double temperaturaCelsius
 )
+
 {
         
 }

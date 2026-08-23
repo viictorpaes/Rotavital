@@ -9,6 +9,7 @@ public record MonitoramentoEntregaDTO(
         StatusRequisicao statusEntrega,
         List<LeituraTelemetriaDTO> leituras
 )
+
 {
 
 }

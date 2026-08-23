@@ -7,6 +7,7 @@ public record EstoqueDTO(
         int totalBolsas,
         List<BolsaHemocomponenteDTO> bolsas
 )
+
 {
         
 }

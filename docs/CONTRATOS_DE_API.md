@@ -6,7 +6,7 @@
 </h1>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/-Java-111827?style=for-the-badge&logo=openjdk&logoColor=orange" height="28"/>
+    <img src="https://img.shields.io/badge/-Java_21-111827?style=for-the-badge&logo=openjdk&logoColor=orange" height="28"/>
     <img src="https://img.shields.io/badge/-OpenAPI%203.0.3-111827?style=for-the-badge&logo=swagger&logoColor=85EA2D" height="28"/>
     <img src="https://img.shields.io/badge/Jira-PI3--14-6f42c1?style=for-the-badge" alt="Jira"/>
     <img src="https://img.shields.io/badge/Tema-Contratos%20de%20API%20(RSD)-blue?style=for-the-badge" alt="Tema"/>

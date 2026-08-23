@@ -10,6 +10,7 @@ public record RotaCalculadaDTO(
         double tempoEstimadoMin,
         boolean dentroDaJanela
 )
+
 {
 
 }

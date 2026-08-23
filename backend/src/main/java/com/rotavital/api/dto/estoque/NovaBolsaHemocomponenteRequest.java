@@ -14,6 +14,7 @@ public record NovaBolsaHemocomponenteRequest(
         double volumeMl,
         String bancoOrigemId
 )
+
 {
         
 }

@@ -10,6 +10,7 @@ public record AlocacaoDTO(
         LocalDateTime dataAlocacao,
         StatusRequisicao status
 )
+
 {
         
 }

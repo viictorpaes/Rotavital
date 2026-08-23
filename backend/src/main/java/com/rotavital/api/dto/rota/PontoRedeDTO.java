@@ -7,6 +7,7 @@ public record PontoRedeDTO(
         double latitude,
         double longitude
 )
+
 {
         
 }
