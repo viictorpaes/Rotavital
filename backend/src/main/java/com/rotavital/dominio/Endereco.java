@@ -1,27 +1,36 @@
 package com.rotavital.dominio;
 
-/**
- * Value object que representa um endereço/localização física.
- * Usado por composição dentro de Hospital e BancoDeSangue.
- */
-public class Endereco {
+public class Endereco
+{
+    private final String logradouro;
+    private final double latitude;
+    private final double longitude;
 
-    private String logradouro;
-    private double latitude;
-    private double longitude;
-
-    public Endereco(String logradouro, double latitude, double longitude) {
+    public Endereco(String logradouro, double latitude, double longitude)
+    {
         this.logradouro = logradouro;
         this.latitude = latitude;
         this.longitude = longitude;
     }
 
-    public String getLogradouro() { return logradouro; }
-    public double getLatitude() { return latitude; }
-    public double getLongitude() { return longitude; }
+    public String getLogradouro()
+    {
+        return logradouro;
+    }
+
+    public double getLatitude()
+    {
+        return latitude;
+    }
+
+    public double getLongitude()
+    {
+        return longitude;
+    }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return logradouro;
     }
 }

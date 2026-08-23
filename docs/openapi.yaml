@@ -1,0 +1,693 @@
+openapi: 3.0.3
+info:
+  title: Rotavital API
+  description: >
+    Contratos REST do sistema Rotavital: gestão de estoque de hemocomponentes,
+    processamento de requisições hospitalares, alocação com regras de
+    compatibilidade/validade (FEFO), roteirização de entregas e telemetria
+    da cadeia fria. Os schemas espelham o modelo de domínio Java em
+    com.rotavital.dominio (ver docs/CONTRATOS_DE_API.md).
+  version: "0.1.0"
+  contact:
+    name: Equipe Rotavital
+    url: https://github.com/viictorpaes/Rotavital
+tags:
+  - name: Estoque
+    description: Consulta consolidada do estoque por banco de sangue.
+  - name: Hemocomponentes
+    description: CRUD e consulta das bolsas de hemocomponentes.
+  - name: Requisicoes
+    description: Recepção de pedidos hospitalares e algoritmo de alocação (FEFO/ABO-Rh).
+  - name: Rotas
+    description: Grafo de distribuição e cálculo de rota mínima com janela de tempo.
+  - name: Telemetria
+    description: Telemetria simulada da cadeia fria durante o transporte.
+servers:
+  - url: http://localhost:8080/api
+    description: Ambiente local (placeholder - Spring Boot ainda não integrado).
+
+paths:
+  /estoque/{bancoId}:
+    get:
+      tags: [Estoque]
+      summary: Consulta o estoque consolidado de um banco de sangue
+      description: Retorna todas as bolsas de hemocomponentes vinculadas ao banco de sangue informado.
+      operationId: consultarEstoque
+      parameters:
+        - $ref: '#/components/parameters/BancoIdPath'
+      responses:
+        '200':
+          description: Estoque do banco informado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Estoque'
+              example:
+                bancoDeSangueId: BS-01
+                totalBolsas: 1
+                bolsas:
+                  - id: BOLSA-001
+                    tipoComponente: HEMACIAS
+                    tipoSanguineo: O_POSITIVO
+                    dataColeta: "2026-08-17"
+                    dataValidade: "2026-09-26"
+                    loteSintetico: LOTE-SIM-0001
+                    volumeMl: 450.0
+                    status: DISPONIVEL
+                    bancoOrigemId: BS-01
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /hemocomponentes:
+    get:
+      tags: [Hemocomponentes]
+      summary: Lista bolsas de hemocomponentes com filtros
+      description: Lista bolsas cadastradas, opcionalmente filtradas por banco, tipo de componente, tipo sanguíneo e status.
+      operationId: listarHemocomponentes
+      parameters:
+        - name: bancoId
+          in: query
+          schema: { type: string }
+        - name: tipoComponente
+          in: query
+          schema: { $ref: '#/components/schemas/TipoComponente' }
+        - name: tipoSanguineo
+          in: query
+          schema: { $ref: '#/components/schemas/TipoSanguineo' }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/StatusBolsa' }
+      responses:
+        '200':
+          description: Lista de bolsas que atendem aos filtros.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BolsaHemocomponente' }
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Hemocomponentes]
+      summary: Registra uma nova bolsa de hemocomponente no estoque
+      description: Cria uma bolsa com status inicial DISPONIVEL, equivalente ao construtor de BolsaHemocomponente no domínio.
+      operationId: criarHemocomponente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NovaBolsaHemocomponenteRequest' }
+            example:
+              tipoComponente: HEMACIAS
+              tipoSanguineo: O_POSITIVO
+              dataColeta: "2026-08-17"
+              dataValidade: "2026-09-26"
+              loteSintetico: LOTE-SIM-0001
+              volumeMl: 450.0
+              bancoOrigemId: BS-01
+      responses:
+        '201':
+          description: Bolsa criada com status inicial DISPONIVEL.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BolsaHemocomponente' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /hemocomponentes/{id}:
+    get:
+      tags: [Hemocomponentes]
+      summary: Consulta uma bolsa pelo id
+      description: Retorna os dados completos de uma bolsa de hemocomponente específica.
+      operationId: obterHemocomponente
+      parameters:
+        - $ref: '#/components/parameters/BolsaIdPath'
+      responses:
+        '200':
+          description: Bolsa encontrada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BolsaHemocomponente' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Hemocomponentes]
+      summary: Atualiza o status de uma bolsa (reservar, descartar, etc.)
+      description: Aplica uma transição de status equivalente aos métodos reservar()/descartar() de BolsaHemocomponente no domínio.
+      operationId: atualizarStatusHemocomponente
+      parameters:
+        - $ref: '#/components/parameters/BolsaIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AtualizarStatusBolsaRequest' }
+            example: { status: RESERVADA }
+      responses:
+        '200':
+          description: Bolsa atualizada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BolsaHemocomponente' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Hemocomponentes]
+      summary: Remove o cadastro de uma bolsa (ex. erro de lançamento)
+      description: Remove definitivamente o registro de uma bolsa. Diferente de descartar (que é uma transição de status).
+      operationId: removerHemocomponente
+      parameters:
+        - $ref: '#/components/parameters/BolsaIdPath'
+      responses:
+        '204':
+          description: Bolsa removida.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /requisicoes:
+    post:
+      tags: [Requisicoes]
+      summary: Recebe um novo pedido de hospital
+      description: Cria uma requisição hospitalar com status inicial PENDENTE, equivalente a Hospital.solicitar(...) no domínio.
+      operationId: criarRequisicao
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NovaRequisicaoRequest' }
+            example:
+              hospitalId: HOSP-01
+              tipoComponente: HEMACIAS
+              tipoSanguineo: O_POSITIVO
+              quantidade: 1
+              urgencia: ALTA
+      responses:
+        '201':
+          description: Requisição criada com status PENDENTE.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RequisicaoHospitalar' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Requisicoes]
+      summary: Lista requisições com filtros
+      description: Lista requisições hospitalares, opcionalmente filtradas por hospital e status.
+      operationId: listarRequisicoes
+      parameters:
+        - name: hospitalId
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/StatusRequisicao' }
+      responses:
+        '200':
+          description: Lista de requisições.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RequisicaoHospitalar' }
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /requisicoes/{id}:
+    get:
+      tags: [Requisicoes]
+      summary: Consulta uma requisição pelo id
+      description: Retorna os dados completos de uma requisição hospitalar específica.
+      operationId: obterRequisicao
+      parameters:
+        - $ref: '#/components/parameters/RequisicaoIdPath'
+      responses:
+        '200':
+          description: Requisição encontrada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RequisicaoHospitalar' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /requisicoes/{id}/alocar:
+    post:
+      tags: [Requisicoes]
+      summary: Dispara o algoritmo de matching/alocação (compatibilidade ABO/Rh, priorização FEFO)
+      description: >
+        Busca bolsas compatíveis no estoque, prioriza a de vencimento mais
+        próximo (FEFO) e reserva-a para a requisição, equivalente ao fluxo
+        Estoque.buscarDisponiveis(...) + BolsaHemocomponente.reservar()
+        demonstrado em TesteFluxo.
+      operationId: alocarRequisicao
+      parameters:
+        - $ref: '#/components/parameters/RequisicaoIdPath'
+      responses:
+        '200':
+          description: Bolsa compatível encontrada e reservada; requisição passa para ALOCADA.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Alocacao' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: >
+            Nenhuma bolsa compatível disponível no momento; requisição
+            permanece PENDENTE (não é um erro de cliente, é regra de negócio).
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Regra de negócio violada
+                status: 422
+                detail: "Nenhuma bolsa compatível (HEMACIAS/O_POSITIVO) disponível no estoque."
+                instance: /requisicoes/9f1c1e7e-2d3a-4b1a-8a1e-000000000001/alocar
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /requisicoes/{id}/cancelar:
+    post:
+      tags: [Requisicoes]
+      summary: Cancela uma requisição
+      description: Marca a requisição como CANCELADA, equivalente a RequisicaoHospitalar.cancelar() no domínio.
+      operationId: cancelarRequisicao
+      parameters:
+        - $ref: '#/components/parameters/RequisicaoIdPath'
+      responses:
+        '200':
+          description: Requisição cancelada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RequisicaoHospitalar' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /rotas/pontos:
+    get:
+      tags: [Rotas]
+      summary: Lista os nós do grafo de distribuição (hospitais e bancos de sangue)
+      description: Retorna todos os pontos de rede (implementações de PontoDeRede no domínio) usados pelo algoritmo de roteirização.
+      operationId: listarPontosRede
+      responses:
+        '200':
+          description: Lista de pontos de rede.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PontoRede' }
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /rotas/conexoes:
+    get:
+      tags: [Rotas]
+      summary: Lista as conexões (arestas) do grafo de distribuição
+      description: Retorna as conexões entre pontos de rede, com distância e tempo estimado, usadas pelo algoritmo de rota mínima.
+      operationId: listarConexoesRede
+      responses:
+        '200':
+          description: Lista de conexões entre pontos de rede.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Conexao' }
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /rotas/calcular:
+    post:
+      tags: [Rotas]
+      summary: Calcula a rota de menor custo entre dois pontos, respeitando janela de tempo
+      description: Executa o algoritmo de menor caminho (AED) sobre o grafo de distribuição e avalia se o resultado cabe na janela de entrega informada.
+      operationId: calcularRota
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CalcularRotaRequest' }
+            example:
+              origemId: BS-01
+              destinoId: HOSP-01
+              janelaEntregaLimite: "2026-08-22T21:00:00"
+      responses:
+        '200':
+          description: Rota calculada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RotaCalculada' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Não existe caminho possível entre origem e destino no grafo.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Regra de negócio violada
+                status: 422
+                detail: "Não existe caminho entre BS-01 e HOSP-01 no grafo de distribuição."
+                instance: /rotas/calcular
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /telemetria/temperatura:
+    post:
+      tags: [Telemetria]
+      summary: Registra uma leitura simulada de telemetria (localização e temperatura) de uma entrega
+      description: Ingesta uma leitura de telemetria da cadeia fria gerada por simulação (dados sintéticos), associada a uma entrega em trânsito.
+      operationId: registrarTelemetria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegistrarTelemetriaRequest' }
+            example:
+              entregaId: ENT-001
+              timestamp: "2026-08-22T18:32:00"
+              latitude: -8.0510
+              longitude: -34.8790
+              temperaturaCelsius: 4.2
+      responses:
+        '201':
+          description: Leitura registrada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeituraTelemetria' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /entregas/{id}/monitoramento:
+    get:
+      tags: [Telemetria]
+      summary: Consulta o histórico de telemetria de uma entrega
+      description: Retorna todas as leituras de localização/temperatura já registradas para a entrega informada, em ordem cronológica.
+      operationId: obterMonitoramentoEntrega
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+          example: ENT-001
+      responses:
+        '200':
+          description: Histórico de leituras da entrega.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonitoramentoEntrega' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    BancoIdPath:
+      name: bancoId
+      in: path
+      required: true
+      schema: { type: string }
+      example: BS-01
+    BolsaIdPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+      example: BOLSA-001
+    RequisicaoIdPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+      example: 9f1c1e7e-2d3a-4b1a-8a1e-000000000001
+
+  schemas:
+    TipoComponente:
+      type: string
+      enum: [HEMACIAS, PLASMA, PLAQUETAS, CRIOPRECIPITADO]
+    TipoSanguineo:
+      type: string
+      enum:
+        - A_POSITIVO
+        - A_NEGATIVO
+        - B_POSITIVO
+        - B_NEGATIVO
+        - AB_POSITIVO
+        - AB_NEGATIVO
+        - O_POSITIVO
+        - O_NEGATIVO
+    StatusBolsa:
+      type: string
+      enum: [DISPONIVEL, RESERVADA, EM_TRANSITO, ENTREGUE, DESCARTADA]
+    StatusRequisicao:
+      type: string
+      enum: [PENDENTE, ALOCADA, EM_TRANSITO, ENTREGUE, CANCELADA]
+    NivelUrgencia:
+      type: string
+      description: >
+        Campo previsto pelo contrato de API (subtask "payloads com prioridade
+        da requisição") mas ainda não existente em RequisicaoHospitalar no
+        domínio Java - ver nota de gap em docs/CONTRATOS_DE_API.md.
+      enum: [BAIXA, MEDIA, ALTA]
+    TipoPontoRede:
+      type: string
+      enum: [HOSPITAL, BANCO_DE_SANGUE]
+
+    BolsaHemocomponente:
+      type: object
+      properties:
+        id: { type: string, example: BOLSA-001 }
+        tipoComponente: { $ref: '#/components/schemas/TipoComponente' }
+        tipoSanguineo: { $ref: '#/components/schemas/TipoSanguineo' }
+        dataColeta: { type: string, format: date }
+        dataValidade: { type: string, format: date }
+        loteSintetico:
+          type: string
+          description: Identifica o lote gerado para simulação com dados sintéticos.
+          example: LOTE-SIM-0001
+        volumeMl: { type: number, format: double }
+        status: { $ref: '#/components/schemas/StatusBolsa' }
+        bancoOrigemId: { type: string, example: BS-01 }
+      required: [id, tipoComponente, tipoSanguineo, dataColeta, dataValidade, loteSintetico, volumeMl, status, bancoOrigemId]
+
+    NovaBolsaHemocomponenteRequest:
+      type: object
+      properties:
+        tipoComponente: { $ref: '#/components/schemas/TipoComponente' }
+        tipoSanguineo: { $ref: '#/components/schemas/TipoSanguineo' }
+        dataColeta: { type: string, format: date }
+        dataValidade: { type: string, format: date }
+        loteSintetico:
+          type: string
+          description: Identifica o lote gerado para simulação com dados sintéticos.
+          example: LOTE-SIM-0001
+        volumeMl: { type: number, format: double }
+        bancoOrigemId: { type: string }
+      required: [tipoComponente, tipoSanguineo, dataColeta, dataValidade, loteSintetico, volumeMl, bancoOrigemId]
+
+    AtualizarStatusBolsaRequest:
+      type: object
+      properties:
+        status: { $ref: '#/components/schemas/StatusBolsa' }
+      required: [status]
+
+    Estoque:
+      type: object
+      properties:
+        bancoDeSangueId: { type: string }
+        totalBolsas: { type: integer }
+        bolsas:
+          type: array
+          items: { $ref: '#/components/schemas/BolsaHemocomponente' }
+      required: [bancoDeSangueId, totalBolsas, bolsas]
+
+    RequisicaoHospitalar:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        hospitalId: { type: string, example: HOSP-01 }
+        tipoComponente: { $ref: '#/components/schemas/TipoComponente' }
+        tipoSanguineo: { $ref: '#/components/schemas/TipoSanguineo' }
+        quantidade: { type: integer, minimum: 1 }
+        urgencia: { $ref: '#/components/schemas/NivelUrgencia' }
+        dataSolicitacao: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/StatusRequisicao' }
+      required: [id, hospitalId, tipoComponente, tipoSanguineo, quantidade, dataSolicitacao, status]
+
+    NovaRequisicaoRequest:
+      type: object
+      properties:
+        hospitalId: { type: string }
+        tipoComponente: { $ref: '#/components/schemas/TipoComponente' }
+        tipoSanguineo: { $ref: '#/components/schemas/TipoSanguineo' }
+        quantidade: { type: integer, minimum: 1 }
+        urgencia: { $ref: '#/components/schemas/NivelUrgencia' }
+      required: [hospitalId, tipoComponente, tipoSanguineo, quantidade]
+
+    Alocacao:
+      type: object
+      properties:
+        requisicaoId: { type: string, format: uuid }
+        bolsaAlocadaId: { type: string, example: BOLSA-001 }
+        dataAlocacao: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/StatusRequisicao' }
+      required: [requisicaoId, bolsaAlocadaId, dataAlocacao, status]
+
+    PontoRede:
+      type: object
+      properties:
+        id: { type: string }
+        nome: { type: string }
+        tipo: { $ref: '#/components/schemas/TipoPontoRede' }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+      required: [id, nome, tipo, latitude, longitude]
+
+    Conexao:
+      type: object
+      properties:
+        origemId: { type: string }
+        destinoId: { type: string }
+        distanciaKm: { type: number, format: double }
+        tempoEstimadoMin: { type: number, format: double }
+      required: [origemId, destinoId, distanciaKm, tempoEstimadoMin]
+
+    CalcularRotaRequest:
+      type: object
+      properties:
+        origemId: { type: string }
+        destinoId: { type: string }
+        janelaEntregaLimite: { type: string, format: date-time, nullable: true }
+      required: [origemId, destinoId]
+
+    RotaCalculada:
+      type: object
+      properties:
+        origemId: { type: string }
+        destinoId: { type: string }
+        nos:
+          type: array
+          items: { type: string }
+          description: Sequência de ids dos pontos de rede, na ordem da rota.
+        distanciaTotalKm: { type: number, format: double }
+        tempoEstimadoMin: { type: number, format: double }
+        dentroDaJanela: { type: boolean }
+      required: [origemId, destinoId, nos, distanciaTotalKm, tempoEstimadoMin]
+
+    RegistrarTelemetriaRequest:
+      type: object
+      properties:
+        entregaId: { type: string }
+        timestamp: { type: string, format: date-time }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        temperaturaCelsius: { type: number, format: double }
+      required: [entregaId, timestamp, latitude, longitude, temperaturaCelsius]
+
+    LeituraTelemetria:
+      type: object
+      properties:
+        entregaId: { type: string }
+        timestamp: { type: string, format: date-time }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        temperaturaCelsius: { type: number, format: double }
+      required: [entregaId, timestamp, latitude, longitude, temperaturaCelsius]
+
+    MonitoramentoEntrega:
+      type: object
+      properties:
+        entregaId: { type: string }
+        statusEntrega: { $ref: '#/components/schemas/StatusRequisicao' }
+        leituras:
+          type: array
+          items: { $ref: '#/components/schemas/LeituraTelemetria' }
+      required: [entregaId, statusEntrega, leituras]
+
+    Erro:
+      type: object
+      description: Problem Details for HTTP APIs (RFC 7807).
+      properties:
+        type:
+          type: string
+          format: uri
+          default: about:blank
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance:
+          type: string
+          format: uri-reference
+      required: [title, status]
+
+  responses:
+    BadRequest:
+      description: Requisição malformada (campo ausente, tipo inválido, etc.).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          example:
+            type: about:blank
+            title: Requisição inválida
+            status: 400
+            detail: "O campo 'quantidade' é obrigatório e deve ser maior que zero."
+            instance: /requisicoes
+    NotFound:
+      description: Recurso não encontrado.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          example:
+            type: about:blank
+            title: Recurso não encontrado
+            status: 404
+            detail: "Nenhuma bolsa encontrada com id BOLSA-999."
+            instance: /hemocomponentes/BOLSA-999
+    UnprocessableEntity:
+      description: Requisição bem formada, mas que viola uma regra de negócio do domínio.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          example:
+            type: about:blank
+            title: Regra de negócio violada
+            status: 422
+            detail: "Bolsa BOLSA-002 está vencida e não pode ser reservada."
+            instance: /hemocomponentes/BOLSA-002
+    InternalServerError:
+      description: Erro inesperado no servidor.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          example:
+            type: about:blank
+            title: Erro interno
+            status: 500
+            detail: "Ocorreu um erro inesperado ao processar a requisição."
+            instance: /
