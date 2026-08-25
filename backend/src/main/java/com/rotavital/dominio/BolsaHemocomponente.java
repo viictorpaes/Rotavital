@@ -1,24 +1,21 @@
 package com.rotavital.dominio;
 import java.time.LocalDate;
 
-/**
- * Representa uma unidade de hemocomponente (bolsa) armazenada
- * em um banco de sangue, com controle de tipo, validade e status.
- */
-public class BolsaHemocomponente {
-
-    private String id;
-    private TipoComponente tipoComponente;
-    private TipoSanguineo tipoSanguineo;
-    private LocalDate dataColeta;
-    private LocalDate dataValidade;
-    private double volumeMl;
+public class BolsaHemocomponente
+{
+    private final String id;
+    private final TipoComponente tipoComponente;
+    private final TipoSanguineo tipoSanguineo;
+    private final LocalDate dataColeta;
+    private final LocalDate dataValidade;
+    private final double volumeMl;
     private StatusBolsa status;
-    private BancoDeSangue bancoOrigem;
+    private final BancoDeSangue bancoOrigem;
 
     public BolsaHemocomponente(String id, TipoComponente tipoComponente, TipoSanguineo tipoSanguineo,
                                 LocalDate dataColeta, LocalDate dataValidade, double volumeMl,
-                                BancoDeSangue bancoOrigem) {
+                                BancoDeSangue bancoOrigem)
+    {
         this.id = id;
         this.tipoComponente = tipoComponente;
         this.tipoSanguineo = tipoSanguineo;
@@ -29,34 +26,69 @@ public class BolsaHemocomponente {
         this.status = StatusBolsa.DISPONIVEL;
     }
 
-    public boolean estaVencida(LocalDate dataReferencia) {
+    public boolean estaVencida(LocalDate dataReferencia)
+    {
         return dataReferencia.isAfter(dataValidade);
     }
 
-    public boolean estaDisponivel() {
+    public boolean estaDisponivel()
+    {
         return status == StatusBolsa.DISPONIVEL;
     }
 
-    public void reservar() {
+    public void reservar()
+    {
         this.status = StatusBolsa.RESERVADA;
     }
 
-    public void descartar() {
+    public void descartar()
+    {
         this.status = StatusBolsa.DESCARTADA;
     }
 
-    // Getters
-    public String getId() { return id; }
-    public TipoComponente getTipoComponente() { return tipoComponente; }
-    public TipoSanguineo getTipoSanguineo() { return tipoSanguineo; }
-    public LocalDate getDataColeta() { return dataColeta; }
-    public LocalDate getDataValidade() { return dataValidade; }
-    public double getVolumeMl() { return volumeMl; }
-    public StatusBolsa getStatus() { return status; }
-    public BancoDeSangue getBancoOrigem() { return bancoOrigem; }
+    public String getId()
+    {
+        return id;
+    }
+
+    public TipoComponente getTipoComponente()
+    {
+        return tipoComponente;
+    }
+
+    public TipoSanguineo getTipoSanguineo()
+    {
+        return tipoSanguineo;
+    }
+
+    public LocalDate getDataColeta()
+    {
+        return dataColeta;
+    }
+
+    public LocalDate getDataValidade()
+    {
+        return dataValidade;
+    }
+
+    public double getVolumeMl()
+    {
+        return volumeMl;
+    }
+
+    public StatusBolsa getStatus()
+    {
+        return status;
+    }
+
+    public BancoDeSangue getBancoOrigem()
+    {
+        return bancoOrigem;
+    }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "Bolsa[" + id + "] " + tipoComponente + " " + tipoSanguineo
                 + " válida até " + dataValidade + " - " + status;
     }

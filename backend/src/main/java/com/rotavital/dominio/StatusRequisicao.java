@@ -1,6 +1,7 @@
 package com.rotavital.dominio;
 
-public enum StatusRequisicao {
+public enum StatusRequisicao
+{
     PENDENTE,
     ALOCADA,
     EM_TRANSITO,

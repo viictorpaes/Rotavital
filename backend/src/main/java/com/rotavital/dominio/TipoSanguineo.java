@@ -1,6 +1,7 @@
 package com.rotavital.dominio;
 
-public enum TipoSanguineo {
+public enum TipoSanguineo
+{
     A_POSITIVO,
     A_NEGATIVO,
     B_POSITIVO,

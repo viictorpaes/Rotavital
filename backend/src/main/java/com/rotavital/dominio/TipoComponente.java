@@ -1,6 +1,7 @@
 package com.rotavital.dominio;
 
-public enum TipoComponente {
+public enum TipoComponente
+{
     HEMACIAS,
     PLASMA,
     PLAQUETAS,
