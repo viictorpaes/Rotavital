@@ -65,14 +65,14 @@ produzidos (histórias de usuário, protótipo, screencasts). Datas conforme o r
 
 <h3 id="-entrega-01" align="center">📌 Entrega 01 — 31/08 <br>
 <a href="https://letter-raven-07178463.figma.site" target="_blank"><img src="https://img.shields.io/badge/-Figma-111827?style=flat-square&logo=figma&logoColor=purple" height="20"/></a>
-<a href="#" target="_blank" title="Substituir por este link assim que o screencast for gravado e publicado no YouTube"><img src="https://img.shields.io/badge/-ScreenCast_1-111827?style=flat-square&logo=youtube&logoColor=red" height="20"/></a>
+<a href="https://youtu.be/SRvAFkqi4Nc" target="_blank"><img src="https://img.shields.io/badge/-ScreenCast_1-111827?style=flat-square&logo=youtube&logoColor=red" height="20"/></a>
 <img src="https://img.shields.io/badge/Status-Concluída-22C55E?style=flat" height="20"/>
 </h3>
 
 | Artefato | Descrição | Link |
 | :--- | :--- | :--- |
 | 🎨 Protótipo low-Fi (Figma Make) | 10 histórias navegadas e confirmadas ponta a ponta (HU‑01 a HU‑10) | [Abrir protótipo](https://letter-raven-07178463.figma.site) |
-| 🎬 Screencast (YouTube) | Demonstração do protótipo, explicando cada história implementada | ⏳ *a publicar* |
+| 🎬 Screencast (YouTube) | Demonstração do protótipo, explicando cada história implementada | [Assistir vídeo](https://youtu.be/SRvAFkqi4Nc) |
 
 <h4 align="center">📋 Histórias de Usuário — Rota Vital 🩸<br>
 Login, Estoque, Requisições, Rede Hospitalar, Pacientes e <b>Doações</b></h4>
