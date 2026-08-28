@@ -36,7 +36,7 @@ flowchart TD
     DOM -. "espelhado 1:1 por" .-> API
     MOD -. "cruza" .-> DOM
     MOD -. "cruza" .-> API
-    IDX --> FIG["RotaVital.fig<br/>protótipo visual"]
+    IDX --> FIG["RotaVital.fig<br/>link do protótipo (Figma)"]
 ```
 
 | Documento | Formato | Conteúdo | Leia quando... |
@@ -45,7 +45,7 @@ flowchart TD
 | [`CONTRATOS_DE_API.md`](CONTRATOS_DE_API.md) | Markdown + Mermaid | Os 4 módulos REST, padrão de erro (RFC 7807), diagramas de sequência, gaps | se for desenhar ou consumir um endpoint |
 | [`openapi.yaml`](openapi.yaml) | OpenAPI 3.0.3 | Fonte da verdade do contrato — schemas, exemplos, respostas | se for importar no Swagger/Postman/Insomnia |
 | [`MODULOS.md`](MODULOS.md) | Markdown + Mermaid | Catálogo dos 4 módulos cruzando domínio ↔ contrato | quiser uma visão geral rápida do sistema |
-| [`../RotaVital.fig`](../RotaVital.fig) | Figma | Protótipo visual | se for discutir UI/UX do frontend |
+| [`../RotaVital.fig`](../RotaVital.fig) | Texto (link) | Aponta para o protótipo publicado no Figma | se for discutir UI/UX do frontend |
 
 <h2 align="left" id="2-dominio">🧬 2. Modelo de Domínio</h2>
 
@@ -71,7 +71,12 @@ contrato com a classe de domínio que ele espelha — ver [`MODULOS.md`](MODULOS
 
 <h2 align="left" id="6-figma">🎨 6. Protótipo (Figma)</h2>
 
-Protótipo visual do projeto em [`RotaVital.fig`](../RotaVital.fig), na raiz do repositório.
+Protótipo Lo-Fi publicado no Figma, com link em [`RotaVital.fig`](../RotaVital.fig) (arquivo de texto na
+raiz do repositório, apontando para o protótipo online) — acesso direto:
+[letter-raven-07178463.figma.site](https://letter-raven-07178463.figma.site).
+
+> As histórias de usuário (BDD) da Entrega 01 estão no [`README.md`](../README.md#-entrega-01) principal,
+> na seção "Entrega 01", em blocos expansíveis (▶️).
 
 <h2 align="left" id="7-visualizar">🔎 7. Visualizando o contrato REST</h2>
 
