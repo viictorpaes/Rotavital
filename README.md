@@ -107,7 +107,7 @@ Login, Estoque, Requisições, Rede Hospitalar, Pacientes e <b>Doações</b></h4
 
 | # | História |
 | :---: | :--- |
-| HU‑01 | Como **usuário do Cesar Life (médico ou doador)**, quero escolher meu tipo de acesso e informar meu nome na tela inicial, para que eu entre direto na experiência certa para o meu papel, sem um cadastro completo. |
+| HU‑01 | Como **usuário do RotaVital (médico ou doador)**, quero escolher meu tipo de acesso e informar meu nome na tela inicial, para que eu entre direto na experiência certa para o meu papel, sem um cadastro completo. |
 | HU‑02 | Como **médico**, quero ver um painel com números rápidos e uma caixa de avisos com alertas críticos em tempo real, para que eu identifique pacientes em risco e problemas de estoque sem navegar por todas as telas. |
 
 **📦 Estoque**
