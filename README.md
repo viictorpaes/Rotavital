@@ -353,6 +353,39 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 
 </details>
 
+<h3 id="-entrega-02" align="center">📌 Entrega 02 — 21/09 <br>
+<img src="https://img.shields.io/badge/-Spring_Boot-111827?style=flat-square&logo=springboot&logoColor=green" height="20"/>
+<img src="https://img.shields.io/badge/Status-Em_andamento-F59E0B?style=flat" height="20"/>
+</h3>
+
+<p align="center">
+Segunda entrega do Projeto Integrador — sai do protótipo Figma e liga o domínio Java a uma
+<b>aplicação Spring Boot rodando de verdade</b>, com pelo menos 2 histórias de usuário implementadas em
+código.
+</p>
+
+| Requisito da entrega | Descrição | Status |
+| :--- | :--- | :---: |
+| ✅ Histórias implementadas | Mínimo de 2 HUs funcionando na aplicação Spring Boot | <img src="https://img.shields.io/badge/1%2F2-F59E0B?style=flat-square" height="18"/> |
+| 🔁 Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Em_dia-22C55E?style=flat-square" height="18"/> |
+| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas da entrega + print no README | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
+| 🎬 ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
+| 💻 ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
+
+<h4 align="center">📝 Histórias Implementadas — Entrega 02</h4>
+
+<p align="center">
+Resumo em formato <b>post-it</b> (como visto em sala) das histórias já rodando na aplicação Spring Boot.
+O detalhamento completo (ator, tela, BDD) de cada HU está na <a href="#-entrega-01">Entrega 01</a>.
+</p>
+
+> 🟨 **HU‑03** — Como **médico**, preciso consultar o estoque por tipo sanguíneo, com validade, temperatura
+> e localização de cada lote, para saber quais estão em risco de vencer ou fora da faixa ideal.
+>
+> ✅ `GET /estoque/{bancoId}?tipoSanguineo=` — [`EstoqueController.java`](./backend/src/main/java/com/rotavital/api/EstoqueController.java)
+
+> 🟨 **HU‑?? (a definir)** — próxima história a sair do protótipo e virar endpoint real nesta entrega.
+
 <h2 align="center" id="modulos">📦 Módulos do Sistema <br>
 <img src="https://img.shields.io/badge/Módulos-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="22"/>
 </h2>
