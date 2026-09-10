@@ -30,6 +30,13 @@ public class Estoque
                 .collect(Collectors.toList());
     }
 
+    public List<BolsaHemocomponente> buscarPorTipoSanguineo(TipoSanguineo tipoSanguineo)
+    {
+        return bolsas.stream()
+                .filter(b -> b.getTipoSanguineo() == tipoSanguineo)
+                .collect(Collectors.toList());
+    }
+
     public List<BolsaHemocomponente> listarVencidas(LocalDate dataReferencia)
     {
         return bolsas.stream()
