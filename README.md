@@ -182,7 +182,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Escolher meu tipo de acesso ("Médico — acesso hospitalar completo" ou "Doador — portal de doações") e informar meu nome |
 | **Para que** | Eu veja a tela adequada ao meu papel sem precisar de um cadastro completo |
 | **Tela do Figma** | Tela inicial "Cesar Life · Estoque Inteligente" — cartões `Médico`/`Doador`, campo `Nome`, botão `Entrar` |
-| **Nível de código** | Não há endpoint de autenticação no backend ainda — hoje é só identificação, sem senha nem sessão real |
+| **Nível de código** | `POST /acesso` (`AcessoController`) devolve a tela inicial e o menu do papel escolhido — é só identificação, como no protótipo: sem senha nem sessão real |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -366,7 +366,7 @@ código.
 
 | Requisito da entrega | Descrição | Status |
 | :--- | :--- | :---: |
-| ✅ Histórias implementadas | Mínimo de 2 HUs funcionando na aplicação Spring Boot | <img src="https://img.shields.io/badge/1%2F2-F59E0B?style=flat-square" height="18"/> |
+| ✅ Histórias implementadas | Mínimo de 2 HUs funcionando na aplicação Spring Boot | <img src="https://img.shields.io/badge/2%2F2-22C55E?style=flat-square" height="18"/> |
 | 🔁 Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Em_dia-22C55E?style=flat-square" height="18"/> |
 | 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas da entrega + print no README | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
 | 🎬 ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
@@ -384,7 +384,10 @@ O detalhamento completo (ator, tela, BDD) de cada HU está na <a href="#-entrega
 >
 > ✅ `GET /estoque/{bancoId}?tipoSanguineo=` — [`EstoqueController.java`](./backend/src/main/java/com/rotavital/api/EstoqueController.java)
 
-> 🟨 **HU‑?? (a definir)** — próxima história a sair do protótipo e virar endpoint real nesta entrega.
+> 🟨 **HU‑01** — Como **usuário (médico ou doador)**, preciso escolher meu tipo de acesso e informar meu
+> nome, para entrar direto na experiência certa para o meu papel, sem um cadastro completo.
+>
+> ✅ `POST /acesso` — [`AcessoController.java`](./backend/src/main/java/com/rotavital/api/AcessoController.java)
 
 <h2 align="center" id="modulos">📦 Módulos do Sistema <br>
 <img src="https://img.shields.io/badge/Módulos-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="22"/>
