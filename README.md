@@ -567,7 +567,7 @@ npm run dev
 | `npm run lint` | Roda o ESLint sobre o código do frontend |
 
 <h2 align="center" id="figma-vs-mockado">🖼️ Figma × Mockado <br>
-<img src="https://img.shields.io/badge/Protótipo_vs_Implementação-111827?style=flat&logo=figma&logoColor=orange" height="22"/>
+<img src="https://img.shields.io/badge/Protótipo-111827?style=flat&logo=figma&logoColor=orange" height="22"/> vs <img src="https://img.shields.io/badge/Mockado-111827?style=flat&logo=react&logoColor=646CFF" height="22"/>
 </h2>
 
 <p align="center">
@@ -585,7 +585,7 @@ Screenshots tiradas do app rodando em <code>localhost:5173</code>, mesma resolu�
 | <img src="./img/FIGMA_Login_Doador.png" width="420"/> | <img src="./img/mockado-login_doador.png" width="420"/> |
 
 <details>
-<summary>▶️ <code>frontend/src/pages/Login/PaginaLogin.tsx</code></summary>
+<summary>🩸 <a href="./frontend/src/pages/Login/PaginaLogin.tsx"><code>frontend/src/pages/Login/PaginaLogin.tsx</code></a></summary>
 
 ```tsx
 export default function PaginaLogin()
@@ -606,7 +606,6 @@ export default function PaginaLogin()
   // ...
 }
 ```
-
 </details>
 
 <h4 align="left">❤️ HU‑09 — Doações (lista de pessoas que precisam)</h4>
@@ -616,7 +615,7 @@ export default function PaginaLogin()
 | <img src="./img/FIGMA_Doacoes.png" width="420"/> | <img src="./img/mockado-doacoes.png" width="420"/> |
 
 <details>
-<summary>▶️ <code>frontend/src/pages/Doacoes/PaginaDoacoes.tsx</code></summary>
+<summary>🩸 <a href="./frontend/src/pages/Doacoes/PaginaDoacoes.tsx"><code>frontend/src/pages/Doacoes/PaginaDoacoes.tsx</code></a></summary>
 
 ```tsx
 const pessoasFiltradas = useMemo(() =>
@@ -644,7 +643,7 @@ const pessoasFiltradas = useMemo(() =>
 | <img src="./img/FIGMA_Doacoes_AgendeSuaDoacao.png" width="420"/> | <img src="./img/mockado-doacoes_agendesuadoacao.png" width="420"/> |
 
 <details>
-<summary>▶️ <code>frontend/src/components/donations/ModalAgendarDoacao.tsx</code></summary>
+<summary>🩸 <a href="./frontend/src/components/donations/ModalAgendarDoacao.tsx"><code>frontend/src/components/donations/ModalAgendarDoacao.tsx</code></a></summary>
 
 ```tsx
 export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
@@ -661,7 +660,6 @@ export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
   </button>
 }
 ```
-
 </details>
 
 <h4 align="left">👤 HU‑10 — Portal do Doador</h4>
@@ -671,7 +669,7 @@ export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
 | <img src="./img/FIGMA_PortalDoDoador.png" width="420"/> | <img src="./img/mockado-portal_do_doador.png" width="420"/> |
 
 <details>
-<summary>▶️ <code>frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx</code></summary>
+<summary>▶️ <a href="./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx"><code>frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx</code></a></summary>
 
 ```tsx
 export default function PaginaPortalDoador()
@@ -682,10 +680,9 @@ export default function PaginaPortalDoador()
   {
     return <Navigate to="/login" replace />;
   }
-  // header "Rota Vital · Portal do Doador", sem o menu operacional (Início/Estoque/...)
+  // ...
 }
 ```
-
 </details>
 
 <h2 align="center" id="documentacao">📚 Documentação <br>
