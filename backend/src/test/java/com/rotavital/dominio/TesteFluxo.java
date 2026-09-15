@@ -17,6 +17,8 @@ public class TesteFluxo
                 LocalDate.now().minusDays(5),
                 LocalDate.now().plusDays(35),
                 450.0,
+                4.0,
+                "R1 · P1 · N1",
                 banco
         );
 
@@ -28,6 +30,8 @@ public class TesteFluxo
                 LocalDate.now().minusDays(20),
                 LocalDate.now().plusDays(5),
                 450.0,
+                4.0,
+                "R1 · P1 · N2",
                 banco
         );
 
@@ -39,6 +43,8 @@ public class TesteFluxo
                 LocalDate.now().minusDays(2),
                 LocalDate.now().plusDays(60),
                 250.0,
+                -25.0,
+                "F1 · P1 · N1",
                 banco
         );
 

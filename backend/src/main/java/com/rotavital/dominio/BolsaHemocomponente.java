@@ -9,11 +9,14 @@ public class BolsaHemocomponente
     private final LocalDate dataColeta;
     private final LocalDate dataValidade;
     private final double volumeMl;
+    private final double temperaturaCelsius;
+    private final String localizacao;
     private StatusBolsa status;
     private final BancoDeSangue bancoOrigem;
 
     public BolsaHemocomponente(String id, TipoComponente tipoComponente, TipoSanguineo tipoSanguineo,
                                 LocalDate dataColeta, LocalDate dataValidade, double volumeMl,
+                                double temperaturaCelsius, String localizacao,
                                 BancoDeSangue bancoOrigem)
     {
         this.id = id;
@@ -22,6 +25,8 @@ public class BolsaHemocomponente
         this.dataColeta = dataColeta;
         this.dataValidade = dataValidade;
         this.volumeMl = volumeMl;
+        this.temperaturaCelsius = temperaturaCelsius;
+        this.localizacao = localizacao;
         this.bancoOrigem = bancoOrigem;
         this.status = StatusBolsa.DISPONIVEL;
     }
@@ -29,6 +34,12 @@ public class BolsaHemocomponente
     public boolean estaVencida(LocalDate dataReferencia)
     {
         return dataReferencia.isAfter(dataValidade);
+    }
+
+    public boolean estaForaDaFaixa()
+    {
+        return temperaturaCelsius < tipoComponente.getTemperaturaMinima()
+                || temperaturaCelsius > tipoComponente.getTemperaturaMaxima();
     }
 
     public boolean estaDisponivel()
@@ -74,6 +85,16 @@ public class BolsaHemocomponente
     public double getVolumeMl()
     {
         return volumeMl;
+    }
+
+    public double getTemperaturaCelsius()
+    {
+        return temperaturaCelsius;
+    }
+
+    public String getLocalizacao()
+    {
+        return localizacao;
     }
 
     public StatusBolsa getStatus()

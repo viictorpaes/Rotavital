@@ -14,6 +14,9 @@ public record BolsaHemocomponenteDTO(
         LocalDate dataValidade,
         String loteSintetico,
         double volumeMl,
+        double temperaturaCelsius,
+        String localizacao,
+        boolean foraDaFaixa,
         StatusBolsa status,
         String bancoOrigemId
 )
