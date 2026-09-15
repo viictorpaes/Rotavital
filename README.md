@@ -376,7 +376,7 @@ com código real, acima do mínimo de 2 exigido.
 | :--- | :--- | :---: |
 | Histórias implementadas | Mínimo de 2 HUs em código real (não só Figma) | <img src="https://img.shields.io/badge/5%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
 | Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/0_commits_na_main_desde_28%2F08-EF4444?style=flat-square" height="18"/> **Falta** — todo o trabalho da Entrega 02 está em branches/PRs abertos, nada foi mesclado na `main` ainda |
-| Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/0_issues_abertas-EF4444?style=flat-square" height="18"/> **Falta** — o repositório só tem 2 Pull Requests, nenhuma Issue foi aberta |
+| Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/7_issues_abertas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues abertas no GitHub (label `bug`), com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
 | ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
 | ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
 
@@ -409,6 +409,33 @@ no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada
 > operacional do hospital, para uma experiência direta: ver quem precisa e agendar minha doação.
 >
 > ✅ Frontend — [`PaginaPortalDoador.tsx`](./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx) (nesta branch)
+
+<h4 align="center" id="issue-tracker">🐛 Issue/Bug Tracker — Entrega 02 <br>
+<img src="https://img.shields.io/badge/7_Issues_Abertas-red?style=flat-square&logo=github&logoColor=white" height="20"/>
+</h4>
+
+<p align="center">
+7 issues abertas no <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> do repositório,
+todas com a label <code>bug</code>, registrando gaps reais encontrados entre o protótipo Figma, a documentação
+técnica (<code>docs/</code>) e o código que de fato roda hoje (backend Spring Boot + frontend React). Nenhuma foi
+fechada ainda — viram trabalho de entrada da Entrega 03.
+</p>
+
+<p align="center">
+<img src="./img/issue-tracker_lista-geral.png" width="800"/>
+</p>
+
+| Imagem | Título | Descrição |
+| :---: | :--- | :--- |
+| <img src="./img/issue-tracker_issue1-testes-junit_1.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (contexto) | Cobertura de testes em 0%: o projeto já tem `junit-jupiter` no `pom.xml`, mas `TesteFluxo.java` ainda usa `main()` em vez de `@Test`. Tarefas para convertê-lo, adicionar `spring-boot-starter-test` e cobrir `AcessoController`/`EstoqueController`. |
+| <img src="./img/issue-tracker_issue1-testes-junit_2.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (cenários e pipeline) | Matriz mínima de cenários de teste por endpoint (`POST /acesso`, `GET /estoque/{id}`) e pipeline de CI sugerido, bloqueando o merge quando `mvn test` falha. |
+| <img src="./img/issue-tracker_issue2-screencasts.png" width="260"/> | 🔴 Issue #2 — Screencasts pendentes da Entrega 02 | Checklist para gravar e publicar os 2 vídeos exigidos nesta entrega (uso do sistema rodando e explicação do código) e atualizar os links na seção Entrega 02 do README. |
+| <img src="./img/issue-tracker_issue3-estoque.png" width="260"/> | 🔴 Issue #3 — Implementar tela de Estoque (HU‑03) | O backend já expõe `GET /estoque/{bancoId}?tipoSanguineo=`; falta a `PaginaEstoque.tsx` sair do placeholder `EmBreve` e consumir esse endpoint de verdade. |
+| <img src="./img/issue-tracker_issue4-integracao-backend.png" width="260"/> | 🔴 Issue #4 — Integrar frontend ao backend real | Hoje o frontend roda 100% sobre dados mockados (`pessoasMock.ts`, login só em memória). Plano para criar uma camada `api.ts`, trocar login/estoque por chamadas HTTP reais e configurar CORS no Spring Boot. |
+| <img src="./img/issue-tracker_issue5-docs-roteirizacao_1.png" width="260"/> | 🟠 Issue #5 — Docs desatualizados sobre Roteirização (achado) | `docs/MODULOS.md` classifica o módulo de Roteirização como "só lat/long, sem grafo", mas o código já implementa o grafo/Dijkstra (`RedeDistribuicao`, `Conexao`, `RotaCalculada`) usado no protótipo. |
+| <img src="./img/issue-tracker_issue5-docs-roteirizacao_2.png" width="260"/> | 🟠 Issue #5 — Docs desatualizados sobre Roteirização (status e fluxo alvo) | Tabela comparando documentação vs. código real e fluxo alvo para expor o cálculo de rota via um novo endpoint `POST /rotas/calcular`. |
+| <img src="./img/issue-tracker_issue6-painel-operacional.png" width="260"/> | 🟠 Issue #6 — Implementar Painel Operacional (HU‑02) | Escopo e cenários BDD para tirar a `PaginaPainel.tsx` do placeholder `EmBreve` e implementar os cards de "Números Rápidos" e a caixa de avisos com alertas críticos. |
+| <img src="./img/issue-tracker_issue7-doador-campanha.png" width="260"/> | 🟠 Issue #7 — Modelar Doador e Campanha de Doação | Diagrama de classes proposto (`Doador`, `CampanhaDoacao`, `AgendamentoDoacao`) — hoje não existe conceito de doador nem de campanha pública no domínio, o que bloqueia versões não mockadas de HU‑06, HU‑09 e HU‑10. |
 
 <h2 align="center" id="modulos">📦 Módulos do Sistema <br>
 <img src="https://img.shields.io/badge/Módulos-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="22"/>
