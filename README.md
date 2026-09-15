@@ -384,7 +384,7 @@ código.
 | ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
 | ✅ Histórias implementadas | Mínimo de 2 HUs funcionando na aplicação Spring Boot | <img src="https://img.shields.io/badge/2%2F2-22C55E?style=flat-square" height="18"/> |
 | 🔁 Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Em_dia-22C55E?style=flat-square" height="18"/> |
-| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas da entrega + print no README | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
+| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas da entrega + print no README | <img src="https://img.shields.io/badge/Em_dia-22C55E?style=flat-square" height="18"/> |
 | 🎬 ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
 | 💻 ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
 
