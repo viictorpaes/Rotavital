@@ -378,7 +378,7 @@ código.
 | Requisito da entrega | Descrição | Status |
 | :--- | :--- | :---: |
 | Histórias implementadas | Mínimo de 2 HUs em código real (não só Figma) | <img src="https://img.shields.io/badge/5%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
-| Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/0_commits_na_main_desde_28%2F08-EF4444?style=flat-square" height="18"/> **Falta** — todo o trabalho da Entrega 02 está em branches/PRs abertos, nada foi mesclado na `main` ainda |
+| Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Commits_semanais_na_main-22C55E?style=flat-square" height="18"/> **Feito** — PRs #2 e #10 mesclados na `main` em 14/09, com commits também em 23/08, 09/09 e 12/09, mantendo cadência semanal |
 | Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/7_issues_abertas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues abertas no GitHub (label `bug`), com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
 | ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
 | ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
