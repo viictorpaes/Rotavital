@@ -369,24 +369,17 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 Segunda entrega do Projeto Integrador — sai do protótipo Figma e liga o domínio a código rodando de
 verdade: back-end em <b>Spring Boot</b> (HU‑01, HU‑03 — em <a href="https://github.com/viictorpaes/Rotavital/pull/2">PR #2</a>,
 ainda não mesclado) e front-end em <b>React</b> (HU‑01, HU‑09, HU‑10 — nesta branch), somando 5 histórias
-com código real, acima do mínimo de 2 exigido.
-Segunda entrega do Projeto Integrador — sai do protótipo Figma e liga o domínio Java a uma
-<b>aplicação Spring Boot rodando de verdade</b>, com pelo menos 2 histórias de usuário implementadas em
-código.
+com código real, acima do mínimo de 2 exigido. Faltam os 2 screencasts (uso do sistema e explicação do
+código) para fechar a entrega.
 </p>
 
 | Requisito da entrega | Descrição | Status |
 | :--- | :--- | :---: |
-| Histórias implementadas | Mínimo de 2 HUs em código real (não só Figma) | <img src="https://img.shields.io/badge/5%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
-| Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Commits_semanais_na_main-22C55E?style=flat-square" height="18"/> **Feito** — PRs #2 e #10 mesclados na `main` em 14/09, com commits também em 23/08, 09/09 e 12/09, mantendo cadência semanal |
-| Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/7_issues_abertas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues abertas no GitHub (label `bug`), com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
-| ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
-| ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
-| ✅ Histórias implementadas | Mínimo de 2 HUs funcionando na aplicação Spring Boot | <img src="https://img.shields.io/badge/2%2F2-22C55E?style=flat-square" height="18"/> |
-| 🔁 Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Em_dia-22C55E?style=flat-square" height="18"/> |
-| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas da entrega + print no README | <img src="https://img.shields.io/badge/Em_dia-22C55E?style=flat-square" height="18"/> |
-| 🎬 ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
-| 💻 ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
+| ✅ Histórias implementadas | Mínimo de 2 HUs em código real (não só Figma) | <img src="https://img.shields.io/badge/5%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
+| 🔁 Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Commits_semanais_na_main-22C55E?style=flat-square" height="18"/> **Feito** — PRs #2 e #10 mesclados na `main` em 14/09, com commits também em 23/08, 09/09 e 12/09, mantendo cadência semanal |
+| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/7_issues_abertas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues abertas no GitHub (label `bug`), com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
+| 🎬 ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
+| 💻 ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
 
 <h4 align="center">📝 Histórias Implementadas — Entrega 02</h4>
 
@@ -444,19 +437,6 @@ fechada ainda — viram trabalho de entrada da Entrega 03.
 | <img src="./img/issue-tracker_issue5-docs-roteirizacao_2.png" width="260"/> | 🟠 Issue #5 — Docs desatualizados sobre Roteirização (status e fluxo alvo) | Tabela comparando documentação vs. código real e fluxo alvo para expor o cálculo de rota via um novo endpoint `POST /rotas/calcular`. |
 | <img src="./img/issue-tracker_issue6-painel-operacional.png" width="260"/> | 🟠 Issue #6 — Implementar Painel Operacional (HU‑02) | Escopo e cenários BDD para tirar a `PaginaPainel.tsx` do placeholder `EmBreve` e implementar os cards de "Números Rápidos" e a caixa de avisos com alertas críticos. |
 | <img src="./img/issue-tracker_issue7-doador-campanha.png" width="260"/> | 🟠 Issue #7 — Modelar Doador e Campanha de Doação | Diagrama de classes proposto (`Doador`, `CampanhaDoacao`, `AgendamentoDoacao`) — hoje não existe conceito de doador nem de campanha pública no domínio, o que bloqueia versões não mockadas de HU‑06, HU‑09 e HU‑10. |
-Resumo em formato <b>post-it</b> (como visto em sala) das histórias já rodando na aplicação Spring Boot.
-O detalhamento completo (ator, tela, BDD) de cada HU está na <a href="#-entrega-01">Entrega 01</a>.
-</p>
-
-> 🟨 **HU‑03** — Como **médico**, preciso consultar o estoque por tipo sanguíneo, com validade, temperatura
-> e localização de cada lote, para saber quais estão em risco de vencer ou fora da faixa ideal.
->
-> ✅ `GET /estoque/{bancoId}?tipoSanguineo=` — [`EstoqueController.java`](./backend/src/main/java/com/rotavital/api/EstoqueController.java)
-
-> 🟨 **HU‑01** — Como **usuário (médico ou doador)**, preciso escolher meu tipo de acesso e informar meu
-> nome, para entrar direto na experiência certa para o meu papel, sem um cadastro completo.
->
-> ✅ `POST /acesso` — [`AcessoController.java`](./backend/src/main/java/com/rotavital/api/AcessoController.java)
 
 <h2 align="center" id="modulos">📦 Módulos do Sistema <br>
 <img src="https://img.shields.io/badge/Módulos-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="22"/>
@@ -717,7 +697,7 @@ export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
 | <img src="./img/FIGMA_PortalDoDoador.png" width="420"/> | <img src="./img/mockado-portal_do_doador.png" width="420"/> |
 
 <details>
-<summary>▶️ <a href="./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx"><code>frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx</code></a></summary>
+<summary>🩸 <a href="./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx"><code>frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx</code></a></summary>
 
 ```tsx
 export default function PaginaPortalDoador()
