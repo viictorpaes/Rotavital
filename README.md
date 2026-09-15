@@ -47,6 +47,12 @@ roteirização de entregas e telemetria da cadeia fria.
   <img src="https://img.shields.io/badge/-Maven-111827?style=flat-square&logo=apachemaven&logoColor=C71A36"/>
   <img src="https://img.shields.io/badge/-JUnit_5-111827?style=flat-square&logo=junit5&logoColor=25A162"/>
   <img src="https://img.shields.io/badge/-OpenAPI_3.0.3-111827?style=flat-square&logo=openapiinitiative&logoColor=6BA539"/> <br>
+  <img src="https://img.shields.io/badge/-React_18-111827?style=flat-square&logo=react&logoColor=61DAFB"/>
+  <img src="https://img.shields.io/badge/-TypeScript-111827?style=flat-square&logo=typescript&logoColor=3178C6"/>
+  <img src="https://img.shields.io/badge/-Vite-111827?style=flat-square&logo=vite&logoColor=646CFF"/>
+  <img src="https://img.shields.io/badge/-Tailwind_CSS-111827?style=flat-square&logo=tailwindcss&logoColor=38BDF8"/>
+  <img src="https://img.shields.io/badge/-React_Router-111827?style=flat-square&logo=reactrouter&logoColor=CA4245"/>
+  <img src="https://img.shields.io/badge/-ESLint-111827?style=flat-square&logo=eslint&logoColor=4B32C3"/> <br>
   <img src="https://img.shields.io/badge/-Figma-111827?style=flat-square&logo=figma&logoColor=F24E1E"/>
   <img src="https://img.shields.io/badge/Architecture-111827?style=flat-square&logo=instructure&logoColor=white"/> <br>
   <img src="https://img.shields.io/badge/-Git-111827?style=flat-square&logo=git&logoColor=F05032"/>
@@ -355,10 +361,15 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 
 <h3 id="-entrega-02" align="center">📌 Entrega 02 — 21/09 <br>
 <img src="https://img.shields.io/badge/-Spring_Boot-111827?style=flat-square&logo=springboot&logoColor=green" height="20"/>
+<img src="https://img.shields.io/badge/-React-111827?style=flat-square&logo=react&logoColor=61DAFB" height="20"/>
 <img src="https://img.shields.io/badge/Status-Em_andamento-F59E0B?style=flat" height="20"/>
 </h3>
 
 <p align="center">
+Segunda entrega do Projeto Integrador — sai do protótipo Figma e liga o domínio a código rodando de
+verdade: back-end em <b>Spring Boot</b> (HU‑01, HU‑03 — em <a href="https://github.com/viictorpaes/Rotavital/pull/2">PR #2</a>,
+ainda não mesclado) e front-end em <b>React</b> (HU‑01, HU‑09, HU‑10 — nesta branch), somando 5 histórias
+com código real, acima do mínimo de 2 exigido.
 Segunda entrega do Projeto Integrador — sai do protótipo Figma e liga o domínio Java a uma
 <b>aplicação Spring Boot rodando de verdade</b>, com pelo menos 2 histórias de usuário implementadas em
 código.
@@ -366,6 +377,11 @@ código.
 
 | Requisito da entrega | Descrição | Status |
 | :--- | :--- | :---: |
+| Histórias implementadas | Mínimo de 2 HUs em código real (não só Figma) | <img src="https://img.shields.io/badge/5%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
+| Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/0_commits_na_main_desde_28%2F08-EF4444?style=flat-square" height="18"/> **Falta** — todo o trabalho da Entrega 02 está em branches/PRs abertos, nada foi mesclado na `main` ainda |
+| Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/7_issues_abertas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues abertas no GitHub (label `bug`), com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
+| ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
+| ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
 | ✅ Histórias implementadas | Mínimo de 2 HUs funcionando na aplicação Spring Boot | <img src="https://img.shields.io/badge/2%2F2-22C55E?style=flat-square" height="18"/> |
 | 🔁 Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Em_dia-22C55E?style=flat-square" height="18"/> |
 | 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas da entrega + print no README | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> |
@@ -375,6 +391,59 @@ código.
 <h4 align="center">📝 Histórias Implementadas — Entrega 02</h4>
 
 <p align="center">
+Resumo em formato <b>post-it</b> (como visto em sala) das histórias já rodando em código — Spring Boot
+no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada HU está na
+<a href="#-entrega-01">Entrega 01</a> acima.
+</p>
+
+> 🟨 **HU‑01** — Como **usuário (médico ou doador)**, preciso escolher meu tipo de acesso e informar meu
+> nome, para entrar direto na experiência certa para o meu papel, sem um cadastro completo.
+>
+> ✅ Frontend — [`PaginaLogin.tsx`](./frontend/src/pages/Login/PaginaLogin.tsx) (nesta branch)
+> ✅ Backend — `POST /acesso` via [`AcessoController.java`](https://github.com/viictorpaes/Rotavital/blob/eduardo-entrega2/backend/src/main/java/com/rotavital/api/AcessoController.java) (PR #2, não mesclado)
+
+> 🟨 **HU‑03** — Como **médico**, preciso consultar o estoque por tipo sanguíneo, com validade, temperatura
+> e localização de cada lote, para saber quais estão em risco de vencer ou fora da faixa ideal.
+>
+> ✅ Backend — `GET /estoque/{bancoId}?tipoSanguineo=` via [`EstoqueController.java`](https://github.com/viictorpaes/Rotavital/blob/eduardo-entrega2/backend/src/main/java/com/rotavital/api/EstoqueController.java) (PR #2, não mesclado)
+> ❌ Frontend — página `Estoque` segue como placeholder `EmBreve` (ver [Figma × Mockado](#figma-vs-mockado))
+
+> 🟨 **HU‑09** — Como **médico ou doador**, preciso visualizar as pessoas que precisam de doação — filtráveis
+> por tipo sanguíneo — e agendar uma doação, para direcionar doadores compatíveis a quem precisa com urgência.
+>
+> ✅ Frontend — [`PaginaDoacoes.tsx`](./frontend/src/pages/Doacoes/PaginaDoacoes.tsx) + [`ModalAgendarDoacao.tsx`](./frontend/src/components/donations/ModalAgendarDoacao.tsx) (nesta branch)
+
+> 🟨 **HU‑10** — Como **doador**, preciso acessar uma versão simplificada da tela de Doações, sem o menu
+> operacional do hospital, para uma experiência direta: ver quem precisa e agendar minha doação.
+>
+> ✅ Frontend — [`PaginaPortalDoador.tsx`](./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx) (nesta branch)
+
+<h4 align="center" id="issue-tracker">🐛 Issue/Bug Tracker — Entrega 02 <br>
+<img src="https://img.shields.io/badge/7_Issues_Abertas-red?style=flat-square&logo=github&logoColor=white" height="20"/>
+</h4>
+
+<p align="center">
+7 issues abertas no <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> do repositório,
+todas com a label <code>bug</code>, registrando gaps reais encontrados entre o protótipo Figma, a documentação
+técnica (<code>docs/</code>) e o código que de fato roda hoje (backend Spring Boot + frontend React). Nenhuma foi
+fechada ainda — viram trabalho de entrada da Entrega 03.
+</p>
+
+<p align="center">
+<img src="./img/issue-tracker_lista-geral.png" width="800"/>
+</p>
+
+| Imagem | Título | Descrição |
+| :---: | :--- | :--- |
+| <img src="./img/issue-tracker_issue1-testes-junit_1.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (contexto) | Cobertura de testes em 0%: o projeto já tem `junit-jupiter` no `pom.xml`, mas `TesteFluxo.java` ainda usa `main()` em vez de `@Test`. Tarefas para convertê-lo, adicionar `spring-boot-starter-test` e cobrir `AcessoController`/`EstoqueController`. |
+| <img src="./img/issue-tracker_issue1-testes-junit_2.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (cenários e pipeline) | Matriz mínima de cenários de teste por endpoint (`POST /acesso`, `GET /estoque/{id}`) e pipeline de CI sugerido, bloqueando o merge quando `mvn test` falha. |
+| <img src="./img/issue-tracker_issue2-screencasts.png" width="260"/> | 🔴 Issue #2 — Screencasts pendentes da Entrega 02 | Checklist para gravar e publicar os 2 vídeos exigidos nesta entrega (uso do sistema rodando e explicação do código) e atualizar os links na seção Entrega 02 do README. |
+| <img src="./img/issue-tracker_issue3-estoque.png" width="260"/> | 🔴 Issue #3 — Implementar tela de Estoque (HU‑03) | O backend já expõe `GET /estoque/{bancoId}?tipoSanguineo=`; falta a `PaginaEstoque.tsx` sair do placeholder `EmBreve` e consumir esse endpoint de verdade. |
+| <img src="./img/issue-tracker_issue4-integracao-backend.png" width="260"/> | 🔴 Issue #4 — Integrar frontend ao backend real | Hoje o frontend roda 100% sobre dados mockados (`pessoasMock.ts`, login só em memória). Plano para criar uma camada `api.ts`, trocar login/estoque por chamadas HTTP reais e configurar CORS no Spring Boot. |
+| <img src="./img/issue-tracker_issue5-docs-roteirizacao_1.png" width="260"/> | 🟠 Issue #5 — Docs desatualizados sobre Roteirização (achado) | `docs/MODULOS.md` classifica o módulo de Roteirização como "só lat/long, sem grafo", mas o código já implementa o grafo/Dijkstra (`RedeDistribuicao`, `Conexao`, `RotaCalculada`) usado no protótipo. |
+| <img src="./img/issue-tracker_issue5-docs-roteirizacao_2.png" width="260"/> | 🟠 Issue #5 — Docs desatualizados sobre Roteirização (status e fluxo alvo) | Tabela comparando documentação vs. código real e fluxo alvo para expor o cálculo de rota via um novo endpoint `POST /rotas/calcular`. |
+| <img src="./img/issue-tracker_issue6-painel-operacional.png" width="260"/> | 🟠 Issue #6 — Implementar Painel Operacional (HU‑02) | Escopo e cenários BDD para tirar a `PaginaPainel.tsx` do placeholder `EmBreve` e implementar os cards de "Números Rápidos" e a caixa de avisos com alertas críticos. |
+| <img src="./img/issue-tracker_issue7-doador-campanha.png" width="260"/> | 🟠 Issue #7 — Modelar Doador e Campanha de Doação | Diagrama de classes proposto (`Doador`, `CampanhaDoacao`, `AgendamentoDoacao`) — hoje não existe conceito de doador nem de campanha pública no domínio, o que bloqueia versões não mockadas de HU‑06, HU‑09 e HU‑10. |
 Resumo em formato <b>post-it</b> (como visto em sala) das histórias já rodando na aplicação Spring Boot.
 O detalhamento completo (ator, tela, BDD) de cada HU está na <a href="#-entrega-01">Entrega 01</a>.
 </p>
@@ -425,7 +494,61 @@ Rotavital🩸/
 │       └── test/java/com/rotavital/dominio <img src="https://img.shields.io/badge/-JUnit_5-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>/
 │           └── TesteFluxo.java <img src="https://img.shields.io/badge/Fluxo_de_Teste-111827?style=flat&logo=openjdk&logoColor=25A162" height="18"/>
 |
-├── frontend <img src="https://img.shields.io/badge/Em_Andamento-111827?style=flat&logoColor=yellow" height="18"/>/
+├── frontend <img src="https://img.shields.io/badge/-React_18-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/> <img src="https://img.shields.io/badge/-TypeScript-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/> <img src="https://img.shields.io/badge/-Vite-111827?style=flat&logo=vite&logoColor=646CFF" height="18"/> <img src="https://img.shields.io/badge/-Tailwind_CSS-111827?style=flat&logo=tailwindcss&logoColor=38BDF8" height="18"/>/
+│   ├── index.html <img src="https://img.shields.io/badge/-HTML5-111827?style=flat-square&logo=html5&logoColor=E34F26" height="18"/>
+│   ├── package.json <img src="https://img.shields.io/badge/-npm-111827?style=flat-square&logo=npm&logoColor=CB3837" height="18"/>
+│   ├── vite.config.ts <img src="https://img.shields.io/badge/-Vite_Config-111827?style=flat-square&logo=vite&logoColor=646CFF" height="18"/>
+│   ├── tailwind.config.ts <img src="https://img.shields.io/badge/-Tailwind_Config-111827?style=flat-square&logo=tailwindcss&logoColor=38BDF8" height="18"/>
+│   ├── postcss.config.js <img src="https://img.shields.io/badge/-PostCSS-111827?style=flat-square&logo=postcss&logoColor=DD3A0A" height="18"/>
+│   ├── tsconfig.json <img src="https://img.shields.io/badge/-TS_Config-111827?style=flat-square&logo=typescript&logoColor=3178C6" height="18"/>
+│   └── src <img src="https://img.shields.io/badge/-TSX_·_TS-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>/
+│       ├── main.tsx <img src="https://img.shields.io/badge/-Entry_Point-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>
+│       ├── App.tsx <img src="https://img.shields.io/badge/-App_Shell-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>
+│       ├── index.css <img src="https://img.shields.io/badge/-CSS-111827?style=flat-square&logo=css&logoColor=663399" height="18"/>
+│       ├── vite-env.d.ts <img src="https://img.shields.io/badge/-Vite_Types-111827?style=flat-square&logo=vite&logoColor=646CFF" height="18"/>
+│       │
+│       ├── routes <img src="https://img.shields.io/badge/-React_Router-111827?style=flat-square&logo=reactrouter&logoColor=CA4245" height="18"/>/
+│       │   └── index.tsx <img src="https://img.shields.io/badge/-AppRoutes-111827?style=flat&logo=reactrouter&logoColor=CA4245" height="18"/>
+│       │
+│       ├── context <img src="https://img.shields.io/badge/-Context_API-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
+│       │   └── ContextoAutenticacao.tsx <img src="https://img.shields.io/badge/-Auth_Provider-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/> <img src="https://img.shields.io/badge/HU‑01-111827?style=flat-square&logoColor=white" height="18"/>
+│       │
+│       ├── components <img src="https://img.shields.io/badge/-Componentes-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
+│       │   ├── layout <img src="https://img.shields.io/badge/-Layout-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
+│       │   │   ├── LayoutPrincipal.tsx <img src="https://img.shields.io/badge/-Guarda_de_Rota-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/>
+│       │   │   └── BarraLateral.tsx <img src="https://img.shields.io/badge/-Menu-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/>
+│       │   ├── donations <img src="https://img.shields.io/badge/-Módulo_Doações-111827?style=flat-square&logo=react&logoColor=E0234E" height="18"/>/
+│       │   │   ├── FiltroTipoSanguineo.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=E0234E" height="18"/> <img src="https://img.shields.io/badge/HU‑09-111827?style=flat-square&logoColor=white" height="18"/>
+│       │   │   ├── CartaoPessoa.tsx <img src="https://img.shields.io/badge/-Card-111827?style=flat&logo=react&logoColor=E0234E" height="18"/>
+│       │   │   └── ModalAgendarDoacao.tsx <img src="https://img.shields.io/badge/-Modal-111827?style=flat&logo=react&logoColor=E0234E" height="18"/> <img src="https://img.shields.io/badge/HU‑09_·_HU‑10-111827?style=flat-square&logoColor=white" height="18"/>
+│       │   └── ui <img src="https://img.shields.io/badge/-UI_Kit-111827?style=flat-square&logo=react&logoColor=A855F7" height="18"/>/
+│       │       ├── SeloTipoSanguineo.tsx <img src="https://img.shields.io/badge/-Badge-111827?style=flat&logo=react&logoColor=A855F7" height="18"/>
+│       │       ├── PontoStatus.tsx <img src="https://img.shields.io/badge/-Status-111827?style=flat&logo=react&logoColor=A855F7" height="18"/>
+│       │       └── EmBreve.tsx <img src="https://img.shields.io/badge/-Placeholder-111827?style=flat&logo=react&logoColor=A855F7" height="18"/>
+│       │
+│       ├── pages <img src="https://img.shields.io/badge/-Páginas-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
+│       │   ├── Login/
+│       │   │   └── PaginaLogin.tsx <img src="https://img.shields.io/badge/HU‑01-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Implementada-22C55E?style=flat-square" height="18"/>
+│       │   ├── PainelOperacional/
+│       │   │   └── PaginaPainel.tsx <img src="https://img.shields.io/badge/HU‑02-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Em_breve-F59E0B?style=flat-square" height="18"/>
+│       │   ├── Estoque/
+│       │   │   └── PaginaEstoque.tsx <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Em_breve-F59E0B?style=flat-square" height="18"/>
+│       │   ├── Requisicao/
+│       │   │   └── PaginaRequisicao.tsx <img src="https://img.shields.io/badge/HU‑04_·_HU‑05_·_HU‑06-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Em_breve-F59E0B?style=flat-square" height="18"/>
+│       │   ├── RedeHospitalar/
+│       │   │   └── PaginaRede.tsx <img src="https://img.shields.io/badge/HU‑07-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Em_breve-F59E0B?style=flat-square" height="18"/>
+│       │   ├── Pacientes/
+│       │   │   └── PaginaPacientes.tsx <img src="https://img.shields.io/badge/HU‑08-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Em_breve-F59E0B?style=flat-square" height="18"/>
+│       │   ├── Doacoes/
+│       │   │   └── PaginaDoacoes.tsx <img src="https://img.shields.io/badge/HU‑09-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Implementada-22C55E?style=flat-square" height="18"/>
+│       │   └── PortalDoador/
+│       │       └── PaginaPortalDoador.tsx <img src="https://img.shields.io/badge/HU‑10-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Implementada-22C55E?style=flat-square" height="18"/>
+│       │
+│       ├── data <img src="https://img.shields.io/badge/-Mock_Data-111827?style=flat-square&logo=json&logoColor=yellow" height="18"/>/
+│       │   └── pessoasMock.ts <img src="https://img.shields.io/badge/-PessoaNecessitada_Array-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/> <img src="https://img.shields.io/badge/HU‑09_·_HU‑10-111827?style=flat-square&logoColor=white" height="18"/>
+│       │
+│       └── types <img src="https://img.shields.io/badge/-TypeScript-111827?style=flat-square&logo=typescript&logoColor=3178C6" height="18"/>/
+│           └── index.ts <img src="https://img.shields.io/badge/-Domain_Types-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │
 ├── docs <img src="https://img.shields.io/badge/Docs-111827?style=flat&logo=markdown&logoColor=blue" height="18"/>/
 │   ├── DOCUMENTACAO.md <img src="https://img.shields.io/badge/Índice-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
@@ -444,6 +567,10 @@ Rotavital🩸/
 > [!NOTE]
 > O backend hoje é **Java puro + Maven** (domínio + DTOs, sem framework web ainda). O contrato OpenAPI já
 > cobre os 4 módulos acima; a implementação dos endpoints é a próxima etapa.
+>
+> O frontend implementa de fato 3 das 10 histórias da Entrega 01 — **HU‑01** (Login), **HU‑09** (Doações)
+> e **HU‑10** (Portal do Doador) — com dados mockados em `src/data/pessoasMock.ts`. As demais (**HU‑02** a
+> **HU‑08**) já têm rota e página criadas, mas renderizam o placeholder `EmBreve` até virarem telas reais.
 
 <h2 align="center" id="como-executar">🚀 Como Executar <br>
 <img src="https://img.shields.io/badge/Terminal-111827?style=flat&logo=gnubash&logoColor=white" height="22"/>
@@ -462,6 +589,149 @@ aloca por FEFO/ABO-Rh):
 javac -d out $(find src/main/java src/test/java -name "*.java")
 java -cp out com.rotavital.dominio.TesteFluxo
 ```
+
+<h2 align="center" id="como-executar-frontend">🖥️ Como Executar o Frontend <br>
+<img src="https://img.shields.io/badge/Vite_+_React-111827?style=flat&logo=vite&logoColor=646CFF" height="22"/>
+</h2>
+
+<p align="center">
+Interface em <b>React + TypeScript + Vite + Tailwind CSS</b>, com as telas já implementadas
+(Login, Doações e Portal do Doador — HU‑01, HU‑09 e HU‑10) rodando com dados mockados.
+</p>
+
+```bash
+cd Rotavital/frontend
+npm install
+npm run dev
+```
+
+> O servidor de desenvolvimento sobe em `http://localhost:5173`.
+
+| Comando | Descrição |
+| :--- | :--- |
+| `npm run dev` | Inicia o servidor de desenvolvimento, com hot reload |
+| `npm run build` | Roda a checagem de tipos (`tsc -b`) e gera o build de produção em `frontend/dist` |
+| `npm run preview` | Serve localmente o build de produção gerado por `npm run build` |
+| `npm run lint` | Roda o ESLint sobre o código do frontend |
+
+<h2 align="center" id="figma-vs-mockado">🖼️ Figma × Mockado <br>
+<img src="https://img.shields.io/badge/Protótipo-111827?style=flat&logo=figma&logoColor=orange" height="22"/> vs <img src="https://img.shields.io/badge/Mockado-111827?style=flat&logo=react&logoColor=646CFF" height="22"/>
+</h2>
+
+<p align="center">
+Comparação lado a lado entre o protótipo do Figma e a tela equivalente rodando de fato em
+<b>React + TypeScript</b> (dados mockados), para as 3 histórias com código real: HU‑01, HU‑09 e HU‑10.
+Screenshots tiradas do app rodando em <code>localhost:5173</code>, mesma resolução do export do Figma
+(1470×956 @2x).
+</p>
+
+<h4 align="left">🔐 HU‑01 — Login (seleção Médico / Doador)</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_Login_Medico.png" width="420"/> | <img src="./img/mockado-login_medico.png" width="420"/> |
+| <img src="./img/FIGMA_Login_Doador.png" width="420"/> | <img src="./img/mockado-login_doador.png" width="420"/> |
+
+<details>
+<summary>🩸 <a href="./frontend/src/pages/Login/PaginaLogin.tsx"><code>frontend/src/pages/Login/PaginaLogin.tsx</code></a></summary>
+
+```tsx
+export default function PaginaLogin()
+{
+  const [papel, setPapel] = useState<PapelUsuario | null>(null);
+  const [nome, setNome] = useState("");
+  const { login } = useAutenticacao();
+  const navigate = useNavigate();
+
+  const podeEntrar = papel !== null && nome.trim().length > 0;
+
+  function handleEntrar()
+  {
+    if (!podeEntrar || !papel) return;
+    login(nome, papel);
+    navigate(papel === "medico" ? "/painel" : "/portal-doador", { replace: true });
+  }
+  // ...
+}
+```
+</details>
+
+<h4 align="left">❤️ HU‑09 — Doações (lista de pessoas que precisam)</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_Doacoes.png" width="420"/> | <img src="./img/mockado-doacoes.png" width="420"/> |
+
+<details>
+<summary>🩸 <a href="./frontend/src/pages/Doacoes/PaginaDoacoes.tsx"><code>frontend/src/pages/Doacoes/PaginaDoacoes.tsx</code></a></summary>
+
+```tsx
+const pessoasFiltradas = useMemo(() =>
+{
+  const termo = busca.trim().toLowerCase();
+  return pessoasNecessitadas.filter((p) =>
+  {
+    const combinaTipo = filtroTipo === "todos" || p.tipoSanguineo === filtroTipo;
+    const combinaBusca =
+      termo.length === 0 ||
+      p.nome.toLowerCase().includes(termo) ||
+      p.causa.toLowerCase().includes(termo) ||
+      p.componente.toLowerCase().includes(termo);
+    return combinaTipo && combinaBusca;
+  });
+}, [busca, filtroTipo]);
+```
+
+</details>
+
+<h4 align="left">❤️ HU‑09 — Agende sua doação (modal)</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_Doacoes_AgendeSuaDoacao.png" width="420"/> | <img src="./img/mockado-doacoes_agendesuadoacao.png" width="420"/> |
+
+<details>
+<summary>🩸 <a href="./frontend/src/components/donations/ModalAgendarDoacao.tsx"><code>frontend/src/components/donations/ModalAgendarDoacao.tsx</code></a></summary>
+
+```tsx
+export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
+{
+  const [confirmado, setConfirmado] = useState(false);
+  // ...
+  <button
+    type="button"
+    onClick={() => setConfirmado(true)}
+    disabled={confirmado}
+    className="w-full rounded-lg bg-rota-red px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-rota-redDark disabled:cursor-default disabled:bg-emerald-600"
+  >
+    {confirmado ? "Rota traçada — até logo!" : "Confirmar e traçar rota no celular"}
+  </button>
+}
+```
+</details>
+
+<h4 align="left">👤 HU‑10 — Portal do Doador</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_PortalDoDoador.png" width="420"/> | <img src="./img/mockado-portal_do_doador.png" width="420"/> |
+
+<details>
+<summary>▶️ <a href="./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx"><code>frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx</code></a></summary>
+
+```tsx
+export default function PaginaPortalDoador()
+{
+  const { usuario, logout } = useAutenticacao();
+  // ...
+  if (usuario?.papel !== "doador")
+  {
+    return <Navigate to="/login" replace />;
+  }
+  // ...
+}
+```
+</details>
 
 <h2 align="center" id="documentacao">📚 Documentação <br>
 <img src="https://img.shields.io/badge/Docs-111827?style=flat&logo=markdown&logoColor=white" height="22"/>

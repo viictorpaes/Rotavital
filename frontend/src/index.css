@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base
+{
+  html
+  {
+    color-scheme: light;
+  }
+
+  body
+  {
+    @apply bg-rota-bg text-gray-900 antialiased;
+  }
+}
+
+@layer utilities
+{
+  .scrollbar-thin::-webkit-scrollbar
+  {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb
+  {
+    @apply bg-rota-border rounded-full;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track
+  {
+    background: transparent;
+  }
+}
