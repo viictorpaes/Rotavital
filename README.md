@@ -627,7 +627,11 @@ export default function PaginaLogin()
 
   function handleEntrar()
   {
-    if (!podeEntrar || !papel) return;
+    if (!podeEntrar || !papel) 
+    {
+      return;
+    }
+    
     login(nome, papel);
     navigate(papel === "medico" ? "/painel" : "/portal-doador", { replace: true });
   }
