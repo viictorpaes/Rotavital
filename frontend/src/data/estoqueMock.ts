@@ -6,6 +6,7 @@ export const FAIXAS_IDEAIS: Record<TipoComponente, FaixaTemperatura> =
   "Concentrado de Hemácias": { minima: 2, maxima: 6 },
   "Plasma Fresco Congelado": { minima: -30, maxima: -18 },
   "Concentrado de Plaquetas": { minima: 20, maxima: 24 },
+  "Crioprecipitado": { minima: -30, maxima: -18 },
 };
 
 /** Data ISO (AAAA-MM-DD) daqui a `dias` — mantém o mock sempre coerente com "hoje". */
@@ -45,6 +46,9 @@ const ENTRADAS: EntradaMock[] =
   { codigo: "PL-2020", componente: "Plasma Fresco Congelado", tipoSanguineo: "O+", unidades: 18, volumeMl: 300, diasParaVencer: 120, temperaturaAtual: -19.5, localizacao: "F2 · P1 · N2" },
   { codigo: "CH-1066", componente: "Concentrado de Hemácias", tipoSanguineo: "O-", unidades: 7, volumeMl: 450, diasParaVencer: 6, temperaturaAtual: 2.9, localizacao: "R1 · P2 · N4" },
   { codigo: "PQ-3017", componente: "Concentrado de Plaquetas", tipoSanguineo: "O-", unidades: 2, volumeMl: 60, diasParaVencer: 5, temperaturaAtual: 19.2, localizacao: "A2 · P2 · N3" },
+  { codigo: "CR-4001", componente: "Crioprecipitado", tipoSanguineo: "O+", unidades: 8, volumeMl: 25, diasParaVencer: 95, temperaturaAtual: -25.0, localizacao: "F2 · P2 · N1" },
+  { codigo: "CR-4002", componente: "Crioprecipitado", tipoSanguineo: "A-", unidades: 4, volumeMl: 25, diasParaVencer: 40, temperaturaAtual: -21.3, localizacao: "F2 · P2 · N2" },
+  { codigo: "CR-4003", componente: "Crioprecipitado", tipoSanguineo: "B+", unidades: 6, volumeMl: 25, diasParaVencer: 160, temperaturaAtual: -23.7, localizacao: "F1 · P3 · N1" },
 ];
 
 // Dados mockados desta primeira versão — substituídos por GET /hemocomponentes.

@@ -28,7 +28,8 @@ export interface PessoaNecessitada
 export type TipoComponente =
   | "Concentrado de Hemácias"
   | "Plasma Fresco Congelado"
-  | "Concentrado de Plaquetas";
+  | "Concentrado de Plaquetas"
+  | "Crioprecipitado";
 
 export interface FaixaTemperatura
 {
@@ -66,4 +67,33 @@ export interface AvisoPainel
   registradoEm: Date;
   /** Rota para onde o atalho do aviso leva. */
   destino: string;
+}
+
+/** Ponto da rede de distribuição (HU-07) — hemocentro ou hospital conectado. */
+export interface PontoDeRede
+{
+  id: string;
+  nome: string;
+  endereco: string;
+  latitude: number;
+  longitude: number;
+  /** `true` para o hemocentro de origem (Cesar Life). */
+  origem?: boolean;
+}
+
+/** Coordenada geográfica de um vértice do trajeto. */
+export interface Coordenada
+{
+  latitude: number;
+  longitude: number;
+}
+
+export interface Conexao
+{
+  hospitalId: string;
+  distanciaKm: number;
+  tempoMin: number;
+  status: UrgenciaNecessidade;
+  /** Vértices intermediários do trajeto entre o hemocentro e o hospital. */
+  trajeto: Coordenada[];
 }
