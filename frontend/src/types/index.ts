@@ -24,3 +24,30 @@ export interface PessoaNecessitada
   status: UrgenciaNecessidade;
   causa: string;
 }
+
+export type TipoComponente =
+  | "Concentrado de Hemácias"
+  | "Plasma Fresco Congelado"
+  | "Concentrado de Plaquetas";
+
+export interface FaixaTemperatura
+{
+  minima: number;
+  maxima: number;
+}
+
+export interface LoteHemocomponente
+{
+  id: string;
+  codigo: string;
+  componente: TipoComponente;
+  tipoSanguineo: TipoSanguineo;
+  unidades: number;
+  volumeMl: number;
+  /** Data de validade no formato ISO (AAAA-MM-DD). */
+  dataValidade: string;
+  temperaturaAtual: number;
+  temperaturaIdeal: FaixaTemperatura;
+  /** Localização física: refrigerador/prateleira/nível. */
+  localizacao: string;
+}
