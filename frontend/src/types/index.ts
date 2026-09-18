@@ -51,3 +51,19 @@ export interface LoteHemocomponente
   /** Localização física: refrigerador/prateleira/nível. */
   localizacao: string;
 }
+
+/** Origem de um aviso do painel operacional (HU-02). */
+export type OrigemAviso = "paciente" | "estoque" | "validade";
+
+export interface AvisoPainel
+{
+  id: string;
+  origem: OrigemAviso;
+  severidade: UrgenciaNecessidade;
+  titulo: string;
+  detalhe: string;
+  /** Momento em que o aviso foi registrado — usado na ordenação por tempo. */
+  registradoEm: Date;
+  /** Rota para onde o atalho do aviso leva. */
+  destino: string;
+}
