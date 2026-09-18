@@ -1,0 +1,22 @@
+# Environment & Secrets (NUNCA comitar)
+.env
+.env.local
+.env.*.local
+
+# Maven build output
+target/
+*.jar
+*.war
+
+# IDE & Editor files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
