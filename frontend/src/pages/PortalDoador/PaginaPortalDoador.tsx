@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Droplet, Search } from "lucide-react";
 import { useAutenticacao } from "@/context/ContextoAutenticacao";
-import { pessoasNecessitadas } from "@/data/pessoasMock";
+import { useDados } from "@/context/ContextoDados";
 import type { PessoaNecessitada, TipoSanguineo } from "@/types";
 import { FiltroTipoSanguineo } from "@/components/donations/FiltroTipoSanguineo";
 import { CartaoPessoa } from "@/components/donations/CartaoPessoa";
@@ -12,6 +12,7 @@ export default function PaginaPortalDoador()
 {
   const { usuario, logout } = useAutenticacao();
   const navigate = useNavigate();
+  const { pacientes: pessoasNecessitadas } = useDados();
   const [busca, setBusca] = useState("");
   const [filtroTipo, setFiltroTipo] = useState<TipoSanguineo | "todos">("todos");
   const [selecionada, setSelecionada] = useState<PessoaNecessitada | null>(null);
@@ -29,7 +30,7 @@ export default function PaginaPortalDoador()
         p.componente.toLowerCase().includes(termo);
       return combinaTipo && combinaBusca;
     });
-  }, [busca, filtroTipo]);
+  }, [pessoasNecessitadas, busca, filtroTipo]);
 
   if (usuario?.papel !== "doador")
   {
