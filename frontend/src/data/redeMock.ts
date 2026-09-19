@@ -25,53 +25,9 @@ export const hospitais: PontoDeRede[] =
 
 export const conexoes: Conexao[] =
 [
-  {
-    hospitalId: "hc-pe",
-    distanciaKm: 7.8,
-    tempoMin: 18,
-    status: "estavel",
-    trajeto: [
-      { latitude: -8.0498, longitude: -34.9080 },
-      { latitude: -8.0455, longitude: -34.9290 },
-      { latitude: -8.0489, longitude: -34.9420 },
-    ],
-  },
-  {
-    hospitalId: "real-portugues",
-    distanciaKm: 2.1,
-    tempoMin: 7,
-    status: "atencao",
-    trajeto: [{ latitude: -8.0501, longitude: -34.8961 }],
-  },
-  {
-    hospitalId: "barao-lucena",
-    distanciaKm: 1.9,
-    tempoMin: 6,
-    status: "estavel",
-    trajeto: [
-      { latitude: -8.0489, longitude: -34.9075 },
-      { latitude: -8.0447, longitude: -34.9240 },
-    ],
-  },
-  {
-    hospitalId: "getulio-vargas",
-    distanciaKm: 7.1,
-    tempoMin: 16,
-    status: "critico",
-    trajeto: [
-      { latitude: -8.0625, longitude: -34.8975 },
-      { latitude: -8.0742, longitude: -34.9038 },
-      { latitude: -8.0795, longitude: -34.9090 },
-    ],
-  },
-  {
-    hospitalId: "upa-norte",
-    distanciaKm: 8.4,
-    tempoMin: 20,
-    status: "atencao",
-    trajeto: [
-      { latitude: -8.0380, longitude: -34.9018 },
-      { latitude: -8.0216, longitude: -34.9180 },
-    ],
-  },
+  { hospitalId: "hc-pe", distanciaKm: 7.8, tempoMin: 18, status: "estavel" },
+  { hospitalId: "real-portugues", distanciaKm: 2.1, tempoMin: 7, status: "atencao" },
+  { hospitalId: "barao-lucena", distanciaKm: 1.9, tempoMin: 6, status: "estavel" },
+  { hospitalId: "getulio-vargas", distanciaKm: 7.1, tempoMin: 16, status: "critico" },
+  { hospitalId: "upa-norte", distanciaKm: 8.4, tempoMin: 20, status: "atencao" },
 ];

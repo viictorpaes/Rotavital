@@ -1,4 +1,4 @@
-import type { Conexao, Coordenada, LoteHemocomponente, PontoDeRede, TipoComponente } from "@/types";
+import type { LoteHemocomponente, PontoDeRede, TipoComponente } from "@/types";
 import { lotesEstoque, FAIXAS_IDEAIS } from "@/data/estoqueMock";
 import { conexoes, hemocentro, hospitais } from "@/data/redeMock";
 import { diasAteVencer } from "@/lib/estoque";
@@ -48,10 +48,4 @@ export function prioridadeFefo(componente: TipoComponente, limite = 3): LoteHemo
     .filter((lote) => lote.componente === componente)
     .sort((a, b) => diasAteVencer(a) - diasAteVencer(b))
     .slice(0, limite);
-}
-
-/** Trajeto completo: hemocentro → vértices intermediários → hospital. */
-export function tracadoDaRota(conexao: Conexao, destino: PontoDeRede): Coordenada[]
-{
-  return [hemocentro, ...conexao.trajeto, destino];
 }

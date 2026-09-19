@@ -31,3 +31,10 @@
     background: transparent;
   }
 }
+
+/* Basemap do mapa da rede (HU-07) em tom neutro, para o traçado da rota
+   e os marcadores ficarem em primeiro plano. */
+.mapa-rede .leaflet-tile-pane
+{
+  filter: grayscale(1) brightness(1.06) contrast(0.92);
+}

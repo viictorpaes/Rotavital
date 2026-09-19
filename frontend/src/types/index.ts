@@ -94,6 +94,4 @@ export interface Conexao
   distanciaKm: number;
   tempoMin: number;
   status: UrgenciaNecessidade;
-  /** Vértices intermediários do trajeto entre o hemocentro e o hospital. */
-  trajeto: Coordenada[];
 }

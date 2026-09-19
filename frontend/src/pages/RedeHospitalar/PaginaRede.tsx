@@ -36,7 +36,7 @@ export default function PaginaRede()
             </p>
           </div>
 
-          <MapaRede selecionado={selecionado} onSelecionar={setSelecionado} />
+          <MapaRede selecionado={selecionado} onSelecionar={setSelecionado} altura="420px" />
 
           <ul className="flex flex-wrap items-center gap-4 border-t border-rota-border px-5 py-3 font-mono text-[11px] text-gray-500">
             <li className="flex items-center gap-1.5">
