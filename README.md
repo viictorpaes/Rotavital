@@ -381,9 +381,12 @@ publicado no <a href="https://youtu.be/3RlgYAGPyaE" target="_blank">YouTube</a>,
 | :--- | :--- | :---: |
 | ✅ Histórias implementadas | Mínimo de 2 HUs em código real (não só Figma) | <img src="https://img.shields.io/badge/5%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
 | 🔁 Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Commits_semanais_na_main-22C55E?style=flat-square" height="18"/> **Feito** — PRs #2 e #10 mesclados na `main` em 14/09, com commits também em 23/08, 09/09 e 12/09, mantendo cadência semanal |
-| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/7_issues_abertas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues abertas no GitHub (label `bug`), com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
-| 🎬 ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <a href="https://youtu.be/3RlgYAGPyaE" target="_blank"><img src="https://img.shields.io/badge/-Assistir_no_YouTube-111827?style=flat-square&logo=youtube&logoColor=red" height="18"/></a> **Feito** |
-| 💻 ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <a href="https://youtu.be/3RlgYAGPyaE" target="_blank"><img src="https://img.shields.io/badge/-Assistir_no_YouTube-111827?style=flat-square&logo=youtube&logoColor=red" height="18"/></a> **Feito** |
+| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/6_abertas_%2F_1_fechada-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues registradas no GitHub (label `bug`), 1 já fechada, com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
+
+| Artefato | Descrição | Link |
+| :--- | :--- | :--- |
+| 🎬 Screencast — Uso do sistema | Aplicação Spring Boot rodando, explicando as HUs implementadas | [Assistir vídeo](https://youtu.be/3RlgYAGPyaE) |
+| 💻 Screencast — Explicação do código | Código da aplicação Spring Boot e das HUs implementadas | [Assistir vídeo](https://youtu.be/3RlgYAGPyaE) |
 
 <h4 align="center">📝 Histórias Implementadas — Entrega 02</h4>
 
@@ -416,14 +419,15 @@ no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada
 > ✅ Frontend — [`PaginaPortalDoador.tsx`](./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx) (nesta branch)
 
 <h4 align="center" id="issue-tracker">🐛 Issue/Bug Tracker — Entrega 02 <br>
-<img src="https://img.shields.io/badge/7_Issues_Abertas-red?style=flat-square&logo=github&logoColor=white" height="20"/>
+<img src="https://img.shields.io/badge/6_Issues_Abertas-red?style=flat-square&logo=github&logoColor=white" height="20"/>
+<img src="https://img.shields.io/badge/1_Issue_Fechada-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
 </h4>
 
 <p align="center">
-7 issues abertas no <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> do repositório,
+7 issues registradas no <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> do repositório,
 todas com a label <code>bug</code>, registrando gaps reais encontrados entre o protótipo Figma, a documentação
-técnica (<code>docs/</code>) e o código que de fato roda hoje (backend Spring Boot + frontend React). Nenhuma foi
-fechada ainda — viram trabalho de entrada da Entrega 03.
+técnica (<code>docs/</code>) e o código que de fato roda hoje (backend Spring Boot + frontend React). A Issue #2 já
+foi fechada nesta entrega; as demais viram trabalho de entrada da Entrega 03.
 </p>
 
 <p align="center">
@@ -434,7 +438,7 @@ fechada ainda — viram trabalho de entrada da Entrega 03.
 | :---: | :--- | :--- |
 | <img src="./img/issue-tracker_issue1-testes-junit_1.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (contexto) | Cobertura de testes em 0%: o projeto já tem `junit-jupiter` no `pom.xml`, mas `TesteFluxo.java` ainda usa `main()` em vez de `@Test`. Tarefas para convertê-lo, adicionar `spring-boot-starter-test` e cobrir `AcessoController`/`EstoqueController`. |
 | <img src="./img/issue-tracker_issue1-testes-junit_2.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (cenários e pipeline) | Matriz mínima de cenários de teste por endpoint (`POST /acesso`, `GET /estoque/{id}`) e pipeline de CI sugerido, bloqueando o merge quando `mvn test` falha. |
-| <img src="./img/issue-tracker_issue2-screencasts.png" width="260"/> | 🔴 Issue #2 — Screencasts pendentes da Entrega 02 | Checklist para gravar e publicar os 2 vídeos exigidos nesta entrega (uso do sistema rodando e explicação do código) e atualizar os links na seção Entrega 02 do README. |
+| <img src="./img/issue2_done.png" width="260"/> | ✅ Issue #2 — Screencasts da Entrega 02 (fechada) | Checklist para gravar e publicar os 2 vídeos exigidos nesta entrega (uso do sistema rodando e explicação do código) concluído; vídeos publicados no YouTube e issue fechada no GitHub. |
 | <img src="./img/issue-tracker_issue3-estoque.png" width="260"/> | 🔴 Issue #3 — Implementar tela de Estoque (HU‑03) | O backend já expõe `GET /estoque/{bancoId}?tipoSanguineo=`; falta a `PaginaEstoque.tsx` sair do placeholder `EmBreve` e consumir esse endpoint de verdade. |
 | <img src="./img/issue-tracker_issue4-integracao-backend.png" width="260"/> | 🔴 Issue #4 — Integrar frontend ao backend real | Hoje o frontend roda 100% sobre dados mockados (`pessoasMock.ts`, login só em memória). Plano para criar uma camada `api.ts`, trocar login/estoque por chamadas HTTP reais e configurar CORS no Spring Boot. |
 | <img src="./img/issue-tracker_issue5-docs-roteirizacao_1.png" width="260"/> | 🟠 Issue #5 — Docs desatualizados sobre Roteirização (achado) | `docs/MODULOS.md` classifica o módulo de Roteirização como "só lat/long, sem grafo", mas o código já implementa o grafo/Dijkstra (`RedeDistribuicao`, `Conexao`, `RotaCalculada`) usado no protótipo. |
