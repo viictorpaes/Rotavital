@@ -12,6 +12,12 @@ export type Sexo = "Feminino" | "Masculino";
 
 export type UrgenciaNecessidade = "critico" | "atencao" | "estavel";
 
+export type TipoComponente =
+  | "Concentrado de Hemácias"
+  | "Plasma Fresco Congelado"
+  | "Concentrado de Plaquetas"
+  | "Crioprecipitado";
+
 export interface PessoaNecessitada
 {
   id: string;
@@ -19,17 +25,40 @@ export interface PessoaNecessitada
   sexo: Sexo;
   idade: number;
   tipoSanguineo: TipoSanguineo;
-  componente: string;
+  componente: TipoComponente;
+  /** Unidades previstas para o procedimento — base da baixa FEFO (HU-08). */
+  unidadesNecessarias: number;
   distanciaKm: number;
   status: UrgenciaNecessidade;
   causa: string;
 }
 
-export type TipoComponente =
-  | "Concentrado de Hemácias"
-  | "Plasma Fresco Congelado"
-  | "Concentrado de Plaquetas"
-  | "Crioprecipitado";
+/** Como o hemocomponente do procedimento foi obtido (HU-08). */
+export type OrigemAtendimento = "doacao-externa" | "estoque-interno";
+
+/** Unidades retiradas de um lote específico durante a baixa FEFO. */
+export interface ConsumoDeLote
+{
+  codigo: string;
+  unidades: number;
+}
+
+/** Registro de um procedimento concluído (HU-08). */
+export interface ProcedimentoConcluido
+{
+  protocolo: string;
+  pacienteId: string;
+  paciente: string;
+  componente: TipoComponente;
+  tipoSanguineo: TipoSanguineo;
+  origem: OrigemAtendimento;
+  /** Unidades efetivamente baixadas do estoque — sempre 0 na doação externa. */
+  unidadesBaixadas: number;
+  /** Lotes tocados pela baixa FEFO — vazio na doação externa. */
+  consumos: ConsumoDeLote[];
+  /** Unidades que o estoque não cobriu, quando houver. */
+  unidadesFaltantes: number;
+}
 
 export interface FaixaTemperatura
 {

@@ -128,6 +128,9 @@ export function pacienteDaCampanha(dados: DadosCampanha, id: string): PessoaNece
     idade: dados.idade,
     tipoSanguineo: dados.tipoSanguineo,
     componente: dados.componente,
+    // A campanha não pergunta o volume clínico: assume uma bolsa, ajustável na
+    // conclusão do procedimento (HU-08).
+    unidadesNecessarias: 1,
     distanciaKm: 0,
     status: dados.gravidade,
     causa: dados.causa.trim(),
