@@ -58,13 +58,14 @@ public class TesteFluxo
         Endereco enderecoHospital = new Endereco("Rua das Flores, 500 - Recife/PE", -8.0476, -34.8770);
         Hospital hospital = new Hospital("HOSP-01", "Hospital das Clinicas", enderecoHospital);
 
-        RequisicaoHospitalar requisicao = hospital.solicitar(
+        RequisicaoHospitalar requisicao = hospital.solicitar
+        (
                 TipoComponente.HEMACIAS,
                 TipoSanguineo.O_POSITIVO,
                 1
         );
 
-        System.out.println("\n=== Nova requisicao ===");
+        System.out.println("\n=== Nova requisição ===");
         System.out.println(requisicao);
 
         List<BolsaHemocomponente> compativeis = banco.getEstoque().buscarDisponiveis(
@@ -74,7 +75,7 @@ public class TesteFluxo
 
         if (compativeis.isEmpty())
         {
-            System.out.println("Nenhuma bolsa compativel disponivel. Requisicao permanece PENDENTE.");
+            System.out.println("Nenhuma bolsa compativel disponivel. Requisicao permanece PENDENTE. ❌");
         }
 
         else
@@ -86,12 +87,12 @@ public class TesteFluxo
             escolhida.reservar();
             requisicao.marcarComoAlocada();
 
-            System.out.println("\n=== Alocação realizada (FEFO) ===");
+            System.out.println("\n=== Alocação realizada (FEFO)✅ ===");
             System.out.println("Bolsa escolhida: " + escolhida);
-            System.out.println("Status da requisicao: " + requisicao.getStatus());
+            System.out.println("Status da requisição: " + requisicao.getStatus());
         }
 
-        System.out.println("\n=== Pontos da rede (via interface PontoDeRede) ===");
+        System.out.println("\n=== Pontos da rede (via interface: PontoDeRede) ===");
         List<PontoDeRede> pontos = List.of(banco, hospital);
 
         for (PontoDeRede ponto : pontos)
@@ -104,7 +105,7 @@ public class TesteFluxo
 
         if (vencidas.isEmpty())
         {
-            System.out.println("Nenhuma bolsa vencida.");
+            System.out.println("Nenhuma bolsa vencida. ❌");
         }
         
         else

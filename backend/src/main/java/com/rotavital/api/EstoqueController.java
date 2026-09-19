@@ -29,7 +29,7 @@ public class EstoqueController
 
     @GetMapping("/estoque/{bancoId}")
     public ResponseEntity<?> consultarEstoque(@PathVariable String bancoId,
-                                              @RequestParam(required = false) TipoSanguineo tipoSanguineo)
+    @RequestParam(required = false) TipoSanguineo tipoSanguineo)
     {
         BancoDeSangue banco = bancos.buscarPorId(bancoId);
 
@@ -46,6 +46,7 @@ public class EstoqueController
         {
             bolsas = banco.getEstoque().getBolsas();
         }
+
         else
         {
             bolsas = banco.getEstoque().buscarPorTipoSanguineo(tipoSanguineo);
