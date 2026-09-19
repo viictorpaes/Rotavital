@@ -603,7 +603,8 @@ npm run dev
 | `npm run preview` | Serve localmente o build de produção gerado por `npm run build` |
 | `npm run lint` | Roda o ESLint sobre o código do frontend |
 
-<h4 align="center">🐳 Com Docker (backend + frontend + Supabase)</h4>
+<h4 align="center"> 🚢🐳 Com Docker (backend + frontend + Supabase) <br>
+<img src="https://img.shields.io/badge/-Docker-111827?style=flat-square&logo=docker&logoColor=2496ED"/><img src="https://img.shields.io/badge/-Supabase-111827?style=flat-square&logo=supabase&logoColor=3ECF8E"/></h4>
 
 <p align="center">
 O <a href="./docker-compose.yml"><code>docker-compose.yml</code></a> na raiz do projeto sobe o backend Spring Boot
@@ -711,11 +712,14 @@ export default function PaginaPainel()
 const grupos = useMemo<GrupoEstoque[]>(() =>
 {
   const tipos = filtroTipo === "todos" ? TIPOS_SANGUINEOS : [filtroTipo];
+
   return tipos
     .map((tipo) =>
     {
       const lotes = lotesEstoque.filter((lote) => lote.tipoSanguineo === tipo);
-      return { tipo, lotes, unidades: lotes.reduce((total, lote) => total + lote.unidades, 0) };
+      return { 
+        tipo, lotes, unidades: lotes.reduce((total, lote) => total + lote.unidades, 0) 
+      };
     })
     .filter((grupo) => grupo.lotes.length > 0);
 }, [lotesEstoque, filtroTipo]);
@@ -748,7 +752,8 @@ export default function PaginaRequisicao()
   const { lotes, recebimentosPendentes } = useDados();
   const [aba, setAba] = useState<Aba>("solicitar");
 
-  const vencendo = useMemo(
+  const vencendo = useMemo
+  (
     () => lotes.filter((lote) => diasAteVencer(lote) <= JANELA_VENCIMENTO_DIAS).length,
     [lotes],
   );
@@ -774,7 +779,7 @@ export default function PaginaRequisicao()
  */
 export default function PaginaRede()
 {
-  const [selecionado, setSelecionado] = useState<PontoDeRede>(hospitais[0]);
+  const [selecionado, setSelecionado] = useState<PontoDeRede>(hospitais[0:]);
   const [componente, setComponente] = useState<TipoComponente>("Concentrado de Hemácias");
   const { rotas, carregando } = useRotasDaRede();
   const rota = rotas[selecionado.id];
@@ -806,7 +811,11 @@ export default function PaginaRede()
  */
 function handleConfirmar(origem: OrigemAtendimento)
 {
-  if (!selecionado) return undefined;
+  if (!selecionado) 
+  {
+    return undefined;
+  }
+
   return concluirProcedimento(selecionado.id, origem);
 }
 ```
@@ -825,14 +834,16 @@ function handleConfirmar(origem: OrigemAtendimento)
 const pessoasFiltradas = useMemo(() =>
 {
   const termo = busca.trim().toLowerCase();
+
   return pessoasNecessitadas.filter((p) =>
   {
-    const combinaTipo = filtroTipo === "todos" || p.tipoSanguineo === filtroTipo;
-    const combinaBusca =
+      const combinaTipo = filtroTipo === "todos" || p.tipoSanguineo === filtroTipo;
+      const combinaBusca = 
       termo.length === 0 ||
       p.nome.toLowerCase().includes(termo) ||
       p.causa.toLowerCase().includes(termo) ||
       p.componente.toLowerCase().includes(termo);
+
     return combinaTipo && combinaBusca;
   });
 }, [busca, filtroTipo]);
@@ -860,7 +871,7 @@ export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
     disabled={confirmado}
     className="w-full rounded-lg bg-rota-red px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-rota-redDark disabled:cursor-default disabled:bg-emerald-600"
   >
-    {confirmado ? "Rota traçada — até logo!" : "Confirmar e traçar rota no celular"}
+    {confirmado ? "Rota traçada — até logo! 👋🏻" : "Confirmar e traçar rota no celular ✅"}
   </button>
 }
 ```
@@ -888,6 +899,7 @@ export default function PaginaPortalDoador()
 }
 ```
 </details>
+
 
 <h2 align="center" id="documentacao">📚 Documentação <br>
 <img src="https://img.shields.io/badge/Docs-111827?style=flat&logo=markdown&logoColor=white" height="22"/>
