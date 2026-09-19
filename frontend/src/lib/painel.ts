@@ -1,6 +1,4 @@
 import type { AvisoPainel, LoteHemocomponente, PessoaNecessitada, UrgenciaNecessidade } from "@/types";
-import { lotesEstoque } from "@/data/estoqueMock";
-import { pessoasNecessitadas } from "@/data/pessoasMock";
 import { TIPOS_SANGUINEOS, diasAteVencer, statusLote, temperaturaForaDaFaixa } from "@/lib/estoque";
 
 /** Abaixo deste total de unidades o tipo sanguíneo entra em desabastecimento (HU-02). */
@@ -99,7 +97,10 @@ function avisoDeLote(lote: LoteHemocomponente): AvisoPainel
  * Avisos do painel derivados dos mesmos mocks das telas de Estoque e Pacientes,
  * para que os números do painel e das telas de detalhe nunca divirjam.
  */
-export function montarAvisos(): AvisoPainel[]
+export function montarAvisos(
+  lotesEstoque: LoteHemocomponente[],
+  pessoasNecessitadas: PessoaNecessitada[],
+): AvisoPainel[]
 {
   const pacientes = pessoasNecessitadas
     .filter((pessoa) => pessoa.status !== "estavel")
@@ -116,7 +117,10 @@ export function montarAvisos(): AvisoPainel[]
   return [...pacientes, ...desabastecidos, ...lotes];
 }
 
-export function montarIndicadores(avisos: AvisoPainel[]): IndicadorPainel[]
+export function montarIndicadores(
+  lotesEstoque: LoteHemocomponente[],
+  avisos: AvisoPainel[],
+): IndicadorPainel[]
 {
   const unidades = lotesEstoque.reduce((total, lote) => total + lote.unidades, 0);
   const componentes = new Set(lotesEstoque.map((lote) => lote.componente)).size;

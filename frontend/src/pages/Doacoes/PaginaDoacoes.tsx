@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { useAutenticacao } from "@/context/ContextoAutenticacao";
 import type { PessoaNecessitada, TipoSanguineo } from "@/types";
-import { pessoasNecessitadas } from "@/data/pessoasMock";
+import { useDados } from "@/context/ContextoDados";
 import { FiltroTipoSanguineo } from "@/components/donations/FiltroTipoSanguineo";
 import { CartaoPessoa } from "@/components/donations/CartaoPessoa";
 import { ModalAgendarDoacao } from "@/components/donations/ModalAgendarDoacao";
@@ -10,6 +10,7 @@ import { ModalAgendarDoacao } from "@/components/donations/ModalAgendarDoacao";
 export default function PaginaDoacoes()
 {
   const { usuario } = useAutenticacao();
+  const { pacientes: pessoasNecessitadas } = useDados();
   const [busca, setBusca] = useState("");
   const [filtroTipo, setFiltroTipo] = useState<TipoSanguineo | "todos">("todos");
   const [selecionada, setSelecionada] = useState<PessoaNecessitada | null>(null);
@@ -27,7 +28,7 @@ export default function PaginaDoacoes()
         p.componente.toLowerCase().includes(termo);
       return combinaTipo && combinaBusca;
     });
-  }, [busca, filtroTipo]);
+  }, [pessoasNecessitadas, busca, filtroTipo]);
 
   return (
     <div className="space-y-6">

@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import type { TipoSanguineo } from "@/types";
-import { pessoasNecessitadas } from "@/data/pessoasMock";
+import { useDados } from "@/context/ContextoDados";
 import { FiltroTipoSanguineo } from "@/components/donations/FiltroTipoSanguineo";
 import { PontoStatus } from "@/components/ui/PontoStatus";
 
 export default function PaginaPacientes()
 {
+  const { pacientes: pessoasNecessitadas } = useDados();
   const [busca, setBusca] = useState("");
   const [filtroTipo, setFiltroTipo] = useState<TipoSanguineo | "todos">("todos");
 
@@ -23,7 +24,7 @@ export default function PaginaPacientes()
         p.componente.toLowerCase().includes(termo);
       return combinaTipo && combinaBusca;
     });
-  }, [busca, filtroTipo]);
+  }, [pessoasNecessitadas, busca, filtroTipo]);
 
   return (
     <div className="space-y-6">

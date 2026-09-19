@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useDados } from "@/context/ContextoDados";
 import {
   montarAvisos,
   montarIndicadores,
@@ -16,10 +17,11 @@ import { AcoesRapidas } from "@/components/painel/AcoesRapidas";
  */
 export default function PaginaPainel()
 {
+  const { lotes, pacientes } = useDados();
   const [ordenacao, setOrdenacao] = useState<OrdenacaoAvisos>("severidade");
 
-  const avisos = useMemo(() => montarAvisos(), []);
-  const indicadores = useMemo(() => montarIndicadores(avisos), [avisos]);
+  const avisos = useMemo(() => montarAvisos(lotes, pacientes), [lotes, pacientes]);
+  const indicadores = useMemo(() => montarIndicadores(lotes, avisos), [lotes, avisos]);
   const avisosOrdenados = useMemo(() => ordenarAvisos(avisos, ordenacao), [avisos, ordenacao]);
 
   return (

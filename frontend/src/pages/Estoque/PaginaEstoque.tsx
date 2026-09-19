@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { LoteHemocomponente, TipoSanguineo } from "@/types";
-import { lotesEstoque } from "@/data/estoqueMock";
+import { useDados } from "@/context/ContextoDados";
 import { TIPOS_SANGUINEOS, statusGrupo } from "@/lib/estoque";
 import { FiltroTipoEstoque } from "@/components/estoque/FiltroTipoEstoque";
 import { CartaoLote } from "@/components/estoque/CartaoLote";
@@ -20,6 +20,7 @@ interface GrupoEstoque
  */
 export default function PaginaEstoque()
 {
+  const { lotes: lotesEstoque } = useDados();
   const [filtroTipo, setFiltroTipo] = useState<TipoSanguineo | "todos">("todos");
 
   const grupos = useMemo<GrupoEstoque[]>(() =>
@@ -36,7 +37,7 @@ export default function PaginaEstoque()
         };
       })
       .filter((grupo) => grupo.lotes.length > 0);
-  }, [filtroTipo]);
+  }, [lotesEstoque, filtroTipo]);
 
   return (
     <div className="space-y-6">

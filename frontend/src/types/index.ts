@@ -95,3 +95,39 @@ export interface Conexao
   tempoMin: number;
   status: UrgenciaNecessidade;
 }
+
+/** Ala médica de destino de uma requisição (HU-04). */
+export type AlaMedica =
+  | "UTI Adulto"
+  | "UTI Neonatal"
+  | "Centro Cirúrgico"
+  | "Emergência"
+  | "Oncologia"
+  | "Hemodiálise"
+  | "Maternidade";
+
+/** Requisição preenchida pelo médico (HU-04). */
+export interface RequisicaoHemocomponente
+{
+  protocolo: string;
+  componente: TipoComponente;
+  tipoSanguineo: TipoSanguineo;
+  ala: AlaMedica;
+  unidades: number;
+  paciente: string;
+  urgencia: UrgenciaNecessidade;
+  /** Código do lote sugerido pela regra FEFO — ausente quando não há estoque. */
+  loteSugerido?: string;
+}
+
+/** Remessa vinda de outra instituição, aguardando conferência física (HU-05). */
+export interface RequisicaoRecebida
+{
+  id: string;
+  componente: TipoComponente;
+  tipoSanguineo: TipoSanguineo;
+  unidades: number;
+  origem: string;
+  /** Momento da chegada, já formatado para exibição (mock). */
+  chegadaEm: string;
+}
