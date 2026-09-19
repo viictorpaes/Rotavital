@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import type { PontoDeRede, UrgenciaNecessidade } from "@/types";
 import { hospitais } from "@/data/redeMock";
 import { conexaoDe } from "@/lib/rede";
+import type { RotasDaRede } from "@/hooks/useRotasDaRede";
 import { cn } from "@/lib/utilitarios";
 
 const COR_STATUS: Record<UrgenciaNecessidade, string> =
@@ -14,17 +15,19 @@ const COR_STATUS: Record<UrgenciaNecessidade, string> =
 interface Props
 {
   selecionadoId: string;
+  rotas: RotasDaRede;
   onSelecionar: (hospital: PontoDeRede) => void;
 }
 
 /** Hospitais conectados, com distância/tempo e o status do estoque local. */
-export function ListaHospitais({ selecionadoId, onSelecionar }: Readonly<Props>)
+export function ListaHospitais({ selecionadoId, rotas, onSelecionar }: Readonly<Props>)
 {
   return (
     <ul className="divide-y divide-rota-border overflow-hidden rounded-xl border border-rota-border bg-white">
       {hospitais.map((hospital) =>
       {
         const conexao = conexaoDe(hospital.id);
+        const rota = rotas[hospital.id];
         const ativo = hospital.id === selecionadoId;
 
         return (
@@ -47,7 +50,7 @@ export function ListaHospitais({ selecionadoId, onSelecionar }: Readonly<Props>)
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold text-gray-900">{hospital.nome}</span>
                 <span className="block font-mono text-xs text-gray-500">
-                  {conexao ? `${conexao.distanciaKm} km · ${conexao.tempoMin} min` : "sem rota"}
+                  {rota ? `${rota.distanciaKm} km · ${rota.tempoMin} min` : "sem rota"}
                 </span>
               </span>
               {ativo && <ArrowRight className="h-4 w-4 shrink-0 text-rota-red" aria-hidden />}

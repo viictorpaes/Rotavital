@@ -1,10 +1,12 @@
 import { MapPin, Route, Thermometer, Truck } from "lucide-react";
 import type { PontoDeRede, TipoComponente } from "@/types";
-import { conexaoDe, COMPONENTES, formatarFaixa, TRANSPORTE_POR_COMPONENTE } from "@/lib/rede";
+import { COMPONENTES, formatarFaixa, TRANSPORTE_POR_COMPONENTE } from "@/lib/rede";
+import type { RotaCalculada } from "@/lib/roteirizacao";
 
 interface Props
 {
   destino: PontoDeRede;
+  rota: RotaCalculada;
   componente: TipoComponente;
   onComponenteChange: (componente: TipoComponente) => void;
 }
@@ -29,10 +31,8 @@ function Linha({
 }
 
 /** Plano de transporte na cadeia fria para o hospital selecionado (HU-07). */
-export function PlanoTransporte({ destino, componente, onComponenteChange }: Readonly<Props>)
+export function PlanoTransporte({ destino, rota, componente, onComponenteChange }: Readonly<Props>)
 {
-  const conexao = conexaoDe(destino.id);
-
   return (
     <section className="space-y-4 rounded-xl border border-rota-border bg-white p-5">
       <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-gray-400">
@@ -47,7 +47,10 @@ export function PlanoTransporte({ destino, componente, onComponenteChange }: Rea
           <span className="text-gray-500">{destino.endereco}</span>
         </Linha>
         <Linha icone={<Route className="h-4 w-4" />} rotulo="Melhor rota">
-          {conexao ? `${conexao.distanciaKm} km · ${conexao.tempoMin} min estimados` : "—"}
+          {rota.distanciaKm} km · {rota.tempoMin} min estimados
+          {!rota.doRoteador && (
+            <span className="ml-2 font-mono text-[11px] text-gray-400">valor previsto</span>
+          )}
         </Linha>
         <Linha icone={<Truck className="h-4 w-4" />} rotulo="Transporte">
           Veículo refrigerado monitorado

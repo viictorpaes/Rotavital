@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { PontoDeRede, TipoComponente } from "@/types";
 import { hospitais } from "@/data/redeMock";
+import { useRotasDaRede } from "@/hooks/useRotasDaRede";
 import { ListaHospitais } from "@/components/rede/ListaHospitais";
 import { MapaRede } from "@/components/rede/MapaRede";
 import { PlanoTransporte } from "@/components/rede/PlanoTransporte";
@@ -15,6 +16,8 @@ export default function PaginaRede()
 {
   const [selecionado, setSelecionado] = useState<PontoDeRede>(hospitais[0]);
   const [componente, setComponente] = useState<TipoComponente>("Concentrado de Hemácias");
+  const { rotas, carregando } = useRotasDaRede();
+  const rota = rotas[selecionado.id];
 
   return (
     <div className="space-y-6">
@@ -36,7 +39,13 @@ export default function PaginaRede()
             </p>
           </div>
 
-          <MapaRede selecionado={selecionado} onSelecionar={setSelecionado} altura="420px" />
+          <MapaRede
+            selecionado={selecionado}
+            rota={rota}
+            calculando={carregando}
+            onSelecionar={setSelecionado}
+            altura="420px"
+          />
 
           <ul className="flex flex-wrap items-center gap-4 border-t border-rota-border px-5 py-3 font-mono text-[11px] text-gray-500">
             <li className="flex items-center gap-1.5">
@@ -52,9 +61,14 @@ export default function PaginaRede()
         </section>
 
         <div className="space-y-4 lg:col-span-2">
-          <ListaHospitais selecionadoId={selecionado.id} onSelecionar={setSelecionado} />
+          <ListaHospitais
+            selecionadoId={selecionado.id}
+            rotas={rotas}
+            onSelecionar={setSelecionado}
+          />
           <PlanoTransporte
             destino={selecionado}
+            rota={rota}
             componente={componente}
             onComponenteChange={setComponente}
           />

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Coordenada, PontoDeRede } from "@/types";
 import { hemocentro, hospitais } from "@/data/redeMock";
+import type { RotaCalculada } from "@/lib/roteirizacao";
 
 type Posicao = [number, number];
 
@@ -26,36 +27,11 @@ const ICONE_INATIVO = iconePonto("#9ca3af", 9);
 
 const posicao = ({ latitude, longitude }: Coordenada): Posicao => [latitude, longitude];
 
-/**
- * Traçado real por ruas via OSRM (serviço público, sem chave). Se a rota não
- * puder ser calculada, cai para a linha reta entre origem e destino.
- */
-async function rotaPorRuas(origem: Coordenada, destino: Coordenada, signal: AbortSignal): Promise<Posicao[]>
-{
-  const reta: Posicao[] = [posicao(origem), posicao(destino)];
-  try
-  {
-    const resposta = await fetch(
-      `https://router.project-osrm.org/route/v1/driving/${origem.longitude},${origem.latitude};` +
-        `${destino.longitude},${destino.latitude}?geometries=geojson&overview=full`,
-      { signal },
-    );
-    const dados = await resposta.json();
-    const coordenadas: Array<[number, number]> | undefined = dados?.routes?.[0]?.geometry?.coordinates;
-    if (!coordenadas?.length) return reta;
-    return coordenadas.map(([lng, lat]) => [lat, lng] as Posicao);
-  }
-  catch
-  {
-    return reta;
-  }
-}
-
 /** Reenquadra o mapa para caber a rota inteira sempre que ela muda. */
 function AjustarEnquadramento({ pontos }: Readonly<{ pontos: Posicao[] }>)
 {
   const mapa = useMap();
-  const chave = pontos.length > 1 ? `${pontos[0]};${pontos[pontos.length - 1]}` : "";
+  const chave = pontos.length > 1 ? `${pontos.length}:${pontos[0]};${pontos[pontos.length - 1]}` : "";
 
   useEffect(() =>
   {
@@ -73,32 +49,20 @@ function AjustarEnquadramento({ pontos }: Readonly<{ pontos: Posicao[] }>)
 interface Props
 {
   selecionado: PontoDeRede;
+  rota: RotaCalculada;
+  calculando: boolean;
   onSelecionar: (hospital: PontoDeRede) => void;
   altura?: string;
 }
 
 /**
- * Mapa da rede (HU-07) sobre tiles do OpenStreetMap/CARTO — basemap aberto, sem
- * chave de API. Clicar em um marcador seleciona o hospital e recalcula a rota.
+ * Mapa da rede (HU-07) sobre tiles do OpenStreetMap — basemap aberto, sem chave
+ * de API. Clicar em um marcador seleciona o hospital, e o traçado exibido é o da
+ * rota já calculada para ele.
  */
-export function MapaRede({ selecionado, onSelecionar, altura = "420px" }: Readonly<Props>)
+export function MapaRede({ selecionado, rota, calculando, onSelecionar, altura = "420px" }: Readonly<Props>)
 {
-  const [rota, setRota] = useState<Posicao[]>([]);
-  const [calculando, setCalculando] = useState(false);
-
-  useEffect(() =>
-  {
-    const controlador = new AbortController();
-    setCalculando(true);
-    rotaPorRuas(hemocentro, selecionado, controlador.signal)
-      .then((pontos) =>
-      {
-        if (controlador.signal.aborted) return;
-        setRota(pontos);
-        setCalculando(false);
-      });
-    return () => controlador.abort();
-  }, [selecionado]);
+  const tracado = rota.pontos.map(posicao);
 
   const centro: Posicao = [
     (hemocentro.latitude + selecionado.latitude) / 2,
@@ -107,7 +71,7 @@ export function MapaRede({ selecionado, onSelecionar, altura = "420px" }: Readon
 
   return (
     <div className="mapa-rede relative" style={{ height: altura }}>
-      {calculando && (
+      {calculando && !rota.doRoteador && (
         <div className="pointer-events-none absolute inset-0 z-[999] flex items-center justify-center bg-white/70">
           <span className="font-mono text-[11px] uppercase tracking-widest text-gray-500">
             calculando rota…
@@ -119,6 +83,7 @@ export function MapaRede({ selecionado, onSelecionar, altura = "420px" }: Readon
         center={centro}
         zoom={13}
         zoomControl={false}
+        scrollWheelZoom={false}
         attributionControl={false}
         style={{ height: "100%", width: "100%" }}
       >
@@ -130,13 +95,13 @@ export function MapaRede({ selecionado, onSelecionar, altura = "420px" }: Readon
           maxZoom={19}
         />
 
-        {rota.length >= 2 && (
+        {tracado.length >= 2 && (
           <>
             <Polyline
-              positions={rota}
+              positions={tracado}
               pathOptions={{ color: "#c1272d", weight: 3.5, dashArray: "10 6", opacity: 0.9 }}
             />
-            <AjustarEnquadramento pontos={rota} />
+            <AjustarEnquadramento pontos={tracado} />
           </>
         )}
 
