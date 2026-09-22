@@ -38,16 +38,21 @@ flowchart LR
 
     M1 -. "espelha" .-> D1["Estoque / BolsaHemocomponente"]
     M2 -. "espelha" .-> D2["Hospital / RequisicaoHospitalar"]
-    M3 -. "espelha" .-> D3["PontoDeRede"]
+    M3 -. "espelha" .-> D3["PontoDeRede + RedeDistribuicao"]
     M4 -. "sem classe de domínio ainda" .-> D4["gap"]
 ```
 
 | Módulo | Recursos | Espelha no domínio | Status |
 | :--- | :--- | :--- | :---: |
-| 📦 Estoque e Hemocomponentes | `/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ✅ Domínio + contrato |
-| 🏥 Requisições e Alocação | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ✅ Domínio + contrato |
-| 🚚 Roteirização e Logística | `/rotas` | `PontoDeRede` (`Hospital`, `BancoDeSangue`) | ⚠️ Só lat/long, sem grafo |
-| 🌡️ Telemetria e Cadeia Fria | `/telemetria`, `/entregas` | *(nenhuma)* | ⚠️ Só contrato, sem domínio |
+| 📦 Estoque e Hemocomponentes | `/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ Domínio + contrato prontos; só `GET /estoque/{bancoId}` implementado |
+| 🏥 Requisições e Alocação | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ⚠️ Domínio + contrato prontos; nenhum controller ainda |
+| 🚚 Roteirização e Logística | `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ Implementado (`RotaController`, grafo + Dijkstra) |
+| 🌡️ Telemetria e Cadeia Fria | `/telemetria`, `/entregas` | *(nenhuma)* | ⚠️ Só contrato, sem domínio nem controller |
+
+> ⚠️ **Fora deste catálogo de 4:** `POST /acesso` (HU-01) está implementado em `AcessoController`,
+> funcionando de fato **e já documentado** em `openapi.yaml`/`CONTRATOS_DE_API.md` — só não entra aqui
+> porque este catálogo cruza contrato com classe de domínio, e Acesso não espelha nenhuma. Ver
+> [`CONTRATOS_DE_API.md`, seção 3](CONTRATOS_DE_API.md#3-acesso).
 
 <h2 align="left" id="2-estoque">📦 2. Estoque e Hemocomponentes</h2>
 
@@ -69,7 +74,7 @@ stateDiagram-v2
     RESERVADA --> DESCARTADA : descartar()
 ```
 
-Detalhes de schema e DTOs Java: [`CONTRATOS_DE_API.md`, seção 3](CONTRATOS_DE_API.md#3-estoque).
+Detalhes de schema e DTOs Java: [`CONTRATOS_DE_API.md`, seção 4](CONTRATOS_DE_API.md#4-estoque).
 
 <h2 align="left" id="3-requisicoes">🏥 3. Requisições e Alocação</h2>
 
@@ -103,7 +108,7 @@ sequenceDiagram
     end
 ```
 
-Detalhes de schema e DTOs Java: [`CONTRATOS_DE_API.md`, seção 4](CONTRATOS_DE_API.md#4-requisicoes).
+Detalhes de schema e DTOs Java: [`CONTRATOS_DE_API.md`, seção 5](CONTRATOS_DE_API.md#5-requisicoes).
 
 <h2 align="left" id="4-rotas">🚚 4. Roteirização e Logística</h2>
 
@@ -112,14 +117,19 @@ entre origem e destino — algoritmos de menor caminho da disciplina de AED.
 
 | Método | Endpoint | Descrição | Equivalente no domínio |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/rotas/pontos` | Lista os nós do grafo | implementações de `PontoDeRede` |
-| `GET` | `/rotas/conexoes` | Lista as arestas do grafo (distância/tempo) | — *(gap, ver seção 6)* |
-| `POST` | `/rotas/calcular` | Calcula a rota de menor custo | algoritmo de menor caminho sobre o grafo |
+| `GET` | `/rotas/pontos` | Lista os nós do grafo | `RedeDistribuicao.getPontos()` |
+| `GET` | `/rotas/conexoes` | Lista as arestas do grafo (distância/tempo) | `RedeDistribuicao.getConexoes()` |
+| `POST` | `/rotas/calcular` | Calcula a rota de menor custo | `RedeDistribuicao.calcularRotaMinima(...)` (Dijkstra) |
 
 `Hospital` e `BancoDeSangue` **não têm herança entre si** — só implementam `PontoDeRede`, o que permite
-tratá-los como nós intercambiáveis do mesmo grafo.
+tratá-los como nós intercambiáveis do mesmo grafo dentro de `RedeDistribuicao`.
 
-Detalhes de schema e DTOs Java: [`CONTRATOS_DE_API.md`, seção 5](CONTRATOS_DE_API.md#5-rotas).
+O domínio resolve o grafo e o menor caminho com Dijkstra
+([`MODELO_DE_DOMINIO.md`, seção 10](MODELO_DE_DOMINIO.md#10-rededistribuicao)) e os três endpoints acima já
+rodam via `RotaController`, sobre uma rede populada em memória (`RedeDistribuicaoEmMemoria`: hemocentro
+`BS-01` + 6 hospitais em topologia de estrela).
+
+Detalhes de schema e DTOs Java: [`CONTRATOS_DE_API.md`, seção 6](CONTRATOS_DE_API.md#6-rotas).
 
 <h2 align="left" id="5-telemetria">🌡️ 5. Telemetria e Cadeia Fria</h2>
 
@@ -132,7 +142,7 @@ trânsito, para acompanhar a cadeia fria dos hemocomponentes.
 | `GET` | `/entregas/{id}/monitoramento` | Histórico de leituras de uma entrega, em ordem cronológica |
 
 Este módulo ainda **não tem nenhuma classe de domínio correspondente** — foi modelado só a partir do
-contrato. Detalhes: [`CONTRATOS_DE_API.md`, seção 6](CONTRATOS_DE_API.md#6-telemetria).
+contrato. Detalhes: [`CONTRATOS_DE_API.md`, seção 7](CONTRATOS_DE_API.md#7-telemetria).
 
 <h2 align="left" id="6-resumo">📌 6. Resumo final</h2>
 
@@ -140,12 +150,15 @@ contrato. Detalhes: [`CONTRATOS_DE_API.md`, seção 6](CONTRATOS_DE_API.md#6-tel
 ┌──────────────────────────────────────────────────────────────────┐
 │  MÓDULOS DO SISTEMA — ROTA VITAL                                  │
 ├──────────────────────────────────────────────────────────────────┤
-│  📦 Estoque        → CRUD de bolsas + transições de status         │
-│  🏥 Requisições    → solicitar() + alocar() → FEFO + ABO/Rh        │
-│  🚚 Rotas          → grafo via PontoDeRede + menor caminho (AED)   │
+│  📦 Estoque        → domínio+contrato prontos; só GET implementado │
+│  🏥 Requisições    → domínio+contrato prontos; sem controller      │
+│  🚚 Rotas          → GET/GET/POST /rotas/* → grafo + Dijkstra ✅    │
 │  🌡️ Telemetria     → cadeia fria simulada — gap de domínio         │
+│  🔑 Acesso (HU-01) → implementado e documentado, sem espelho no domínio │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
 > Ver o modelo de domínio completo em [`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md) e a tabela integral de
-> gaps entre contrato e domínio em [`CONTRATOS_DE_API.md`, seção 8](CONTRATOS_DE_API.md#8-gaps).
+> gaps entre contrato e domínio em [`CONTRATOS_DE_API.md`, seção 9](CONTRATOS_DE_API.md#9-gaps). Dos 4
+> módulos do catálogo, **Estoque** (só `GET /estoque/{bancoId}`) e **Rotas** (os 3 endpoints) já rodam em
+> código hoje — Requisições e Telemetria ainda descrevem só o contrato aprovado, não o backend em produção.

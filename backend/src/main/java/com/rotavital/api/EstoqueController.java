@@ -62,7 +62,7 @@ public class EstoqueController
                     bolsa.getTipoSanguineo(),
                     bolsa.getDataColeta(),
                     bolsa.getDataValidade(),
-                    null,
+                    bolsa.getLoteSintetico(),
                     bolsa.getVolumeMl(),
                     bolsa.getTemperaturaCelsius(),
                     bolsa.getLocalizacao(),

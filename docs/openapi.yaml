@@ -14,6 +14,8 @@ info:
     url: https://github.com/viictorpaes/Rotavital
 
 tags:
+  - name: Acesso
+    description: Identificação do tipo de usuário (médico/doador) e tela inicial correspondente (HU-01).
   - name: Estoque
     description: Consulta consolidada do estoque por banco de sangue.
   - name: Hemocomponentes
@@ -26,10 +28,70 @@ tags:
     description: Telemetria simulada da cadeia fria durante o transporte.
 
 servers:
-  - url: http://localhost:8080/api
-    description: Ambiente local (placeholder - Spring Boot ainda não integrado).
+  - url: http://localhost:8080
+    description: >
+      Backend Spring Boot direto (mvn spring-boot:run ou docker compose up).
+      Sem prefixo /api - os controllers estão registrados na raiz.
+  - url: http://localhost/api
+    description: >
+      Via proxy reverso do Nginx do frontend (docker compose up, container
+      rotavital-frontend na porta 80) - hoje sem uso real, a SPA ainda consome
+      mocks locais em vez de chamar este proxy.
 
 paths:
+
+  # -- Acesso --------------------------------------------------------------
+  /acesso:
+    post:
+      tags: [Acesso]
+      summary: Identifica o tipo de usuário e devolve a tela inicial (HU-01)
+      description: >
+        Recebe nome e tipo de acesso (MEDICO/DOADOR) e devolve a tela inicial
+        e o menu correspondentes. Não persiste nada e não valida credenciais -
+        é seleção de perfil, não autenticação.
+      operationId: entrar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NovoAcessoRequest' }
+            example:
+              nome: Dra. Ana
+              tipoAcesso: MEDICO
+      responses:
+        '200':
+          description: Acesso concedido, com a tela inicial e o menu do tipo de usuário.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Acesso' }
+              examples:
+                medico:
+                  summary: Acesso como médico
+                  value:
+                    nome: Dra. Ana
+                    tipoAcesso: MEDICO
+                    telaInicial: Painel Operacional
+                    menu: [Início, Estoque, Requisição, Rede, Pacientes, Doações]
+                doador:
+                  summary: Acesso como doador
+                  value:
+                    nome: João
+                    tipoAcesso: DOADOR
+                    telaInicial: Portal do Doador
+                    menu: []
+        '400':
+          description: Nome em branco ou tipo de acesso ausente.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Requisição inválida
+                status: 400
+                detail: "Informe o nome e o tipo de acesso para entrar"
+                instance: /acesso
+        default:
+          $ref: '#/components/responses/InternalServerError'
 
   # -- Estoque -----------------------------------------------------------
   /estoque/{bancoId}:
@@ -503,6 +565,33 @@ components:
     TipoPontoRede:
       type: string
       enum: [HOSPITAL, BANCO_DE_SANGUE]
+
+    TipoAcesso:
+      type: string
+      enum: [MEDICO, DOADOR]
+
+    # ---- Acesso ----
+    NovoAcessoRequest:
+      type: object
+      properties:
+        nome: { type: string, example: Dra. Ana }
+        tipoAcesso: { $ref: '#/components/schemas/TipoAcesso' }
+      required: [nome, tipoAcesso]
+
+    Acesso:
+      type: object
+      properties:
+        nome: { type: string, example: Dra. Ana }
+        tipoAcesso: { $ref: '#/components/schemas/TipoAcesso' }
+        telaInicial:
+          type: string
+          description: "Painel Operacional (MEDICO) ou Portal do Doador (DOADOR)."
+          example: Painel Operacional
+        menu:
+          type: array
+          items: { type: string }
+          description: Itens de menu do tipo de usuário; vazio para DOADOR.
+      required: [nome, tipoAcesso, telaInicial, menu]
 
     # ---- Hemocomponentes / Estoque ----
     BolsaHemocomponente:
