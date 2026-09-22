@@ -1,0 +1,107 @@
+<mxfile host="app.diagrams.net" modified="2026-09-22T00:00:00.000Z" agent="Mozilla/5.0" version="24.7.17" type="device">
+  <diagram id="rotavital-arch" name="Rotavital Arquitetura">
+    <mxGraphModel dx="1890" dy="1160" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="title" />
+        <mxCell id="layerRede" value="Rede" style="shape=swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#EAF2FF;strokeColor=#5B8DEF;swimlaneFillColor=#F4F8FF;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="820" height="440" as="geometry" />
+        </mxCell>
+        <mxCell id="layerAplicacao" value="Aplicação" style="shape=swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#ECFDF5;strokeColor=#22C55E;swimlaneFillColor=#F0FFF6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="40" width="620" height="440" as="geometry" />
+        </mxCell>
+
+        <mxCell id="publicSubnet" value="Sub-rede pública&#xa;10.0.1.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=2;" vertex="1" parent="layerRede">
+          <mxGeometry x="30" y="70" width="760" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="appSubnet" value="Sub-rede de aplicação&#xa;10.0.10.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;" vertex="1" parent="layerAplicacao">
+          <mxGeometry x="30" y="70" width="560" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dataSubnet" value="Sub-rede de dados&#xa;10.0.20.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7C3AED;strokeWidth=2;" vertex="1" parent="layerAplicacao">
+          <mxGeometry x="30" y="350" width="560" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="internet" value="Usuário / Internet" style="shape=mxgraph.networks.user;html=1;whiteSpace=wrap;fillColor=#F8FAFC;strokeColor=#334155;" vertex="1" parent="layerRede">
+          <mxGeometry x="70" y="140" width="90" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gateway" value="Load Balancer / Gateway&#xa;SSL Termination" style="shape=mxgraph.networks.router;html=1;whiteSpace=wrap;fillColor=#BFDBFE;strokeColor=#1D4ED8;" vertex="1" parent="layerRede">
+          <mxGeometry x="230" y="120" width="140" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dns" value="DNS&#xa;Resolver" style="shape=mxgraph.networks.server;html=1;whiteSpace=wrap;fillColor=#DBEAFE;strokeColor=#2563EB;" vertex="1" parent="layerRede">
+          <mxGeometry x="620" y="125" width="120" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="frontend" value="Frontend&#xa;React + Vite + Nginx" style="shape=mxgraph.networks.web_server;html=1;whiteSpace=wrap;fillColor=#BBF7D0;strokeColor=#15803D;" vertex="1" parent="layerAplicacao">
+          <mxGeometry x="80" y="120" width="150" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="backend" value="Backend API&#xa;Spring Boot" style="shape=mxgraph.networks.server;html=1;whiteSpace=wrap;fillColor=#A7F3D0;strokeColor=#16A34A;" vertex="1" parent="layerAplicacao">
+          <mxGeometry x="340" y="120" width="150" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="db" value="PostgreSQL / Supabase&#xa;Banco de dados" style="shape=mxgraph.networks.database;html=1;whiteSpace=wrap;fillColor=#E9D5FF;strokeColor=#7C3AED;" vertex="1" parent="layerAplicacao">
+          <mxGeometry x="220" y="365" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="obs" value="Observabilidade&#xa;Métricas / Logs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;" vertex="1" parent="layerAplicacao">
+          <mxGeometry x="430" y="240" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="line1" value="HTTPS/443" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1D4ED8;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="internet" target="gateway">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="line2" value="HTTPS/443" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1D4ED8;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="gateway" target="frontend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="line3" value="HTTP/1.1/8080" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#15803D;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="frontend" target="backend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="line4" value="PostgreSQL/TCP/5432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#7C3AED;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="backend" target="db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="line5" value="DNS/UDP/53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563EB;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="gateway" target="dns">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="line6" value="Métricas/logs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=3 3;strokeColor=#D97706;strokeWidth=1.5;endArrow=classic;endFill=1;" edge="1" parent="1" source="backend" target="obs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legendTitle" value="Legenda" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="510" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legendSync" value="Linha contínua = síncrono" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1F2937;strokeWidth=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="540" width="220" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legendAsync" value="Linha tracejada = assíncrono" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1F2937;strokeWidth=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="575" width="220" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legendObs" value="Linha pontilhada = observabilidade" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1F2937;strokeWidth=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="610" width="220" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legendColor1" value="Azul = rede pública" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="540" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legendColor2" value="Verde = aplicação" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="575" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legendColor3" value="Roxo = dados" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7C3AED;strokeWidth=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="610" width="180" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
