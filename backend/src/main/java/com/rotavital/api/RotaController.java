@@ -1,16 +1,17 @@
 package com.rotavital.api;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rotavital.api.dto.comum.ErroDTO;
-import com.rotavital.api.dto.rota.CalcularRotaRequest;
 import com.rotavital.api.dto.rota.ConexaoDTO;
 import com.rotavital.api.dto.rota.PontoRedeDTO;
 import com.rotavital.api.dto.rota.RotaCalculadaDTO;
@@ -22,6 +23,7 @@ import com.rotavital.dominio.RedeDistribuicao;
 import com.rotavital.dominio.RotaCalculada;
 
 @RestController
+@RequestMapping("/api/v1")
 public class RotaController
 {
     private final RedeDistribuicao rede;
@@ -31,7 +33,7 @@ public class RotaController
         this.rede = redeDistribuicaoEmMemoria.getRede();
     }
 
-    @GetMapping("/rotas/pontos")
+    @GetMapping("/pontos")
     public ResponseEntity<List<PontoRedeDTO>> listarPontos()
     {
         List<PontoRedeDTO> pontos = rede.getPontos().stream()
@@ -41,7 +43,7 @@ public class RotaController
         return ResponseEntity.ok(pontos);
     }
 
-    @GetMapping("/rotas/conexoes")
+    @GetMapping("/conexoes")
     public ResponseEntity<List<ConexaoDTO>> listarConexoes()
     {
         List<ConexaoDTO> conexoes = rede.getConexoes().stream()
@@ -51,13 +53,21 @@ public class RotaController
         return ResponseEntity.ok(conexoes);
     }
 
-    @PostMapping("/rotas/calcular")
-    public ResponseEntity<?> calcularRota(@RequestBody CalcularRotaRequest request)
+    @GetMapping("/rotas")
+    public ResponseEntity<?> calcularRota(@RequestParam(required = false) String origemId,
+    @RequestParam(required = false) String destinoId,
+    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime janelaEntregaLimite)
     {
+        if (origemId == null || origemId.isBlank() || destinoId == null || destinoId.isBlank())
+        {
+            ErroDTO erro = new ErroDTO(null, "Requisição inválida", 400,
+                    "Informe origemId e destinoId na query string", "/api/v1/rotas");
+            return ResponseEntity.status(400).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
+        }
+
         try
         {
-            RotaCalculada rota = rede.calcularRotaMinima(
-                    request.origemId(), request.destinoId(), request.janelaEntregaLimite());
+            RotaCalculada rota = rede.calcularRotaMinima(origemId, destinoId, janelaEntregaLimite);
 
             List<String> nos = rota.getNos().stream().map(PontoDeRede::getId).toList();
 
@@ -73,12 +83,12 @@ public class RotaController
         }
         catch (IllegalArgumentException e)
         {
-            ErroDTO erro = new ErroDTO(null, "Recurso não encontrado", 404, e.getMessage(), "/rotas/calcular");
+            ErroDTO erro = new ErroDTO(null, "Recurso não encontrado", 404, e.getMessage(), "/api/v1/rotas");
             return ResponseEntity.status(404).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
         }
         catch (IllegalStateException e)
         {
-            ErroDTO erro = new ErroDTO(null, "Regra de negócio violada", 422, e.getMessage(), "/rotas/calcular");
+            ErroDTO erro = new ErroDTO(null, "Regra de negócio violada", 422, e.getMessage(), "/api/v1/rotas");
             return ResponseEntity.status(422).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
         }
     }

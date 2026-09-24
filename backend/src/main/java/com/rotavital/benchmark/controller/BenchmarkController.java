@@ -20,7 +20,7 @@ import com.rotavital.benchmark.model.ResultadoAuditoria;
 import com.rotavital.benchmark.service.AuditoriaTelemetriaService;
 
 @RestController
-@RequestMapping("/api/benchmark")
+@RequestMapping("/api/v1/benchmarks")
 @CrossOrigin(origins = "*")
 public class BenchmarkController {
 

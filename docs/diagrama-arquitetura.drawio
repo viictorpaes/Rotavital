@@ -41,8 +41,8 @@
         </mxCell>
 
         <!-- Backend container -->
-        <mxCell id="backend" value="Container: backend (Spring Boot)&#10;monolito &#8212; porta 8080&#10;&#10;EstoqueController&#10;AcessoController&#10;RotaController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=center;fontStyle=1;fontSize=12;spacingTop=6;" vertex="1" parent="1">
-          <mxGeometry x="640" y="210" width="240" height="160" as="geometry" />
+        <mxCell id="backend" value="Container: backend (Spring Boot)&#10;monolito &#8212; porta 8080 &#183; base /api/v1&#10;&#10;AcessoController &#8594; /acessos&#10;EstoqueController &#8594; /bancos/{id}/estoque&#10;RotaController &#8594; /pontos, /conexoes, /rotas&#10;BenchmarkController &#8594; /benchmarks/*&#10;&#10;PLANEJADO (so contrato): /hemocomponentes,&#10;/requisicoes, /entregas/{id}/leituras" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=center;fontStyle=1;fontSize=11;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="620" y="200" width="280" height="200" as="geometry" />
         </mxCell>
 
         <!-- In-memory store -->
@@ -65,7 +65,7 @@
         <mxCell id="e3" value="HTTP :80" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=11;fontStyle=1;" edge="1" parent="1" source="navegador" target="nginx">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e4" value="PLANEJADO &#8212; proxy /api/* -&gt; :8080 ja configurado,&#10;mas sem trafego real (SPA usa mocks locais)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" edge="1" parent="1" source="nginx" target="backend">
+        <mxCell id="e4" value="PLANEJADO &#8212; proxy /api/* -&gt; :8080/api/* ja configurado,&#10;mas sem trafego real (SPA usa mocks locais)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" edge="1" parent="1" source="nginx" target="backend">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e5" value="le / escreve" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=11;fontStyle=1;" edge="1" parent="1" source="backend" target="memoria">

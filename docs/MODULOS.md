@@ -44,12 +44,12 @@ flowchart LR
 
 | Módulo | Recursos | Espelha no domínio | Status |
 | :--- | :--- | :--- | :---: |
-| 📦 Estoque e Hemocomponentes | `/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ Domínio + contrato prontos; só `GET /estoque/{bancoId}` implementado |
+| 📦 Estoque e Hemocomponentes | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ Domínio + contrato prontos; só `GET /api/v1/bancos/{bancoId}/estoque` implementado |
 | 🏥 Requisições e Alocação | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ⚠️ Domínio + contrato prontos; nenhum controller ainda |
-| 🚚 Roteirização e Logística | `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ Implementado (`RotaController`, grafo + Dijkstra) |
-| 🌡️ Telemetria e Cadeia Fria | `/telemetria`, `/entregas` | *(nenhuma)* | ⚠️ Só contrato, sem domínio nem controller |
+| 🚚 Roteirização e Logística | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ Implementado (`RotaController`, grafo + Dijkstra) |
+| 🌡️ Telemetria e Cadeia Fria | `/entregas/{id}/leituras` | *(nenhuma)* | ⚠️ Só contrato, sem domínio nem controller |
 
-> ⚠️ **Fora deste catálogo de 4:** `POST /acesso` (HU-01) está implementado em `AcessoController`,
+> ⚠️ **Fora deste catálogo de 4:** `POST /api/v1/acessos` (HU-01) está implementado em `AcessoController`,
 > funcionando de fato **e já documentado** em `openapi.yaml`/`CONTRATOS_DE_API.md` — só não entra aqui
 > porque este catálogo cruza contrato com classe de domínio, e Acesso não espelha nenhuma. Ver
 > [`CONTRATOS_DE_API.md`, seção 3](CONTRATOS_DE_API.md#3-acesso).
@@ -60,11 +60,11 @@ Controla o cadastro e o ciclo de vida das bolsas de hemocomponentes de um banco 
 
 | Método | Endpoint | Descrição | Equivalente no domínio |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/estoque/{bancoId}` | Estoque consolidado de um banco de sangue | `BancoDeSangue.getEstoque()` |
-| `GET` | `/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`) | `Estoque.buscarDisponiveis(...)` |
-| `POST` | `/hemocomponentes` | Cadastra uma nova bolsa (`status` inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
-| `PATCH` | `/hemocomponentes/{id}` | Transição de status (`reservar`, `descartar`) | `reservar()` / `descartar()` |
-| `DELETE` | `/hemocomponentes/{id}` | Remove o cadastro (erro de lançamento) | — |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque` | Estoque consolidado de um banco de sangue | `BancoDeSangue.getEstoque()` |
+| `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `Estoque.buscarDisponiveis(...)` |
+| `POST` | `/api/v1/hemocomponentes` | Cadastra uma nova bolsa (`status` inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
+| `PATCH` | `/api/v1/hemocomponentes/{id}` | Transição de status (`reservar`, `descartar`) | `reservar()` / `descartar()` |
+| `DELETE` | `/api/v1/hemocomponentes/{id}` | Remove o cadastro (erro de lançamento) | — |
 
 ```mermaid
 stateDiagram-v2
@@ -84,15 +84,15 @@ próximo é escolhida primeiro).
 
 | Método | Endpoint | Descrição | Equivalente no domínio |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/requisicoes` | Cria requisição (`status` inicial `PENDENTE`) | `Hospital.solicitar(...)` |
-| `GET` | `/requisicoes` | Lista requisições (filtros: `hospitalId`, `status`) | `Hospital.getRequisicoes()` |
-| `POST` | `/requisicoes/{id}/alocar` | Busca bolsa compatível (FEFO/ABO-Rh) e reserva | `Estoque.buscarDisponiveis(...)` + `reservar()` + `marcarComoAlocada()` |
-| `POST` | `/requisicoes/{id}/cancelar` | Cancela a requisição | `RequisicaoHospitalar.cancelar()` |
+| `POST` | `/api/v1/requisicoes` | Cria requisição (`status` inicial `PENDENTE`) | `Hospital.solicitar(...)` |
+| `GET` | `/api/v1/requisicoes` | Lista requisições (filtros: `hospitalId`, `status`, `page`, `size`) | `Hospital.getRequisicoes()` |
+| `POST` | `/api/v1/requisicoes/{id}/alocacoes` | Cria a alocação: busca bolsa compatível (FEFO/ABO-Rh) e reserva (`201`) | `Estoque.buscarDisponiveis(...)` + `reservar()` + `marcarComoAlocada()` |
+| `PATCH` | `/api/v1/requisicoes/{id}` | Cancela a requisição (`{"status": "CANCELADA"}`) | `RequisicaoHospitalar.cancelar()` |
 
 ```mermaid
 sequenceDiagram
     participant H as Hospital
-    participant API as POST /requisicoes/{id}/alocar
+    participant API as POST /api/v1/requisicoes/{id}/alocacoes
     participant E as Estoque
     participant B as BolsaHemocomponente
 
@@ -117,9 +117,9 @@ entre origem e destino — algoritmos de menor caminho da disciplina de AED.
 
 | Método | Endpoint | Descrição | Equivalente no domínio |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/rotas/pontos` | Lista os nós do grafo | `RedeDistribuicao.getPontos()` |
-| `GET` | `/rotas/conexoes` | Lista as arestas do grafo (distância/tempo) | `RedeDistribuicao.getConexoes()` |
-| `POST` | `/rotas/calcular` | Calcula a rota de menor custo | `RedeDistribuicao.calcularRotaMinima(...)` (Dijkstra) |
+| `GET` | `/api/v1/pontos` | Lista os nós do grafo | `RedeDistribuicao.getPontos()` |
+| `GET` | `/api/v1/conexoes` | Lista as arestas do grafo (distância/tempo) | `RedeDistribuicao.getConexoes()` |
+| `GET` | `/api/v1/rotas?origemId=&destinoId=&janelaEntregaLimite=` | Calcula a rota de menor custo | `RedeDistribuicao.calcularRotaMinima(...)` (Dijkstra) |
 
 `Hospital` e `BancoDeSangue` **não têm herança entre si** — só implementam `PontoDeRede`, o que permite
 tratá-los como nós intercambiáveis do mesmo grafo dentro de `RedeDistribuicao`.
@@ -138,8 +138,8 @@ trânsito, para acompanhar a cadeia fria dos hemocomponentes.
 
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
-| `POST` | `/telemetria/temperatura` | Registra uma leitura (timestamp, GPS, temperatura em °C) |
-| `GET` | `/entregas/{id}/monitoramento` | Histórico de leituras de uma entrega, em ordem cronológica |
+| `POST` | `/api/v1/entregas/{id}/leituras` | Registra uma leitura (timestamp, GPS, temperatura em °C) |
+| `GET` | `/api/v1/entregas/{id}/leituras` | Histórico de leituras de uma entrega, em ordem cronológica |
 
 Este módulo ainda **não tem nenhuma classe de domínio correspondente** — foi modelado só a partir do
 contrato. Detalhes: [`CONTRATOS_DE_API.md`, seção 7](CONTRATOS_DE_API.md#7-telemetria).
@@ -152,7 +152,7 @@ contrato. Detalhes: [`CONTRATOS_DE_API.md`, seção 7](CONTRATOS_DE_API.md#7-tel
 ├──────────────────────────────────────────────────────────────────┤
 │  📦 Estoque        → domínio+contrato prontos; só GET implementado │
 │  🏥 Requisições    → domínio+contrato prontos; sem controller      │
-│  🚚 Rotas          → GET/GET/POST /rotas/* → grafo + Dijkstra ✅    │
+│  🚚 Rotas          → GET /pontos, /conexoes, /rotas → Dijkstra ✅   │
 │  🌡️ Telemetria     → cadeia fria simulada — gap de domínio         │
 │  🔑 Acesso (HU-01) → implementado e documentado, sem espelho no domínio │
 └──────────────────────────────────────────────────────────────────┘
@@ -160,5 +160,5 @@ contrato. Detalhes: [`CONTRATOS_DE_API.md`, seção 7](CONTRATOS_DE_API.md#7-tel
 
 > Ver o modelo de domínio completo em [`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md) e a tabela integral de
 > gaps entre contrato e domínio em [`CONTRATOS_DE_API.md`, seção 9](CONTRATOS_DE_API.md#9-gaps). Dos 4
-> módulos do catálogo, **Estoque** (só `GET /estoque/{bancoId}`) e **Rotas** (os 3 endpoints) já rodam em
+> módulos do catálogo, **Estoque** (só `GET /api/v1/bancos/{bancoId}/estoque`) e **Rotas** (os 3 endpoints) já rodam em
 > código hoje — Requisições e Telemetria ainda descrevem só o contrato aprovado, não o backend em produção.

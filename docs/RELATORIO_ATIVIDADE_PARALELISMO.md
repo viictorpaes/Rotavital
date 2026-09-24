@@ -46,8 +46,8 @@ Cada thread calcula de forma completamente isolada o seu próprio acumulador loc
 * **Controller:** `com.rotavital.benchmark.controller.BenchmarkController`
 * **Service:** `com.rotavital.benchmark.service.AuditoriaTelemetriaService`
 * **Endpoints:**
-  * `GET /api/benchmark/auditoria-telemetria?tamanho=100000&modo=TODOS`
-  * `POST /api/benchmark/auditoria-telemetria` com corpo JSON:
+  * `GET /api/v1/benchmarks/auditoria-telemetria?tamanho=100000&modo=TODOS`
+  * `POST /api/v1/benchmarks/auditoria-telemetria` com corpo JSON:
     ```json
     {
       "quantidadeRegistros": 1000000,

@@ -36,14 +36,16 @@ backend, e não há workflow de CI que rode ou faça deploy da aplicação (o ú
 Sim. [`frontend/`](../frontend) é uma SPA React 18 + Vite + TypeScript, com build estático servido por um
 container **Nginx** próprio ([`frontend/Dockerfile`](../frontend/Dockerfile),
 [`frontend/nginx.conf`](../frontend/nginx.conf)) — não é servido pelo Spring Boot. Esse Nginx também faz
-proxy reverso: qualquer chamada para `/api/` é encaminhada para `http://backend:8080/`.
+proxy reverso: qualquer chamada para `/api/` é encaminhada, com o caminho intacto, para `http://backend:8080` (o backend expõe tudo em `/api/v1`).
 
 **Quantos serviços de backend existem? Monolito ou vários?**
-Um único serviço: monolito Spring Boot em [`backend/`](../backend), porta `8080`, com três controllers REST
-hoje — [`EstoqueController`](../backend/src/main/java/com/rotavital/api/EstoqueController.java),
-[`AcessoController`](../backend/src/main/java/com/rotavital/api/AcessoController.java) e
+Um único serviço: monolito Spring Boot em [`backend/`](../backend), porta `8080`, com quatro controllers REST
+sob `/api/v1` hoje — [`EstoqueController`](../backend/src/main/java/com/rotavital/api/EstoqueController.java),
+[`AcessoController`](../backend/src/main/java/com/rotavital/api/AcessoController.java),
 [`RotaController`](../backend/src/main/java/com/rotavital/api/RotaController.java) (grafo de distribuição +
-menor caminho via Dijkstra, sobre uma rede populada em memória por `RedeDistribuicaoEmMemoria`).
+menor caminho via Dijkstra, sobre uma rede populada em memória por `RedeDistribuicaoEmMemoria`) e
+[`BenchmarkController`](../backend/src/main/java/com/rotavital/benchmark/controller/BenchmarkController.java)
+(auditoria de telemetria sequencial × paralela).
 
 **Quais bancos de dados?**
 Dois candidatos, em estados diferentes — ver a [decisão registrada](#3-decisao) para o corte exato:
@@ -90,7 +92,7 @@ Não há observabilidade formal. Só logs no `stdout`: `System.out.println` de d
 | 1 | **Navegador (usuário)** | Cliente | Único ponto de entrada; roda a SPA e chama OSRM/OSM direto | — |
 | 2 | **SPA React** (`rotavital-frontend`) | Frontend | Telas do painel operacional e do portal do doador; hoje consome **dados mockados locais** (`frontend/src/data/*Mock.ts`), não o backend | [`frontend/src`](../frontend/src) |
 | 3 | **Nginx (container frontend)** | Infra / servidor web + proxy | Serve o build estático da SPA e faz proxy reverso de `/api/*` para o backend | [`frontend/nginx.conf`](../frontend/nginx.conf) |
-| 4 | **Backend Spring Boot** (`rotavital-backend`) | Backend (monolito) | Expõe `GET /estoque/{bancoId}`, `POST /acesso` e `GET/GET/POST /rotas/*` (grafo + Dijkstra); hoje não é chamado pela SPA | [`backend/src/main/java/com/rotavital`](../backend/src/main/java/com/rotavital) |
+| 4 | **Backend Spring Boot** (`rotavital-backend`) | Backend (monolito) | Expõe, sob `/api/v1`, `POST /acessos`, `GET /bancos/{bancoId}/estoque`, `GET /pontos`, `GET /conexoes`, `GET /rotas` (grafo + Dijkstra) e `/benchmarks/auditoria-telemetria`; hoje não é chamado pela SPA | [`backend/src/main/java/com/rotavital`](../backend/src/main/java/com/rotavital) |
 | 5 | **`BancosEmMemoria` / `RedeDistribuicaoEmMemoria`** | Armazenamento (em memória) | Estoque e grafo de distribuição hardcoded em `HashMap`/listas — o que `EstoqueController` e `RotaController` de fato leem | [`BancosEmMemoria.java`](../backend/src/main/java/com/rotavital/api/BancosEmMemoria.java) · [`RedeDistribuicaoEmMemoria.java`](../backend/src/main/java/com/rotavital/api/RedeDistribuicaoEmMemoria.java) |
 | 6 | **PostgreSQL / Supabase** | Banco de dados (planejado) | Configurado e testado na subida; nenhuma entidade/repositório JPA ainda o usa | [`application.properties`](../backend/src/main/resources/application.properties) |
 | 7 | **OSRM** (`router.project-osrm.org`) | Serviço de terceiro | Calcula rota real (distância/tempo) entre hemocentro e hospital | [`roteirizacao.ts`](../frontend/src/lib/roteirizacao.ts) |
@@ -105,7 +107,7 @@ Fora da tabela, por não executarem código nem guardarem dado fora do processo:
 O enunciado pede só o que é **real**. Aplicando esse corte:
 
 - **`BancosEmMemoria` e `RedeDistribuicaoEmMemoria` entram no diagrama como o banco de dados atual.** São o
-  que os endpoints de leitura (`GET /estoque/{bancoId}`, `GET/GET/POST /rotas/*`) de fato usam — confirma o
+  que os endpoints de leitura (`GET /api/v1/bancos/{bancoId}/estoque`, `GET /api/v1/pontos`, `/conexoes`, `/rotas`) de fato usam — confirma o
   que a PI3-122 registrou ("sem banco de dados, dados em memória").
 - **Supabase/PostgreSQL entra, mas marcado como *em provisionamento*, não como banco em uso.** A conexão
   existe, é testada no boot (`testarConexaoBanco`) e a dependência (`spring-boot-starter-data-jpa`,

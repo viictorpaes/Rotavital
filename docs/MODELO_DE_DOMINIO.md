@@ -253,7 +253,7 @@ Também acumula o tempo estimado ao longo do caminho e verifica se o total cabe 
 `janelaEntregaLimite` (quando informada). Lança `IllegalStateException` se não existir caminho até o
 destino, e `IllegalArgumentException` se `origemId`/`destinoId` não corresponder a nenhum ponto cadastrado.
 
-> ✅ Exposta via `RotaController` (`GET /rotas/pontos`, `GET /rotas/conexoes`, `POST /rotas/calcular`),
+> ✅ Exposta via `RotaController` (`GET /api/v1/pontos`, `GET /api/v1/conexoes`, `GET /api/v1/rotas`),
 > populada em memória por `RedeDistribuicaoEmMemoria` (hemocentro `BS-01` + 6 hospitais). `TesteFluxo`
 > continua sem exercitá-la — a demonstração manual cobre só estoque/requisição. Ver
 > [seção 15](#15-onde-o-contrato-diverge).
@@ -324,7 +324,7 @@ desenhado para espelhar 1:1 estas classes, mas ainda diverge em alguns pontos:
 | Gap | Detalhe |
 |---|---|
 | `urgencia` em `RequisicaoHospitalar` | Existe no contrato (`NivelUrgencia`), não no domínio |
-| Classes de domínio para telemetria | Não existem — módulo `/telemetria` foi modelado só a partir da subtask |
+| Classes de domínio para telemetria | Não existem — módulo de telemetria (`/entregas/{id}/leituras`) foi modelado só a partir da subtask |
 
 > Ver a tabela completa em [`CONTRATOS_DE_API.md`, seção 9](CONTRATOS_DE_API.md#9-gaps).
 
