@@ -7,3 +7,7 @@
 # verdade, docs/openapi.yaml continua sendo. Gerado ao importar a spec no Postman.
 .postman/
 postman/
+
+# Cache local da Supabase CLI (project-ref, URL do pooler, versões) - gerado por
+# `supabase link`, não é fonte de verdade. O schema versionado fica em supabase/migrations/.
+supabase/.temp/

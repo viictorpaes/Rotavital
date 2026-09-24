@@ -40,6 +40,9 @@ flowchart TD
     IDX --> FIG["RotaVital.fig<br/>link do protótipo (Figma)"]
     IDX --> INV["INVENTARIO_COMPONENTES.md<br/>Etapa 1: o que executa/guarda dado"]
     INV --> DRAW["diagrama-arquitetura.drawio<br/>Etapa 2: diagrama de contêineres"]
+    IDX --> SB["supabase/md/SUPABASE.md<br/>banco, conexão, RLS, migrations"]
+    SB --> DER["DER.md<br/>modelo relacional + constraints"]
+    DOM -. "persistido como" .-> DER
 ```
 
 | Documento | Formato | Conteúdo | Leia quando... |
@@ -51,6 +54,8 @@ flowchart TD
 | [`../RotaVital.fig`](../RotaVital.fig) | Texto (link) | Aponta para o protótipo publicado no Figma | se for discutir UI/UX do frontend |
 | [`INVENTARIO_COMPONENTES.md`](INVENTARIO_COMPONENTES.md) | Markdown | Levantamento do que executa código/guarda dado, validado contra o repositório | antes de desenhar o diagrama de arquitetura no draw.io |
 | [`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio) | draw.io (mxGraph XML) | Diagrama de contêineres com os 8 componentes da Etapa 1, ativo × planejado | para visualizar/editar a arquitetura no draw.io |
+| [`supabase/md/SUPABASE.md`](../supabase/md/SUPABASE.md) | Markdown + Mermaid | Projeto Supabase, conexão do backend, variáveis de ambiente, migrations, RLS, validação e prints | se for mexer no banco ou configurar o `.env` |
+| [`DER.md`](DER.md) | Markdown + Mermaid | DER das 7 tabelas e catálogo de NOT NULL, UNIQUE, CHECK, FKs e gatilho | se for criar tabela, entidade JPA ou consulta |
 
 <h2 align="left" id="2-dominio">🧬 2. Modelo de Domínio</h2>
 
