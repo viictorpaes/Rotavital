@@ -23,6 +23,7 @@ import com.rotavital.dominio.RedeDistribuicao;
 import com.rotavital.dominio.RotaCalculada;
 
 @RestController
+
 @RequestMapping("/api/v1")
 public class RotaController
 {
@@ -81,11 +82,13 @@ public class RotaController
 
             return ResponseEntity.ok(dto);
         }
+        
         catch (IllegalArgumentException e)
         {
             ErroDTO erro = new ErroDTO(null, "Recurso não encontrado", 404, e.getMessage(), "/api/v1/rotas");
             return ResponseEntity.status(404).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
         }
+
         catch (IllegalStateException e)
         {
             ErroDTO erro = new ErroDTO(null, "Regra de negócio violada", 422, e.getMessage(), "/api/v1/rotas");
