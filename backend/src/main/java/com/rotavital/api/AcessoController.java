@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rotavital.api.dto.acesso.AcessoDTO;
@@ -14,15 +15,16 @@ import com.rotavital.api.dto.acesso.TipoAcesso;
 import com.rotavital.api.dto.comum.ErroDTO;
 
 @RestController
+@RequestMapping("/api/v1")
 public class AcessoController
 {
-    @PostMapping("/acesso")
+    @PostMapping("/acessos")
     public ResponseEntity<?> entrar(@RequestBody NovoAcessoRequest request)
     {
         if (request.nome() == null || request.nome().isBlank() || request.tipoAcesso() == null)
         {
             ErroDTO erro = new ErroDTO(null, "Requisição inválida", 400,
-                    "Informe o nome e o tipo de acesso para entrar", "/acesso");
+                    "Informe o nome e o tipo de acesso para entrar", "/api/v1/acessos");
             return ResponseEntity.status(400).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
         }
 

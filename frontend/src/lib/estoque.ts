@@ -1,6 +1,7 @@
 import type { LoteHemocomponente, TipoSanguineo, UrgenciaNecessidade } from "@/types";
 
-export const TIPOS_SANGUINEOS: TipoSanguineo[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+export const TIPOS_SANGUINEOS: TipoSanguineo[] = 
+["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 /** Dias restantes até a validade (negativo quando o lote já venceu). */
 export function diasAteVencer(lote: LoteHemocomponente)
@@ -14,7 +15,7 @@ export function diasAteVencer(lote: LoteHemocomponente)
 /** Temperatura do lote fora da faixa ideal do hemocomponente (HU-03). */
 export function temperaturaForaDaFaixa(lote: LoteHemocomponente)
 {
-  return (
+  return(
     lote.temperaturaAtual < lote.temperaturaIdeal.minima ||
     lote.temperaturaAtual > lote.temperaturaIdeal.maxima
   );
@@ -25,7 +26,11 @@ export function statusLote(lote: LoteHemocomponente): UrgenciaNecessidade
 {
   const dias = diasAteVencer(lote);
   if (temperaturaForaDaFaixa(lote) || dias <= 3) return "critico";
-  if (dias <= 15) return "atencao";
+  
+  if (dias <= 15) 
+  {
+    return "atencao";
+  }
   return "estavel";
 }
 

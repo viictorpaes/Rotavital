@@ -2,6 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "skipLibCheck": true,
+    "outDir": "./node_modules/.tsc-out",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true

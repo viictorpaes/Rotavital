@@ -24,6 +24,7 @@ export function lotesCompativeis(
   componente: TipoComponente,
   tipoSanguineo: TipoSanguineo,
 )
+
 {
   return lotes
     .filter(
@@ -37,11 +38,13 @@ export function lotesCompativeis(
 }
 
 /** Unidades disponíveis para o par componente + tipo sanguíneo. */
-export function unidadesDisponiveis(
+export function unidadesDisponiveis
+(
   lotes: LoteHemocomponente[],
   componente: TipoComponente,
   tipoSanguineo: TipoSanguineo,
 )
+
 {
   return lotesCompativeis(lotes, componente, tipoSanguineo).reduce(
     (total, lote) => total + lote.unidades,
@@ -55,12 +58,14 @@ export function unidadesDisponiveis(
  * validade. Quando o estoque não cobre o pedido, baixa o que há e devolve o
  * saldo em `unidadesFaltantes` — quem chama decide o que fazer com a diferença.
  */
-export function reservarPorFefo(
+export function reservarPorFefo
+(
   lotes: LoteHemocomponente[],
   componente: TipoComponente,
   tipoSanguineo: TipoSanguineo,
   unidades: number,
 ): ResultadoBaixa
+
 {
   const fila = lotesCompativeis(lotes, componente, tipoSanguineo);
   const consumos: ConsumoDeLote[] = [];
@@ -69,7 +74,11 @@ export function reservarPorFefo(
 
   for (const lote of fila)
   {
-    if (pendente === 0) break;
+    if (pendente === 0) 
+    {
+      break;
+    }
+
     const retirada = Math.min(lote.unidades, pendente);
     consumos.push({ codigo: lote.codigo, unidades: retirada });
     restantes.set(lote.id, lote.unidades - retirada);

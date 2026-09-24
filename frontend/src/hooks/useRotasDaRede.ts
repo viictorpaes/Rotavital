@@ -35,15 +35,23 @@ export function useRotasDaRede()
       hospitais.map(async (hospital) =>
       {
         const referencia = referencias[hospital.id];
-        if (!referencia) return;
+        
+        if (!referencia) 
+        {
+          return;
+        }
 
         const rota = await calcularRota(hemocentro, hospital, referencia, controlador.signal);
         if (controlador.signal.aborted) return;
         setRotas((anteriores) => ({ ...anteriores, [hospital.id]: rota }));
       }),
+
     ).finally(() =>
     {
-      if (!controlador.signal.aborted) setCarregando(false);
+      if (!controlador.signal.aborted) 
+      {
+          setCarregando(false)
+      };
     });
 
     return () => controlador.abort();

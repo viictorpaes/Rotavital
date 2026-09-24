@@ -23,6 +23,7 @@
 5. [Módulos do Sistema](#5-modulos)
 6. [Protótipo (Figma)](#6-figma)
 7. [Visualizando o contrato REST](#7-visualizar)
+8. [Inventário de Componentes (arquitetura)](#8-inventario)
 
 <h2 align="left" id="1-mapa">🗺️ 1. Mapa dos documentos</h2>
 
@@ -37,6 +38,8 @@ flowchart TD
     MOD -. "cruza" .-> DOM
     MOD -. "cruza" .-> API
     IDX --> FIG["RotaVital.fig<br/>link do protótipo (Figma)"]
+    IDX --> INV["INVENTARIO_COMPONENTES.md<br/>Etapa 1: o que executa/guarda dado"]
+    INV --> DRAW["diagrama-arquitetura.drawio<br/>Etapa 2: diagrama de contêineres"]
 ```
 
 | Documento | Formato | Conteúdo | Leia quando... |
@@ -46,6 +49,8 @@ flowchart TD
 | [`openapi.yaml`](openapi.yaml) | OpenAPI 3.0.3 | Fonte da verdade do contrato — schemas, exemplos, respostas | se for importar no Swagger/Postman/Insomnia |
 | [`MODULOS.md`](MODULOS.md) | Markdown + Mermaid | Catálogo dos 4 módulos cruzando domínio ↔ contrato | quiser uma visão geral rápida do sistema |
 | [`../RotaVital.fig`](../RotaVital.fig) | Texto (link) | Aponta para o protótipo publicado no Figma | se for discutir UI/UX do frontend |
+| [`INVENTARIO_COMPONENTES.md`](INVENTARIO_COMPONENTES.md) | Markdown | Levantamento do que executa código/guarda dado, validado contra o repositório | antes de desenhar o diagrama de arquitetura no draw.io |
+| [`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio) | draw.io (mxGraph XML) | Diagrama de contêineres com os 8 componentes da Etapa 1, ativo × planejado | para visualizar/editar a arquitetura no draw.io |
 
 <h2 align="left" id="2-dominio">🧬 2. Modelo de Domínio</h2>
 
@@ -99,3 +104,15 @@ backend.
 ```bash
 npx --yes @stoplight/spectral-cli lint docs/openapi.yaml --ruleset <(echo "extends: spectral:oas")
 ```
+
+<h2 align="left" id="8-inventario">🗺️ 8. Inventário de Componentes (arquitetura)</h2>
+
+Etapa 1 do exercício de arquitetura: lista, validada contra o código real, de tudo que executa código ou
+guarda dado no Rota Vital hoje — e o que é só planejado. Ver
+[`INVENTARIO_COMPONENTES.md`](INVENTARIO_COMPONENTES.md).
+
+**Etapa 2 — diagrama de contêineres:** [`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio), com os
+8 componentes da Etapa 1, distinguindo visualmente o que já é real (linha sólida) do que é só planejado
+(linha tracejada — Supabase/Postgres e a integração SPA→Backend). Abra no
+[app.diagrams.net](https://app.diagrams.net) (`File → Open from → Device`) ou na extensão draw.io do
+VS Code.

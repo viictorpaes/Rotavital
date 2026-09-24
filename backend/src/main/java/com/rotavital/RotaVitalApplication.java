@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.List;
+
 import javax.sql.DataSource;
 
 import org.springframework.boot.CommandLineRunner;
@@ -24,7 +25,8 @@ public class RotaVitalApplication
 
     private static void carregarArquivoEnv()
     {
-        List<Path> possiveisCaminhos = List.of(
+        List<Path> possiveisCaminhos = List.of
+        (
             Paths.get(".env"),
             Paths.get("Rotavital/backend/.env"),
             Paths.get("backend/.env"),
@@ -48,6 +50,7 @@ public class RotaVitalApplication
                             int separador = linha.indexOf('=');
                             String chave = linha.substring(0, separador).trim();
                             String valor = linha.substring(separador + 1).trim();
+
                             if (System.getProperty(chave) == null && System.getenv(chave) == null)
                             {
                                 System.setProperty(chave, valor);
@@ -57,7 +60,8 @@ public class RotaVitalApplication
                     System.out.println("📄 Arquivo .env carregado de: " + caminho.toAbsolutePath());
                     break;
                 }
-                catch (IOException ignored) {}
+                catch (IOException ignored) 
+                {}
             }
         }
     }

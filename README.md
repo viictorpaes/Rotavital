@@ -46,13 +46,16 @@ roteirização de entregas e telemetria da cadeia fria.
     <img src="https://img.shields.io/badge/-Spring Boot-111827?style=flat-square&logo=springboot&logoColor=green"/>
   <img src="https://img.shields.io/badge/-Maven-111827?style=flat-square&logo=apachemaven&logoColor=C71A36"/>
   <img src="https://img.shields.io/badge/-JUnit_5-111827?style=flat-square&logo=junit5&logoColor=25A162"/>
-  <img src="https://img.shields.io/badge/-OpenAPI_3.0.3-111827?style=flat-square&logo=openapiinitiative&logoColor=6BA539"/> <br>
+  <img src="https://img.shields.io/badge/-OpenAPI_3.0.3-111827?style=flat-square&logo=openapiinitiative&logoColor=6BA539"/>
+  <img src="https://img.shields.io/badge/-Supabase-111827?style=flat-square&logo=supabase&logoColor=3ECF8E"/> <br>
   <img src="https://img.shields.io/badge/-React_18-111827?style=flat-square&logo=react&logoColor=61DAFB"/>
   <img src="https://img.shields.io/badge/-TypeScript-111827?style=flat-square&logo=typescript&logoColor=3178C6"/>
   <img src="https://img.shields.io/badge/-Vite-111827?style=flat-square&logo=vite&logoColor=646CFF"/>
   <img src="https://img.shields.io/badge/-Tailwind_CSS-111827?style=flat-square&logo=tailwindcss&logoColor=38BDF8"/>
   <img src="https://img.shields.io/badge/-React_Router-111827?style=flat-square&logo=reactrouter&logoColor=CA4245"/>
   <img src="https://img.shields.io/badge/-ESLint-111827?style=flat-square&logo=eslint&logoColor=4B32C3"/> <br>
+  <img src="https://img.shields.io/badge/-Docker-111827?style=flat-square&logo=docker&logoColor=2496ED"/>
+  <img src="https://img.shields.io/badge/-Docker%20Compose-111827?style=flat-square&logo=docker&logoColor=2496ED"/>
   <img src="https://img.shields.io/badge/-Figma-111827?style=flat-square&logo=figma&logoColor=F24E1E"/>
   <img src="https://img.shields.io/badge/Architecture-111827?style=flat-square&logo=instructure&logoColor=white"/> <br>
   <img src="https://img.shields.io/badge/-Git-111827?style=flat-square&logo=git&logoColor=F05032"/>
@@ -171,7 +174,7 @@ Login, Estoque, Requisições, Rede Hospitalar, Pacientes e <b>Doações</b></h4
 | 🚀 Futuras | 6 histórias |
 | **Total** | **16 histórias** |
 
-<h5 align="left">🔍 Detalhamento em BDD (Gherkin)</h5>
+<h5 align="left">🔍 Detalhamento:</h5>
 
 <p align="center">
 Cada história implementada abaixo traz o detalhamento completo — ator, ação, benefício, a tela do protótipo
@@ -188,7 +191,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Escolher meu tipo de acesso ("Médico — acesso hospitalar completo" ou "Doador — portal de doações") e informar meu nome |
 | **Para que** | Eu veja a tela adequada ao meu papel sem precisar de um cadastro completo |
 | **Tela do Figma** | Tela inicial "Cesar Life · Estoque Inteligente" — cartões `Médico`/`Doador`, campo `Nome`, botão `Entrar` |
-| **Nível de código** | `POST /acesso` (`AcessoController`) devolve a tela inicial e o menu do papel escolhido — é só identificação, como no protótipo: sem senha nem sessão real |
+| **Nível de código** | `POST /api/v1/acessos` (`AcessoController`) devolve a tela inicial e o menu do papel escolhido — é só identificação, como no protótipo: sem senha nem sessão real |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -224,7 +227,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Consultar o estoque agrupado por tipo sanguíneo, com detalhe de cada lote (validade, temperatura, localização) |
 | **Para que** | Eu saiba exatamente quais lotes estão em risco de vencer ou fora da faixa de temperatura ideal |
 | **Tela do Figma** | "Estoque" — filtro por tipo sanguíneo (A+ … O-), cartão de lote com código, unidades, volume, validade e temperatura (com etiqueta "FORA DA FAIXA") |
-| **Nível de código** | Parcialmente coberto por `Estoque`/`BolsaHemocomponente` e `GET /estoque/{bancoId}` — mas o contrato atual não tem campos de localização física (rack/posição) nem de temperatura por lote |
+| **Nível de código** | Parcialmente coberto por `Estoque`/`BolsaHemocomponente` e `GET /api/v1/bancos/{bancoId}/estoque` — mas o contrato atual não tem campos de localização física (rack/posição) nem de temperatura por lote |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -242,7 +245,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Preencher uma requisição informando hemocomponente, tipo sanguíneo, ala de destino, quantidade, paciente e urgência |
 | **Para que** | Eu atenda o paciente rapidamente usando o lote mais próximo do vencimento, sem precisar escolher manualmente |
 | **Tela do Figma** | "Requisição" → aba "Solicitar" — formulário completo + painel lateral "Lote Sugerido (FEFO)" |
-| **Nível de código** | Corresponde a `POST /requisicoes` + à lógica de FEFO já em `Estoque.buscarDisponiveis()`; o contrato atual não modela `alaMedica` nem `nomePaciente` |
+| **Nível de código** | Corresponde a `POST /api/v1/requisicoes` + à lógica de FEFO já em `Estoque.buscarDisponiveis()`; o contrato atual não modela `alaMedica` nem `nomePaciente` |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -260,7 +263,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Registrar o recebimento físico de hemocomponentes vindos de outras instituições |
 | **Para que** | As unidades recebidas sejam somadas automaticamente ao estoque, sem lançamento manual |
 | **Tela do Figma** | "Requisição" → aba "Recebidas" — lista de recebimentos (`INC-001`…`INC-004`) com origem, tipo e quantidade |
-| **Nível de código** | Sem endpoint equivalente — é um fluxo de entrada diferente do cadastro manual de `POST /hemocomponentes` |
+| **Nível de código** | Sem endpoint equivalente — é um fluxo de entrada diferente do cadastro manual de `POST /api/v1/hemocomponentes` |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -362,24 +365,28 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 <h3 id="-entrega-02" align="center">📌 Entrega 02 — 21/09 <br>
 <img src="https://img.shields.io/badge/-Spring_Boot-111827?style=flat-square&logo=springboot&logoColor=green" height="20"/>
 <img src="https://img.shields.io/badge/-React-111827?style=flat-square&logo=react&logoColor=61DAFB" height="20"/>
-<img src="https://img.shields.io/badge/Status-Em_andamento-F59E0B?style=flat" height="20"/>
+<a href="https://youtu.be/3RlgYAGPyaE" target="_blank"><img src="https://img.shields.io/badge/-ScreenCast_2-111827?style=flat-square&logo=youtube&logoColor=red" height="20"/></a>
+<img src="https://img.shields.io/badge/Status-Concluída-22C55E?style=flat" height="20"/>
 </h3>
 
 <p align="center">
 Segunda entrega do Projeto Integrador — sai do protótipo Figma e liga o domínio a código rodando de
 verdade: back-end em <b>Spring Boot</b> (HU‑01, HU‑03 — em <a href="https://github.com/viictorpaes/Rotavital/pull/2">PR #2</a>,
 ainda não mesclado) e front-end em <b>React</b> (HU‑01, HU‑09, HU‑10 — nesta branch), somando 5 histórias
-com código real, acima do mínimo de 2 exigido. Faltam os 2 screencasts (uso do sistema e explicação do
-código) para fechar a entrega.
+com código real, acima do mínimo de 2 exigido. Screencast de uso do sistema e explicação do código
+publicado no <a href="https://youtu.be/3RlgYAGPyaE" target="_blank">YouTube</a>, fechando a entrega.
 </p>
 
 | Requisito da entrega | Descrição | Status |
 | :--- | :--- | :---: |
 | ✅ Histórias implementadas | Mínimo de 2 HUs em código real (não só Figma) | <img src="https://img.shields.io/badge/5%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
 | 🔁 Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Commits_semanais_na_main-22C55E?style=flat-square" height="18"/> **Feito** — PRs #2 e #10 mesclados na `main` em 14/09, com commits também em 23/08, 09/09 e 12/09, mantendo cadência semanal |
-| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/7_issues_abertas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues abertas no GitHub (label `bug`), com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
-| 🎬 ScreenCast — Uso do sistema | Vídeo (YouTube) da aplicação Spring Boot rodando, explicando as HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
-| 💻 ScreenCast — Explicação do código | Vídeo (YouTube) explicando o código da aplicação Spring e das HUs implementadas | <img src="https://img.shields.io/badge/Pendente-EF4444?style=flat-square" height="18"/> **Falta** |
+| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/5_abertas_%2F_2_fechadas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues registradas no GitHub (label `bug`), 2 já fechadas (#2 e #5), com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
+
+| Artefato | Descrição | Link |
+| :--- | :--- | :--- |
+| 🎬 Screencast — Uso do sistema | Aplicação Spring Boot rodando, explicando as HUs implementadas | [Assistir vídeo](https://youtu.be/3RlgYAGPyaE) |
+| 💻 Screencast — Explicação do código | Código da aplicação Spring Boot e das HUs implementadas | [Assistir vídeo](https://youtu.be/3RlgYAGPyaE) |
 
 <h4 align="center">📝 Histórias Implementadas — Entrega 02</h4>
 
@@ -412,29 +419,31 @@ no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada
 > ✅ Frontend — [`PaginaPortalDoador.tsx`](./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx) (nesta branch)
 
 <h4 align="center" id="issue-tracker">🐛 Issue/Bug Tracker — Entrega 02 <br>
-<img src="https://img.shields.io/badge/7_Issues_Abertas-red?style=flat-square&logo=github&logoColor=white" height="20"/>
+<img src="https://img.shields.io/badge/5_Issues_Abertas-red?style=flat-square&logo=github&logoColor=white" height="20"/>
+<img src="https://img.shields.io/badge/2_Issues_Fechadas-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
 </h4>
 
 <p align="center">
-7 issues abertas no <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> do repositório,
+7 issues registradas no <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> do repositório,
 todas com a label <code>bug</code>, registrando gaps reais encontrados entre o protótipo Figma, a documentação
-técnica (<code>docs/</code>) e o código que de fato roda hoje (backend Spring Boot + frontend React). Nenhuma foi
-fechada ainda — viram trabalho de entrada da Entrega 03.
+técnica (<code>docs/</code>) e o código que de fato roda hoje (backend Spring Boot + frontend React). As Issues #2 e #5
+já foram fechadas; as demais viram trabalho de entrada da Entrega 03.
 </p>
 
 <p align="center">
-<img src="./img/issue-tracker_lista-geral.png" width="800"/>
+<img src="./img/issues_abertas.png" width="800"/>
+<img src="./img/issues_fechadas.png" width="800"/>
 </p>
 
 | Imagem | Título | Descrição |
 | :---: | :--- | :--- |
 | <img src="./img/issue-tracker_issue1-testes-junit_1.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (contexto) | Cobertura de testes em 0%: o projeto já tem `junit-jupiter` no `pom.xml`, mas `TesteFluxo.java` ainda usa `main()` em vez de `@Test`. Tarefas para convertê-lo, adicionar `spring-boot-starter-test` e cobrir `AcessoController`/`EstoqueController`. |
-| <img src="./img/issue-tracker_issue1-testes-junit_2.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (cenários e pipeline) | Matriz mínima de cenários de teste por endpoint (`POST /acesso`, `GET /estoque/{id}`) e pipeline de CI sugerido, bloqueando o merge quando `mvn test` falha. |
-| <img src="./img/issue-tracker_issue2-screencasts.png" width="260"/> | 🔴 Issue #2 — Screencasts pendentes da Entrega 02 | Checklist para gravar e publicar os 2 vídeos exigidos nesta entrega (uso do sistema rodando e explicação do código) e atualizar os links na seção Entrega 02 do README. |
-| <img src="./img/issue-tracker_issue3-estoque.png" width="260"/> | 🔴 Issue #3 — Implementar tela de Estoque (HU‑03) | O backend já expõe `GET /estoque/{bancoId}?tipoSanguineo=`; falta a `PaginaEstoque.tsx` sair do placeholder `EmBreve` e consumir esse endpoint de verdade. |
+| <img src="./img/issue-tracker_issue1-testes-junit_2.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (cenários e pipeline) | Matriz mínima de cenários de teste por endpoint (`POST /api/v1/acessos`, `GET /api/v1/bancos/{id}/estoque`) e pipeline de CI sugerido, bloqueando o merge quando `mvn test` falha. |
+| <img src="./img/issue2_done.png" width="260"/> | ✅ Issue #2 — Screencasts da Entrega 02 (fechada) | Checklist para gravar e publicar os 2 vídeos exigidos nesta entrega (uso do sistema rodando e explicação do código) concluído; vídeos publicados no YouTube e issue fechada no GitHub. |
+| <img src="./img/issue-tracker_issue3-estoque.png" width="260"/> | 🔴 Issue #3 — Implementar tela de Estoque (HU‑03) | O backend já expõe `GET /api/v1/bancos/{bancoId}/estoque?tipoSanguineo=`; falta a `PaginaEstoque.tsx` sair do placeholder `EmBreve` e consumir esse endpoint de verdade. |
 | <img src="./img/issue-tracker_issue4-integracao-backend.png" width="260"/> | 🔴 Issue #4 — Integrar frontend ao backend real | Hoje o frontend roda 100% sobre dados mockados (`pessoasMock.ts`, login só em memória). Plano para criar uma camada `api.ts`, trocar login/estoque por chamadas HTTP reais e configurar CORS no Spring Boot. |
-| <img src="./img/issue-tracker_issue5-docs-roteirizacao_1.png" width="260"/> | 🟠 Issue #5 — Docs desatualizados sobre Roteirização (achado) | `docs/MODULOS.md` classifica o módulo de Roteirização como "só lat/long, sem grafo", mas o código já implementa o grafo/Dijkstra (`RedeDistribuicao`, `Conexao`, `RotaCalculada`) usado no protótipo. |
-| <img src="./img/issue-tracker_issue5-docs-roteirizacao_2.png" width="260"/> | 🟠 Issue #5 — Docs desatualizados sobre Roteirização (status e fluxo alvo) | Tabela comparando documentação vs. código real e fluxo alvo para expor o cálculo de rota via um novo endpoint `POST /rotas/calcular`. |
+| <img src="./img/issue-tracker_issue5-docs-roteirizacao_1.png" width="260"/> | ✅ Issue #5 — Docs desatualizados sobre Roteirização (fechada) | `docs/MODULOS.md` classifica o módulo de Roteirização como "só lat/long, sem grafo", mas o código já implementa o grafo/Dijkstra (`RedeDistribuicao`, `Conexao`, `RotaCalculada`) usado no protótipo. |
+| <img src="./img/issue-tracker_issue5-docs-roteirizacao_2.png" width="260"/> | ✅ Issue #5 — Docs desatualizados sobre Roteirização (resolução) | Resolvida com o novo `RotaController`, que expõe `GET /api/v1/pontos`, `GET /api/v1/conexoes` e `GET /api/v1/rotas?origemId=&destinoId=` (o `POST /rotas/calcular` proposto virou consulta `GET` idempotente), e com o `docs/MODULOS.md` marcando o módulo como implementado (grafo + Dijkstra). |
 | <img src="./img/issue-tracker_issue6-painel-operacional.png" width="260"/> | 🟠 Issue #6 — Implementar Painel Operacional (HU‑02) | Escopo e cenários BDD para tirar a `PaginaPainel.tsx` do placeholder `EmBreve` e implementar os cards de "Números Rápidos" e a caixa de avisos com alertas críticos. |
 | <img src="./img/issue-tracker_issue7-doador-campanha.png" width="260"/> | 🟠 Issue #7 — Modelar Doador e Campanha de Doação | Diagrama de classes proposto (`Doador`, `CampanhaDoacao`, `AgendamentoDoacao`) — hoje não existe conceito de doador nem de campanha pública no domínio, o que bloqueia versões não mockadas de HU‑06, HU‑09 e HU‑10. |
 
@@ -572,6 +581,7 @@ java -cp out com.rotavital.dominio.TesteFluxo
 
 <h2 align="center" id="como-executar-frontend">🖥️ Como Executar o Frontend <br>
 <img src="https://img.shields.io/badge/Vite_+_React-111827?style=flat&logo=vite&logoColor=646CFF" height="22"/>
+<img src="https://img.shields.io/badge/-Docker-111827?style=flat&logo=docker&logoColor=2496ED" height="22"/>
 </h2>
 
 <p align="center">
@@ -594,13 +604,30 @@ npm run dev
 | `npm run preview` | Serve localmente o build de produção gerado por `npm run build` |
 | `npm run lint` | Roda o ESLint sobre o código do frontend |
 
+<h4 align="center"> 🚢🐳 Com Docker (backend + frontend + Supabase) <br>
+<img src="https://img.shields.io/badge/-Docker-111827?style=flat-square&logo=docker&logoColor=2496ED"/><img src="https://img.shields.io/badge/-Supabase-111827?style=flat-square&logo=supabase&logoColor=3ECF8E"/></h4>
+
+<p align="center">
+O <a href="./docker-compose.yml"><code>docker-compose.yml</code></a> na raiz do projeto sobe o backend Spring Boot
+e o frontend (build de produção servido via Nginx) já conectados ao banco <b>Supabase</b>. Crie um arquivo
+<code>backend/.env</code> com a variável <code>SUPABASE_DB_PASSWORD</code> antes de subir os containers.
+</p>
+
+```bash
+cd Rotavital
+docker compose up --build
+```
+
+> Frontend em `http://localhost:80` e backend em `http://localhost:8080`.
+
 <h2 align="center" id="figma-vs-mockado">🖼️ Figma × Mockado <br>
 <img src="https://img.shields.io/badge/Protótipo-111827?style=flat&logo=figma&logoColor=orange" height="22"/> vs <img src="https://img.shields.io/badge/Mockado-111827?style=flat&logo=react&logoColor=646CFF" height="22"/>
 </h2>
 
 <p align="center">
 Comparação lado a lado entre o protótipo do Figma e a tela equivalente rodando de fato em
-<b>React + TypeScript</b> (dados mockados), para as 3 histórias com código real: HU‑01, HU‑09 e HU‑10.
+<b>React + TypeScript</b> (dados mockados), cobrindo as histórias já implementadas em código real:
+HU‑01, HU‑02, HU‑03, HU‑04/05/06, HU‑07, HU‑08, HU‑09 e HU‑10.
 Screenshots tiradas do app rodando em <code>localhost:5173</code>, mesma resolução do export do Figma
 (1470×956 @2x).
 </p>
@@ -640,6 +667,161 @@ export default function PaginaLogin()
 ```
 </details>
 
+<h4 align="left">📊 HU‑02 — Painel Operacional (início)</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_PainelOperacional.png" width="420"/> | <img src="./img/mockado-painel_operacional.png" width="420"/> |
+
+<details>
+<summary>🩸 <a href="./frontend/src/pages/PainelOperacional/PaginaPainel.tsx"><code>frontend/src/pages/PainelOperacional/PaginaPainel.tsx</code></a></summary>
+
+```tsx
+/**
+ * HU-02 — Painel operacional: números rápidos, caixa de avisos ordenável e
+ * atalhos, para o médico agir sem percorrer todas as telas. Indicadores e
+ * avisos derivam dos mocks de estoque e de pacientes (ver `lib/painel.ts`).
+ */
+export default function PaginaPainel()
+{
+  const { lotes, pacientes } = useDados();
+  const [ordenacao, setOrdenacao] = useState<OrdenacaoAvisos>("severidade");
+
+  const avisos = useMemo(() => montarAvisos(lotes, pacientes), [lotes, pacientes]);
+  const indicadores = useMemo(() => montarIndicadores(lotes, avisos), [lotes, avisos]);
+  const avisosOrdenados = useMemo(() => ordenarAvisos(avisos, ordenacao), [avisos, ordenacao]);
+  // ...
+}
+```
+</details>
+
+<h4 align="left">📦 HU‑03 — Estoque (por tipo sanguíneo)</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_Estoque.png" width="420"/> | <img src="./img/mockado-estoque.png" width="420"/> |
+
+<details>
+<summary>🩸 <a href="./frontend/src/pages/Estoque/PaginaEstoque.tsx"><code>frontend/src/pages/Estoque/PaginaEstoque.tsx</code></a></summary>
+
+```tsx
+/**
+ * HU-03 — Estoque agrupado por tipo sanguíneo, com detalhe de lote (validade,
+ * temperatura e localização) para identificar risco de vencimento/temperatura.
+ * Dados mockados nesta primeira versão (ver `data/estoqueMock.ts`).
+ */
+const grupos = useMemo<GrupoEstoque[]>(() =>
+{
+  const tipos = filtroTipo === "todos" ? TIPOS_SANGUINEOS : [filtroTipo];
+
+  return tipos
+    .map((tipo) =>
+    {
+      const lotes = lotesEstoque.filter((lote) => lote.tipoSanguineo === tipo);
+      return { 
+        tipo, lotes, unidades: lotes.reduce((total, lote) => total + lote.unidades, 0) 
+      };
+    })
+    .filter((grupo) => grupo.lotes.length > 0);
+}, [lotesEstoque, filtroTipo]);
+```
+</details>
+
+<h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (solicitar)</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_Requisicao_Solicitar.png" width="420"/> | <img src="./img/mockado-requisicao_solicitar.png" width="420"/> |
+
+<h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (recebidas)</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_Requisicao_Recebidas.png" width="420"/> | <img src="./img/mockado-requisicao_recebidas.png" width="420"/> |
+
+<details>
+<summary>🩸 <a href="./frontend/src/pages/Requisicao/PaginaRequisicao.tsx"><code>frontend/src/pages/Requisicao/PaginaRequisicao.tsx</code></a></summary>
+
+```tsx
+/**
+ * HU-04, HU-05 e HU-06 — Solicitação clínica em três abas: solicitar um
+ * hemocomponente (com sugestão FEFO), conferir remessas recebidas e publicar
+ * uma campanha de doação. Dados ainda mockados (ver `context/ContextoDados.tsx`).
+ */
+export default function PaginaRequisicao()
+{
+  const { lotes, recebimentosPendentes } = useDados();
+  const [aba, setAba] = useState<Aba>("solicitar");
+
+  const vencendo = useMemo
+  (
+    () => lotes.filter((lote) => diasAteVencer(lote) <= JANELA_VENCIMENTO_DIAS).length,
+    [lotes],
+  );
+  // ...
+}
+```
+</details>
+
+<h4 align="left">🗺️ HU‑07 — Rede hospitalar (mapa e rota de transporte)</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_RedeHospitalar.png" width="420"/> | <img src="./img/mockado-rede_hospitalar.png" width="420"/> |
+
+<details>
+<summary>🩸 <a href="./frontend/src/pages/RedeHospitalar/PaginaRede.tsx"><code>frontend/src/pages/RedeHospitalar/PaginaRede.tsx</code></a></summary>
+
+```tsx
+/**
+ * HU-07 — Mapa dos hospitais conectados e plano de transporte na cadeia fria.
+ * Selecionar um hospital (no mapa ou na lista) recalcula a rota e o plano.
+ * Dados mockados nesta primeira versão (ver `data/redeMock.ts`).
+ */
+export default function PaginaRede()
+{
+  const [selecionado, setSelecionado] = useState<PontoDeRede>(hospitais[0:]);
+  const [componente, setComponente] = useState<TipoComponente>("Concentrado de Hemácias");
+  const { rotas, carregando } = useRotasDaRede();
+  const rota = rotas[selecionado.id];
+  // ...
+}
+```
+</details>
+
+<h4 align="left">🏥 HU‑08 — Pacientes (fila clínica)</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_Pacientes.png" width="420"/> | <img src="./img/mockado-pacientes.png" width="420"/> |
+
+<h4 align="left">🏥 HU‑08 — Pacientes (concluir procedimento)</h4>
+
+| Figma | Mockado (React) |
+| :---: | :---: |
+| <img src="./img/FIGMA_Pacientes_ConcluirProcedimento.png" width="420"/> | <img src="./img/mockado-pacientes_concluirprocedimento.png" width="420"/> |
+
+<details>
+<summary>🩸 <a href="./frontend/src/pages/Pacientes/PaginaPacientes.tsx"><code>frontend/src/pages/Pacientes/PaginaPacientes.tsx</code></a></summary>
+
+```tsx
+/**
+ * HU-08 — Fila clínica de pacientes com necessidade ativa. A conclusão do
+ * procedimento tira o paciente da fila e, quando atendido pelo estoque interno,
+ * baixa as unidades por FEFO.
+ */
+function handleConfirmar(origem: OrigemAtendimento)
+{
+  if (!selecionado) 
+  {
+    return undefined;
+  }
+
+  return concluirProcedimento(selecionado.id, origem);
+}
+```
+</details>
+
 <h4 align="left">❤️ HU‑09 — Doações (lista de pessoas que precisam)</h4>
 
 | Figma | Mockado (React) |
@@ -653,14 +835,16 @@ export default function PaginaLogin()
 const pessoasFiltradas = useMemo(() =>
 {
   const termo = busca.trim().toLowerCase();
+
   return pessoasNecessitadas.filter((p) =>
   {
-    const combinaTipo = filtroTipo === "todos" || p.tipoSanguineo === filtroTipo;
-    const combinaBusca =
+      const combinaTipo = filtroTipo === "todos" || p.tipoSanguineo === filtroTipo;
+      const combinaBusca = 
       termo.length === 0 ||
       p.nome.toLowerCase().includes(termo) ||
       p.causa.toLowerCase().includes(termo) ||
       p.componente.toLowerCase().includes(termo);
+
     return combinaTipo && combinaBusca;
   });
 }, [busca, filtroTipo]);
@@ -688,7 +872,7 @@ export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
     disabled={confirmado}
     className="w-full rounded-lg bg-rota-red px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-rota-redDark disabled:cursor-default disabled:bg-emerald-600"
   >
-    {confirmado ? "Rota traçada — até logo!" : "Confirmar e traçar rota no celular"}
+    {confirmado ? "Rota traçada — até logo! 👋🏻" : "Confirmar e traçar rota no celular ✅"}
   </button>
 }
 ```
@@ -716,6 +900,7 @@ export default function PaginaPortalDoador()
 }
 ```
 </details>
+
 
 <h2 align="center" id="documentacao">📚 Documentação <br>
 <img src="https://img.shields.io/badge/Docs-111827?style=flat&logo=markdown&logoColor=white" height="22"/>
