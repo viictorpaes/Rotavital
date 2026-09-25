@@ -508,16 +508,16 @@ PK `(procedimento_id, bolsa_id)`.
 
 <h2 align="left" id="8-migrations">📜 8. Plano de migrations</h2>
 
-As duas primeiras já estão aplicadas no Supabase e **não são alteradas**. As mudanças entram em migrations
+As cinco migrations estão aplicadas no Supabase. As duas primeiras **não foram alteradas**: as mudanças entraram em migrations
 novas, com timestamp posterior:
 
 | # | Arquivo | Conteúdo | |
 | :---: | :--- | :--- | :---: |
 | 1 | `20260924120000_schema_inicial.sql` | 7 tabelas, PKs, FKs, índices, RLS | ✅ aplicada |
 | 2 | `20260924120100_constraints_integridade.sql` | NOT NULL, CHECK, UNIQUE, FKs compostas, `trg_alocacao_validar` | ✅ aplicada |
-| 3 | `20260925120000_ajustes_schema_existente.sql` | Colunas novas em `ponto_rede`, `bolsa_hemocomponente`, `requisicao_hospitalar` e `alocacao`; índice parcial da alocação; gatilho de alocação atualizado; status `UTILIZADA`; remoção das FKs simples redundantes com as compostas | 🆕 |
-| 4 | `20260925120100_escopo_clinico.sql` | `usuario`, `paciente`, `remessa`, `campanha_doacao`, `agendamento_doacao`, `procedimento`, `procedimento_bolsa`, gatilhos novos e RLS | 🆕 |
-| 5 | `20260925120200_views_painel.sql` | `vw_estoque_por_tipo`, `vw_estoque_agrupado` | 🆕 |
+| 3 | `20260925120000_ajustes_schema_existente.sql` | Colunas novas em `ponto_rede`, `bolsa_hemocomponente`, `requisicao_hospitalar` e `alocacao`; índice parcial da alocação; gatilho de alocação atualizado; status `UTILIZADA`; remoção das FKs simples redundantes com as compostas | ✅ aplicada |
+| 4 | `20260925120100_escopo_clinico.sql` | `usuario`, `paciente`, `remessa`, `campanha_doacao`, `agendamento_doacao`, `procedimento`, `procedimento_bolsa`, gatilhos novos e RLS | ✅ aplicada |
+| 5 | `20260925120200_views_painel.sql` | `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ✅ aplicada |
 | — | `supabase/seed.sql` | Pontos e conexões de `RedeDistribuicaoEmMemoria`, bolsas de `BancosEmMemoria`, pacientes e remessas dos mocks do frontend | 🆕 |
 
 > A migration 4 cria `remessa` e `paciente`, que são alvo das FKs novas de `bolsa_hemocomponente` e
