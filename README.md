@@ -490,6 +490,7 @@ Rotavital🩸/
 │   ├── vite.config.ts <img src="https://img.shields.io/badge/-Vite_Config-111827?style=flat-square&logo=vite&logoColor=646CFF" height="18"/>
 │   ├── tailwind.config.ts <img src="https://img.shields.io/badge/-Tailwind_Config-111827?style=flat-square&logo=tailwindcss&logoColor=38BDF8" height="18"/>
 │   ├── postcss.config.js <img src="https://img.shields.io/badge/-PostCSS-111827?style=flat-square&logo=postcss&logoColor=DD3A0A" height="18"/>
+│   ├── eslint.config.js <img src="https://img.shields.io/badge/-ESLint-111827?style=flat-square&logo=eslint&logoColor=4B32C3" height="18"/>
 │   ├── tsconfig.json <img src="https://img.shields.io/badge/-TS_Config-111827?style=flat-square&logo=typescript&logoColor=3178C6" height="18"/>
 │   └── src <img src="https://img.shields.io/badge/-TSX_·_TS-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>/
 │       ├── main.tsx <img src="https://img.shields.io/badge/-Entry_Point-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>
@@ -701,19 +702,77 @@ npx supabase db push
 <img src="https://img.shields.io/badge/Terminal-111827?style=flat&logo=gnubash&logoColor=white" height="22"/>
 </h2>
 
+**Pré-requisitos:** Java 21+, Maven 3.9+, Node.js 20+ e (opcional) Docker.
+
 ```bash
 git clone https://github.com/viictorpaes/Rotavital.git
-cd Rotavital/backend
-mvn compile
+cd Rotavital
+cp backend/.env.example backend/.env   # e preencha SUPABASE_DB_PASSWORD
 ```
+
+<details>
+<summary>🪟 <b>Windows (PowerShell)</b></summary>
+
+```powershell
+git clone https://github.com/viictorpaes/Rotavital.git
+cd Rotavital
+Copy-Item backend\.env.example backend\.env   # e preencha SUPABASE_DB_PASSWORD
+```
+</details>
+
+**Backend** (Spring Boot, a partir de `Rotavital/`):
+
+```bash
+cd backend
+mvn clean package              # compila, roda os testes JUnit e gera target/rotavital-backend-0.1.0-SNAPSHOT.jar
+set -a; source .env; set +a    # exporta SUPABASE_DB_PASSWORD para o Spring (ele não lê o .env sozinho)
+mvn spring-boot:run            # ou: java -jar target/rotavital-backend-0.1.0-SNAPSHOT.jar
+```
+
+<details>
+<summary>🪟 <b>Windows (PowerShell)</b></summary>
+
+```powershell
+cd backend
+mvn clean package
+# exporta as variáveis do .env para a sessão atual do PowerShell
+Get-Content .env | Where-Object { $_ -match '^\s*[^#].*=' } | ForEach-Object {
+    $nome, $valor = $_ -split '=', 2
+    Set-Item "env:$($nome.Trim())" $valor.Trim()
+}
+mvn spring-boot:run            # ou: java -jar target\rotavital-backend-0.1.0-SNAPSHOT.jar
+```
+</details>
+
+> A API sobe em `http://localhost:8080/api/v1` (ex.: `curl http://localhost:8080/api/v1/pontos`).
+
+| Comando (em `backend/`) | Descrição |
+| :--- | :--- |
+| `mvn compile` | Só compila o código de `src/main/java` |
+| `mvn test` | Compila e roda os testes JUnit 5 (`AuditoriaTelemetriaTest`) |
+| `mvn clean package` | Compila, testa e gera o `.jar` executável em `target/` |
+| `mvn spring-boot:run` | Sobe a API (precisa de `SUPABASE_DB_PASSWORD` exportada) |
 
 **Fluxo de demonstração do domínio** (`TesteFluxo`: cria banco de sangue, popula estoque, abre requisição e
 aloca por FEFO/ABO-Rh):
 
 ```bash
-javac -d out $(find src/main/java src/test/java -name "*.java")
-java -cp out com.rotavital.dominio.TesteFluxo
+cd backend
+mvn test-compile
+java -cp target/classes:target/test-classes com.rotavital.dominio.TesteFluxo
 ```
+
+<details>
+<summary>🪟 <b>Windows (PowerShell)</b></summary>
+
+No Windows o separador do classpath é `;` em vez de `:`:
+
+```powershell
+cd backend
+mvn test-compile
+java -cp "target/classes;target/test-classes" com.rotavital.dominio.TesteFluxo
+```
+</details>
 
 <h2 align="center" id="como-executar-frontend">🖥️ Como Executar o Frontend <br>
 <img src="https://img.shields.io/badge/Vite_+_React-111827?style=flat&logo=vite&logoColor=646CFF" height="22"/>
@@ -726,7 +785,7 @@ Interface em <b>React + TypeScript + Vite + Tailwind CSS</b>, com as telas já i
 </p>
 
 ```bash
-cd Rotavital/frontend
+cd frontend        # a partir de Rotavital/
 npm install
 npm run dev
 ```
@@ -746,12 +805,15 @@ npm run dev
 <p align="center">
 O <a href="./docker-compose.yml"><code>docker-compose.yml</code></a> na raiz do projeto sobe o backend Spring Boot
 e o frontend (build de produção servido via Nginx) já conectados ao banco <b>Supabase</b>. Crie um arquivo
-<code>backend/.env</code> com a variável <code>SUPABASE_DB_PASSWORD</code> antes de subir os containers.
+<code>backend/.env</code> com a variável <code>SUPABASE_DB_PASSWORD</code> antes de subir os containers
+(o compose injeta esse arquivo no container do backend).
 </p>
 
 ```bash
-cd Rotavital
-docker compose up --build
+# a partir de Rotavital/
+docker compose up --build -d   # compila as imagens e sobe os containers em segundo plano
+docker compose logs -f backend # acompanha os logs do Spring Boot
+docker compose down            # derruba os containers
 ```
 
 > Frontend em `http://localhost:80` e backend em `http://localhost:8080`.
