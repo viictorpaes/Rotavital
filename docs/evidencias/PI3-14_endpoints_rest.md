@@ -1,4 +1,6 @@
-<h1 align="center">Evidências · PI3-14 · Endpoints REST do MVP</h1>
+<h1 align="center">Evidências · PI3-14 · Endpoints REST do MVP <br>
+<img src="https://img.shields.io/badge/-Postman-111827?style=flat-square&logo=postman&logoColor=FF6C37"/>
+<img src="https://img.shields.io/badge/-Insomnia-111827?style=flat-square&logo=insomnia&logoColor=4000BF"/></h1>
 
 > Chamadas reais contra o backend (`mvn spring-boot:run`, porta `8080`), geradas em **23/09/2026 22:14** a partir do
 > código-base `39507b9` com as mudanças da padronização `/api/v1`. Tabela de referência:
