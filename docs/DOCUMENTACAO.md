@@ -24,6 +24,7 @@
 6. [Protótipo (Figma)](#6-figma)
 7. [Visualizando o contrato REST](#7-visualizar)
 8. [Inventário de Componentes (arquitetura)](#8-inventario)
+9. [Banco de dados (Supabase)](#9-supabase)
 
 <h2 align="left" id="1-mapa">🗺️ 1. Mapa dos documentos</h2>
 
@@ -40,6 +41,9 @@ flowchart TD
     IDX --> FIG["RotaVital.fig<br/>link do protótipo (Figma)"]
     IDX --> INV["INVENTARIO_COMPONENTES.md<br/>Etapa 1: o que executa/guarda dado"]
     INV --> DRAW["diagrama-arquitetura.drawio<br/>Etapa 2: diagrama de contêineres"]
+    IDX --> SB["supabase/md/SUPABASE.md<br/>banco, conexão, RLS, migrations"]
+    SB --> DER["DER.md<br/>modelo relacional + constraints"]
+    DOM -. "persistido como" .-> DER
 ```
 
 | Documento | Formato | Conteúdo | Leia quando... |
@@ -51,6 +55,8 @@ flowchart TD
 | [`../RotaVital.fig`](../RotaVital.fig) | Texto (link) | Aponta para o protótipo publicado no Figma | se for discutir UI/UX do frontend |
 | [`INVENTARIO_COMPONENTES.md`](INVENTARIO_COMPONENTES.md) | Markdown | Levantamento do que executa código/guarda dado, validado contra o repositório | antes de desenhar o diagrama de arquitetura no draw.io |
 | [`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio) | draw.io (mxGraph XML) | Diagrama de contêineres com os 8 componentes da Etapa 1, ativo × planejado | para visualizar/editar a arquitetura no draw.io |
+| [`supabase/md/SUPABASE.md`](../supabase/md/SUPABASE.md) | Markdown + Mermaid | Projeto Supabase, conexão do backend, variáveis de ambiente, migrations, RLS, validação e prints | se for mexer no banco ou configurar o `.env` |
+| [`DER.md`](DER.md) | Markdown + Mermaid | DER das 7 tabelas e catálogo de NOT NULL, UNIQUE, CHECK, FKs e gatilho | se for criar tabela, entidade JPA ou consulta |
 
 <h2 align="left" id="2-dominio">🧬 2. Modelo de Domínio</h2>
 
@@ -116,3 +122,87 @@ guarda dado no Rota Vital hoje — e o que é só planejado. Ver
 (linha tracejada — Supabase/Postgres e a integração SPA→Backend). Abra no
 [app.diagrams.net](https://app.diagrams.net) (`File → Open from → Device`) ou na extensão draw.io do
 VS Code.
+
+<h2 align="left" id="9-supabase">🟢 9. Banco de dados (Supabase)</h2>
+
+O banco do Rota Vital roda no **Supabase** (PostgreSQL gerenciado), projeto `Rota_vital`, branch `main`
+(*production*). O schema vem das migrations versionadas em [`supabase/migrations/`](../supabase/migrations/)
+e segue o modelo de [`DER.md`](DER.md); conexão, variáveis de ambiente e RLS estão em
+[`supabase/md/SUPABASE.md`](../supabase/md/SUPABASE.md). Os prints abaixo mostram o estado atual do projeto.
+
+| # | Evidência | Onde no Supabase | O que comprova |
+| :---: | :--- | :--- | :--- |
+| 1 | Visão geral do projeto | **Project Overview** | Projeto ativo, requisições em Postgres/API/Storage/Realtime e *Advisor found no issues* |
+| 2 | Lista de tabelas | **Database → Tables** | As 7 tabelas do DER criadas no schema `public` |
+| 3 | Colunas de `bolsa_hemocomponente` | **Database → Tables → View columns** | Tipos, PK, FKs e NOT NULL / NULL batendo com o DER |
+| 4 | Schema Visualizer | **Database → Schema Visualizer** | Diagrama gerado a partir do banco real, com os relacionamentos entre as tabelas |
+| 5 | Migrations aplicadas | **Database → Migrations** | `schema_inicial` e `constraints_integridade` registradas |
+| 6 | Logs do Postgres | **Logs → Postgres** | Execução do SQL das migrations (gatilho `trg_alocacao_validar`, índice `uq_entrega_requisicao_ativa`) |
+
+<details>
+<summary>▶️🏠 <b>1. Visão geral do projeto</b></summary>
+
+<p align="center">
+<img src="../supabase/img/supabase.png" width="800" alt="Project Overview do Supabase com requisições por serviço e Advisor sem problemas">
+</p>
+
+</details>
+
+<details>
+<summary>▶️🗂️ <b>2. Tabelas do banco (7)</b></summary>
+
+`alocacao`, `bolsa_hemocomponente`, `conexao`, `entrega`, `leitura_telemetria`, `ponto_rede` e
+`requisicao_hospitalar`, todas no schema `public`.
+
+<p align="center">
+<img src="../supabase/img/Database%20Tables.png" width="800" alt="Database Tables do Supabase listando as 7 tabelas">
+</p>
+
+</details>
+
+<details>
+<summary>▶️🩸 <b>3. Colunas de <code>bolsa_hemocomponente</code></b></summary>
+
+13 colunas: `id` como PK, `banco_origem_id` + `banco_origem_tipo` como FK composta para `ponto_rede`, e só
+`temperatura_celsius` e `localizacao` aceitando nulo.
+
+<p align="center">
+<img src="../supabase/img/Colunas_exemplo(bolsa_hemocomponente).png" width="800" alt="Colunas da tabela bolsa_hemocomponente com tipos e constraints">
+</p>
+
+</details>
+
+<details>
+<summary>▶️🧩 <b>4. Schema Visualizer</b></summary>
+
+Diagrama desenhado pelo próprio Supabase a partir do banco. Serve de conferência de que o banco segue o
+[`DER.md`](DER.md).
+
+<p align="center">
+<img src="../supabase/img/Schema_Vizualizer.png" width="800" alt="Schema Visualizer do Supabase com as 7 tabelas e seus relacionamentos">
+</p>
+
+</details>
+
+<details>
+<summary>▶️📜 <b>5. Migrations aplicadas</b></summary>
+
+| Versão | Nome | Arquivo |
+| :--- | :--- | :--- |
+| `20260924120000` | `schema_inicial` | [`20260924120000_schema_inicial.sql`](../supabase/migrations/20260924120000_schema_inicial.sql) |
+| `20260924120100` | `constraints_integridade` | [`20260924120100_constraints_integridade.sql`](../supabase/migrations/20260924120100_constraints_integridade.sql) |
+
+<p align="center">
+<img src="../supabase/img/Migrations_no_supabase.png" width="800" alt="Database Migrations do Supabase com as duas migrations aplicadas">
+</p>
+
+</details>
+
+<details>
+<summary>▶️🪵 <b>6. Logs do Postgres</b></summary>
+
+<p align="center">
+<img src="../supabase/img/logs_postgres.png" width="800" alt="Logs do Postgres mostrando a execução do SQL das migrations">
+</p>
+
+</details>
