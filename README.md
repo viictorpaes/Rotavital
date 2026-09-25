@@ -463,7 +463,9 @@ endpoints e classes de domínio, em <a href="./docs/MODULOS.md"><code>docs/MODUL
 Rotavital🩸/
 ├── backend <img src="https://img.shields.io/badge/-Java_21-111827?style=flat&logo=openjdk&logoColor=orange" height="18"/> <img src="https://img.shields.io/badge/-Maven-111827?style=flat&logo=apachemaven&logoColor=C71A36" height="18"/>/
 │   ├── pom.xml <img src="https://img.shields.io/badge/-Maven_POM-111827?style=flat&logo=apachemaven&logoColor=C71A36" height="18"/>
+│   ├── .env.example <img src="https://img.shields.io/badge/-SUPABASE__DB__PASSWORD-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/>
 │   └── src <img src="https://img.shields.io/badge/src-111827?style=flat&logo=openjdk&logoColor=orange" height="18"/>/
+│       ├── main/resources/application.properties <img src="https://img.shields.io/badge/-Conexão_Supabase_(Session_Pooler)-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/>
 │       ├── main/java/com/rotavital <img src="https://img.shields.io/badge/-Java-111827?style=flat&logo=openjdk&logoColor=orange" height="18"/>/
 │       │   ├── api/dto <img src="https://img.shields.io/badge/-DTO-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>/
 │       │   │   ├── comum <img src="https://img.shields.io/badge/-Comum-111827?style=flat-square&logo=openjdk&logoColor=orange" height="18"/>/
@@ -544,7 +546,15 @@ Rotavital🩸/
 │   ├── MODELO_DE_DOMINIO.md <img src="https://img.shields.io/badge/Modelo_de_Domínio-111827?style=flat&logo=markdown&logoColor=purple" height="18"/>
 │   ├── CONTRATOS_DE_API.md <img src="https://img.shields.io/badge/Contratos_de_API-111827?style=flat&logo=markdown&logoColor=6BA539" height="18"/>
 │   ├── MODULOS.md <img src="https://img.shields.io/badge/Módulos-111827?style=flat&logo=markdown&logoColor=6BA539" height="18"/>
+│   ├── DER.md <img src="https://img.shields.io/badge/DER_·_Constraints-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 │   └── openapi.yaml <img src="https://img.shields.io/badge/OpenAPI_3.0-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│
+├── supabase <img src="https://img.shields.io/badge/-Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/> <img src="https://img.shields.io/badge/-PostgreSQL-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>/
+│   ├── md <img src="https://img.shields.io/badge/-Markdown-111827?style=flat&logo=markdown&logoColor=white" height="18"/>/
+│   │   └── SUPABASE.md <img src="https://img.shields.io/badge/Detalhamento_do_Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/>
+│   └── migrations <img src="https://img.shields.io/badge/-SQL-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>/
+│       ├── 20260924120000_schema_inicial.sql <img src="https://img.shields.io/badge/-Tabelas_·_PK_·_FK_·_RLS-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│       └── 20260924120100_constraints_integridade.sql <img src="https://img.shields.io/badge/-NOT_NULL_·_UNIQUE_·_CHECK_·_Trigger-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 │
 ├── img/ <img src="https://img.shields.io/badge/Assets-green?style=flat&logo=image&logoColor=white" height="18"/>
 ├── .gitignore <img src="https://img.shields.io/badge/-GitIgnore-111827?style=flat&logo=git&logoColor=F05032" height="18"/>
@@ -560,6 +570,133 @@ Rotavital🩸/
 > O frontend implementa de fato 3 das 10 histórias da Entrega 01 — **HU‑01** (Login), **HU‑09** (Doações)
 > e **HU‑10** (Portal do Doador) — com dados mockados em `src/data/pessoasMock.ts`. As demais (**HU‑02** a
 > **HU‑08**) já têm rota e página criadas, mas renderizam o placeholder `EmBreve` até virarem telas reais.
+>
+> A persistência usa **Supabase (PostgreSQL)**: o backend conecta pelo Session Pooler
+> (`application.properties`, senha em `backend/.env`), e o schema é versionado em `supabase/migrations/` —
+> 7 tabelas (`ponto_rede`, `conexao`, `bolsa_hemocomponente`, `requisicao_hospitalar`, `alocacao`, `entrega`,
+> `leitura_telemetria`) com PKs, FKs, constraints de integridade e RLS ligado. O DER e o catálogo de
+> constraints estão em [`docs/DER.md`](./docs/DER.md), e o detalhamento do banco (conexão, variáveis, RLS,
+> validação e prints) em [`supabase/md/SUPABASE.md`](./supabase/md/SUPABASE.md).
+
+<h2 align="center" id="supabase">🟢 Banco de Dados — Supabase <br>
+<img src="https://img.shields.io/badge/-Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="22"/>
+<img src="https://img.shields.io/badge/-PostgreSQL-111827?style=flat&logo=postgresql&logoColor=4169E1" height="22"/>
+<img src="https://img.shields.io/badge/Tabelas-7-3ECF8E?style=flat&logo=supabase&logoColor=white" height="22"/>
+<img src="https://img.shields.io/badge/Testes_de_constraints-34%2F34-brightgreen?style=flat" height="22"/>
+
+<br>
+
+<img src="./supabase/img/supabase.png" width="440" alt="init supabase">
+</h2>
+
+<p align="center">
+A persistência do Rota Vital fica no <b>Supabase</b> (PostgreSQL gerenciado). O backend é o único cliente do
+banco; o frontend consome só a API <code>/api/v1</code>. Detalhamento completo em
+<a href="./supabase/md/SUPABASE.md"><code>supabase/md/SUPABASE.md</code></a> e DER em
+<a href="./docs/DER.md"><code>docs/DER.md</code></a>.
+</p>
+
+```mermaid
+flowchart LR
+    FE["🖥️ Frontend<br/>React + Vite (Nginx)"] -->|"HTTP /api/v1"| BE["☕ Backend<br/>Spring Boot (Java 21)"]
+    BE -->|"JDBC · SSL<br/>Session Pooler :5432"| SB[("🟢 Supabase<br/>PostgreSQL")]
+    MIG["📜 supabase/migrations/*.sql"] -->|"SQL Editor ou supabase db push"| SB
+    API["🔑 API REST do Supabase<br/>(chave anon)"] -. "bloqueada pelo RLS" .-> SB
+```
+
+| Item | Valor |
+| :--- | :--- |
+| 🆔 Project ref | `gilyfswvezmvtmlxgvrd` |
+| 🌍 URL do projeto | `https://gilyfswvezmvtmlxgvrd.supabase.co` |
+| 📍 Região | AWS `us-east-2` (Ohio) |
+| 🐘 Banco | PostgreSQL, database `postgres`, schema `public` |
+| 🔌 Pooler | `aws-0-us-east-2.pooler.supabase.com:5432` (Session mode, IPv4) |
+
+<details>
+<summary>▶️🔌 <b>Conexão do backend</b> (<code>application.properties</code>)</summary>
+
+```properties
+spring.datasource.url=jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require
+spring.datasource.username=postgres.gilyfswvezmvtmlxgvrd
+spring.datasource.password=${SUPABASE_DB_PASSWORD}
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.jpa.hibernate.ddl-auto=update
+```
+
+- `sslmode=require` 🔒 — o Supabase só aceita conexões criptografadas.
+- Session Pooler em vez da conexão direta — a direta é só IPv6; o pooler aceita IPv4 (rede da faculdade e Docker).
+- `ddl-auto=update` ⚠️ — quando as `@Entity` entrarem, trocar para `validate`: o schema passa a vir só das migrations.
+</details>
+
+<details>
+<summary>▶️🔑 <b>Variáveis de ambiente</b> (<code>backend/.env</code>)</summary>
+
+Copie [`backend/.env.example`](./backend/.env.example) para `backend/.env` (já está no `.gitignore`) e preencha:
+
+| Variável | Uso | Pode ir para o Git? |
+| :--- | :--- | :---: |
+| `SUPABASE_DB_PASSWORD` | Senha do banco (JDBC e `docker-compose.yml`) | ❌ |
+| `SUPABASE_URL` | URL pública do projeto (API REST/Auth) | ✅ |
+| `SUPABASE_KEY` | Chave `anon` da API do Supabase | ⚠️ só a `anon` |
+
+> [!WARNING]
+> A chave **`service_role`** ignora o RLS e dá acesso total ao banco — nunca vai para `.env.example`, commit ou frontend.
+</details>
+
+<details>
+<summary>▶️🗂️ <b>Tabelas e migrations</b></summary>
+
+| Tabela | Classe de domínio | PK |
+| :--- | :--- | :--- |
+| 📍 `ponto_rede` | `Hospital`, `BancoDeSangue` (+ `Endereco`) | `id` (text, ex.: `BS-01`) |
+| 🛣️ `conexao` | `Conexao` | `id` (identity) |
+| 🩸 `bolsa_hemocomponente` | `BolsaHemocomponente` | `id` (text, ex.: `CH-1042`) |
+| 🏥 `requisicao_hospitalar` | `RequisicaoHospitalar` | `id` (uuid) |
+| 🔗 `alocacao` | `AlocacaoDTO` | `id` (uuid) |
+| 🚑 `entrega` | `MonitoramentoEntregaDTO` | `id` (uuid) |
+| 🌡️ `leitura_telemetria` | `LeituraTelemetriaDTO` | `id` (identity) |
+
+| # | Migration | O que faz |
+| :---: | :--- | :--- |
+| 1️⃣ | [`20260924120000_schema_inicial.sql`](./supabase/migrations/20260924120000_schema_inicial.sql) | Cria as 7 tabelas, PKs, FKs e índices, e liga o RLS |
+| 2️⃣ | [`20260924120100_constraints_integridade.sql`](./supabase/migrations/20260924120100_constraints_integridade.sql) | NOT NULL, DEFAULT, UNIQUE, 33 CHECK, 7 FKs compostas e o gatilho `trg_alocacao_validar` |
+</details>
+
+<details>
+<summary>▶️🛡️ <b>Row Level Security (RLS)</b></summary>
+
+| Acesso | Role | Resultado hoje |
+| :--- | :--- | :--- |
+| ☕ Backend (JDBC) | `postgres` | ✅ lê e escreve (ignora RLS) |
+| 🌐 API REST com chave `anon` | `anon` | 🚫 bloqueado (RLS ligado, sem políticas) |
+| 👤 Usuário logado via Supabase Auth | `authenticated` | 🚫 bloqueado até existirem políticas |
+</details>
+
+<details>
+<summary>▶️🚀 <b>Como aplicar as migrations</b></summary>
+
+**Opção A — SQL Editor:** abrir o projeto → **SQL Editor** → rodar as duas migrations em ordem → conferir em **Table Editor**.
+
+**Opção B — Supabase CLI:**
+
+```bash
+npx supabase login
+npx supabase link --project-ref gilyfswvezmvtmlxgvrd
+npx supabase db push
+```
+</details>
+
+<details>
+<summary>▶️📸 <b>Prints do Supabase</b></summary>
+
+| Tabelas | Colunas de `bolsa_hemocomponente` |
+| :---: | :---: |
+| <img src="./supabase/img/Database%20Tables.png" width="400"/> | <img src="./supabase/img/Colunas_exemplo(bolsa_hemocomponente).png" width="400"/> |
+| **Schema Visualizer** | **Migrations** |
+| <img src="./supabase/img/Schema_Vizualizer.png" width="400"/> | <img src="./supabase/img/Migrations_no_supabase.png" width="400"/> |
+| **Logs do Postgres** | **Projeto** |
+| <img src="./supabase/img/logs_postgres.png" width="400"/> | <img src="./supabase/img/supabase.png" width="400"/> |
+</details>
 
 <h2 align="center" id="como-executar">🚀 Como Executar <br>
 <img src="https://img.shields.io/badge/Terminal-111827?style=flat&logo=gnubash&logoColor=white" height="22"/>
