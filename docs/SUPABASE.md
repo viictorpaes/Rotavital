@@ -1,5 +1,6 @@
 <h1 align="center">
-  Detalhamento do Supabase <br>
+  Detalhamento do Supabase <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/supabase/supabase-original.svg" title="Supabase" alt="Supabase" width="40" height="40"/>&nbsp;
+ <br>
   <img src="https://img.shields.io/badge/-Supabase-111827?style=for-the-badge&logo=supabase&logoColor=3ECF8E" height="28"/>
   <img src="https://img.shields.io/badge/-PostgreSQL-111827?style=for-the-badge&logo=postgresql&logoColor=4169E1" height="28"/>
 </h1>
@@ -13,7 +14,7 @@
 
 > Como o Rota Vital usa o **Supabase** (PostgreSQL gerenciado): projeto, conexão do backend, variáveis de
 > ambiente, migrations, constraints, RLS e como validar. O modelo relacional completo (DER em Mermaid e o
-> catálogo de cada constraint) está em [`DER.md`](../../docs/DER.md).
+> catálogo de cada constraint) está em [`DER.md`](DER.md).
 
 <h2 align="left">🧭 Sumário: </h2>
 
@@ -23,6 +24,7 @@
 4. [Variáveis de ambiente](#4-variaveis)
 5. [Migrations versionadas](#5-migrations)
 6. [Tabelas](#6-tabelas)
+    - [6.1 Colunas detalhadas](#6-1-colunas)
 7. [Constraints de integridade](#7-constraints)
 8. [Row Level Security (RLS)](#8-rls)
 9. [Validação](#9-validacao)
@@ -62,7 +64,7 @@ flowchart LR
 
 <h2 align="left" id="3-conexao">🔌 3. Conexão do backend</h2>
 
-Em [`backend/src/main/resources/application.properties`](../../backend/src/main/resources/application.properties):
+Em [`backend/src/main/resources/application.properties`](../backend/src/main/resources/application.properties):
 
 ```properties
 spring.datasource.url=jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require
@@ -87,7 +89,7 @@ spring.jpa.hibernate.ddl-auto=update
 | `SUPABASE_URL` | Clientes da API REST/Auth do Supabase | `backend/.env` | ✅ (é pública) |
 | `SUPABASE_KEY` | Chave `anon` para a API do Supabase | `backend/.env` | ⚠️ só a `anon`, nunca a `service_role` |
 
-O modelo fica em [`backend/.env.example`](../../backend/.env.example): copie para `backend/.env` e preencha.
+O modelo fica em [`backend/.env.example`](../backend/.env.example): copie para `backend/.env` e preencha.
 O `.env` está no `.gitignore`.
 
 > [!WARNING]
@@ -96,13 +98,13 @@ O `.env` está no `.gitignore`.
 
 <h2 align="left" id="5-migrations">📜 5. Migrations versionadas</h2>
 
-As migrations ficam em [`supabase/migrations/`](../migrations/), no formato do Supabase CLI
+As migrations ficam em [`supabase/migrations/`](../supabase/migrations/), no formato do Supabase CLI
 (`<timestamp>_<nome>.sql`), e rodam em ordem:
 
 | # | Arquivo | O que faz |
 | :---: | :--- | :--- |
-| 1️⃣ | [`20260924120000_schema_inicial.sql`](../migrations/20260924120000_schema_inicial.sql) | Cria as 7 tabelas, PKs, FKs e índices, e liga o RLS |
-| 2️⃣ | [`20260924120100_constraints_integridade.sql`](../migrations/20260924120100_constraints_integridade.sql) | NOT NULL, DEFAULT, UNIQUE, CHECK, FKs compostas de regra de negócio e o gatilho de alocação |
+| 1️⃣ | [`20260924120000_schema_inicial.sql`](../supabase/migrations/20260924120000_schema_inicial.sql) | Cria as 7 tabelas, PKs, FKs e índices, e liga o RLS |
+| 2️⃣ | [`20260924120100_constraints_integridade.sql`](../supabase/migrations/20260924120100_constraints_integridade.sql) | NOT NULL, DEFAULT, UNIQUE, CHECK, FKs compostas de regra de negócio e o gatilho de alocação |
 
 <h2 align="left" id="6-tabelas">🗂️ 6. Tabelas</h2>
 
@@ -118,11 +120,221 @@ As migrations ficam em [`supabase/migrations/`](../migrations/), no formato do S
 
 > 🧩 `Hospital` e `BancoDeSangue` dividem a tabela `ponto_rede` porque uma `Conexao` liga dois pontos
 > quaisquer. A coluna `tipo` e as FKs compostas `(id, tipo)` garantem que cada relação aponte para o tipo
-> certo de ponto. Detalhes no [DER](../../docs/DER.md#1-der).
+> certo de ponto. Detalhes no [DER](DER.md#1-der).
+
+<h3 align="left" id="6-1-colunas">🧾 6.1 Colunas detalhadas</h3>
+
+Colunas de cada tabela como estão hoje no banco (exportadas do painel do Supabase), já incluindo as
+tabelas e colunas criadas pelas migrations posteriores ao schema inicial.
+
+<details>
+<summary>▶️🧾 <b>Colunas das 14 tabelas</b></summary>
+
+#### 📋 `ponto_rede`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `text` | Primary |
+| `tipo` | `text` |  |
+| `nome` | `text` |  |
+| `logradouro` | `text` |  |
+| `latitude` | `float8` |  |
+| `longitude` | `float8` |  |
+| `criado_em` | `timestamptz` |  |
+| `cidade` | `text` |  Nullable |
+| `uf` | `bpchar` |  Nullable |
+| `horario_funcionamento` | `text` |  Nullable |
+
+#### 📋 `conexao`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `origem_id` | `text` |  |
+| `destino_id` | `text` |  |
+| `distancia_km` | `numeric` |  |
+| `tempo_estimado_min` | `numeric` |  |
+
+#### 📋 `bolsa_hemocomponente`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `text` | Primary |
+| `banco_origem_id` | `text` |  |
+| `tipo_componente` | `text` |  |
+| `tipo_sanguineo` | `text` |  |
+| `data_coleta` | `date` |  |
+| `data_validade` | `date` |  |
+| `lote_sintetico` | `text` |  |
+| `volume_ml` | `numeric` |  |
+| `temperatura_celsius` | `numeric` |  Nullable |
+| `localizacao` | `text` |  Nullable |
+| `status` | `text` |  |
+| `criado_em` | `timestamptz` |  |
+| `banco_origem_tipo` | `text` |  |
+| `remessa_id` | `uuid` |  Nullable |
+| `atualizado_em` | `timestamptz` |  |
+
+#### 📋 `requisicao_hospitalar`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `hospital_id` | `text` |  |
+| `tipo_componente` | `text` |  |
+| `tipo_sanguineo` | `text` |  |
+| `quantidade` | `int4` |  |
+| `urgencia` | `text` |  |
+| `data_solicitacao` | `timestamptz` |  |
+| `status` | `text` |  |
+| `hospital_tipo` | `text` |  |
+| `protocolo` | `text` |  Unique |
+| `banco_id` | `text` |  |
+| `banco_tipo` | `text` |  |
+| `paciente_id` | `uuid` |  Nullable |
+| `ala` | `text` |  Nullable |
+| `solicitante_id` | `uuid` |  Nullable |
+| `atualizado_em` | `timestamptz` |  |
+
+#### 📋 `alocacao`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `requisicao_id` | `uuid` |  |
+| `bolsa_id` | `text` |  |
+| `data_alocacao` | `timestamptz` |  |
+| `tipo_componente` | `text` |  |
+| `tipo_sanguineo` | `text` |  |
+| `cancelada_em` | `timestamptz` |  Nullable |
+
+#### 📋 `entrega`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `requisicao_id` | `uuid` |  |
+| `origem_id` | `text` |  |
+| `destino_id` | `text` |  |
+| `status` | `text` |  |
+| `saida_em` | `timestamptz` |  |
+| `chegada_em` | `timestamptz` |  Nullable |
+| `origem_tipo` | `text` |  |
+| `destino_tipo` | `text` |  |
+
+#### 📋 `leitura_telemetria`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `entrega_id` | `uuid` |  |
+| `registrado_em` | `timestamptz` |  |
+| `latitude` | `float8` |  |
+| `longitude` | `float8` |  |
+| `temperatura_celsius` | `numeric` |  |
+
+#### 📋 `usuario`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `auth_user_id` | `uuid` |  Nullable Unique |
+| `nome` | `text` |  |
+| `papel` | `text` |  |
+| `ponto_rede_id` | `text` |  Nullable |
+| `tipo_sanguineo` | `text` |  Nullable |
+| `criado_em` | `timestamptz` |  |
+
+#### 📋 `paciente`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `hospital_id` | `text` |  |
+| `hospital_tipo` | `text` |  |
+| `nome` | `text` |  |
+| `sexo` | `text` |  |
+| `data_nascimento` | `date` |  |
+| `tipo_sanguineo` | `text` |  |
+| `tipo_componente` | `text` |  |
+| `unidades_necessarias` | `int4` |  |
+| `causa` | `text` |  |
+| `gravidade` | `text` |  |
+| `status` | `text` |  |
+| `criado_em` | `timestamptz` |  |
+| `atualizado_em` | `timestamptz` |  |
+
+#### 📋 `remessa`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `codigo` | `text` |  Unique |
+| `origem_id` | `text` |  Nullable |
+| `origem_tipo` | `text` |  |
+| `origem_descricao` | `text` |  Nullable |
+| `destino_id` | `text` |  |
+| `destino_tipo` | `text` |  |
+| `tipo_componente` | `text` |  |
+| `tipo_sanguineo` | `text` |  |
+| `unidades` | `int4` |  |
+| `chegada_prevista_em` | `timestamptz` |  |
+| `recebida_em` | `timestamptz` |  Nullable |
+| `conferida_por` | `uuid` |  Nullable |
+| `status` | `text` |  |
+
+#### 📋 `campanha_doacao`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `paciente_id` | `uuid` |  |
+| `publicada_por` | `uuid` |  Nullable |
+| `publicada_por_papel` | `text` |  |
+| `publicada_em` | `timestamptz` |  |
+| `status` | `text` |  |
+| `encerrada_em` | `timestamptz` |  Nullable |
+
+#### 📋 `agendamento_doacao`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `doador_id` | `uuid` |  |
+| `doador_papel` | `text` |  |
+| `banco_id` | `text` |  |
+| `banco_tipo` | `text` |  |
+| `campanha_id` | `uuid` |  Nullable |
+| `agendado_para` | `timestamptz` |  |
+| `status` | `text` |  |
+| `criado_em` | `timestamptz` |  |
+
+#### 📋 `procedimento`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `protocolo` | `text` |  Unique |
+| `paciente_id` | `uuid` |  |
+| `origem` | `text` |  |
+| `unidades_previstas` | `int4` |  |
+| `unidades_faltantes` | `int4` |  |
+| `responsavel_id` | `uuid` |  Nullable |
+| `responsavel_papel` | `text` |  |
+| `concluido_em` | `timestamptz` |  |
+
+#### 📋 `procedimento_bolsa`
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `procedimento_id` | `uuid` | Primary |
+| `bolsa_id` | `text` | Primary Unique |
+
+</details>
 
 <h2 align="left" id="7-constraints">🔒 7. Constraints de integridade</h2>
 
-Resumo por tipo; a lista completa, com a origem de cada regra, está em [`DER.md` → seção 2](../../docs/DER.md#2-constraints).
+Resumo por tipo; a lista completa, com a origem de cada regra, está em [`DER.md` → seção 2](DER.md#2-constraints).
 
 | Tipo | Qtd. | Exemplos |
 | :--- | :---: | :--- |
@@ -274,38 +486,38 @@ values ('PQ-TESTE', 'BS-01', 'PLAQUETAS', 'O_NEGATIVO', current_date, current_da
 
 <h2 align="left" id="11-prints">📸 11. Prints / evidências</h2>
 
-Prints salvos em [`supabase/img/`](../img/). ✅ = já tirado · ⏳ = pendente.
+Prints salvos em [`supabase/img/`](../supabase/img/). ✅ = já tirado · ⏳ = pendente.
 
 | # | Print | Onde tirar | Arquivo | Status |
 | :---: | :--- | :--- | :--- | :---: |
-| 1 | Home do projeto (requisições por serviço, *Advisor found no issues*) | Supabase → **Project Overview** | [`supabase.png`](../img/supabase.png) | ✅ |
-| 2 | Lista das 7 tabelas | **Database → Tables** | [`Database Tables.png`](../img/Database%20Tables.png) | ✅ |
-| 3 | Colunas de `bolsa_hemocomponente` (tipos, PK, FKs, nullable) | **Database → Tables** → `bolsa_hemocomponente` → *View columns* | [`Colunas_exemplo(bolsa_hemocomponente).png`](<../img/Colunas_exemplo(bolsa_hemocomponente).png>) | ✅ |
+| 1 | Home do projeto (requisições por serviço, *Advisor found no issues*) | Supabase → **Project Overview** | [`supabase.png`](../supabase/img/supabase.png) | ✅ |
+| 2 | Lista das 7 tabelas | **Database → Tables** | [`Database Tables.png`](../supabase/img/Database%20Tables.png) | ✅ |
+| 3 | Colunas de `bolsa_hemocomponente` (tipos, PK, FKs, nullable) | **Database → Tables** → `bolsa_hemocomponente` → *View columns* | [`Colunas_exemplo(bolsa_hemocomponente).png`](<../supabase/img/Colunas_exemplo(bolsa_hemocomponente).png>) | ✅ |
 | 4 | Lista das constraints | **SQL Editor**, rodando a consulta da seção 10 | `supabase_04_constraints.png` | ⏳ |
 | 5 | Constraint recusando um dado | **SQL Editor**, rodando o `insert` inválido da seção 10 | `supabase_05_check_violado.png` | ⏳ |
-| 6 | Diagrama gerado pelo Supabase | **Database → Schema Visualizer** | [`Schema_Vizualizer.png`](../img/Schema_Vizualizer.png) | ✅ |
+| 6 | Diagrama gerado pelo Supabase | **Database → Schema Visualizer** | [`Schema_Vizualizer.png`](../supabase/img/Schema_Vizualizer.png) | ✅ |
 | 7 | RLS ligado nas 7 tabelas | **Authentication → Policies** | `supabase_07_rls.png` | ⏳ |
-| 8 | Histórico das migrations | **Database → Migrations** | [`Migrations_no_supabase.png`](../img/Migrations_no_supabase.png) | ✅ |
-| 9 | Logs do Postgres executando as migrations | **Logs → Postgres** | [`logs_postgres.png`](../img/logs_postgres.png) | ✅ |
+| 8 | Histórico das migrations | **Database → Migrations** | [`Migrations_no_supabase.png`](../supabase/img/Migrations_no_supabase.png) | ✅ |
+| 9 | Logs do Postgres executando as migrations | **Logs → Postgres** | [`logs_postgres.png`](../supabase/img/logs_postgres.png) | ✅ |
 
 > [!TIP]
 > O print 6 (**Schema Visualizer**) desenha o DER a partir do banco real. Serve de evidência de que o banco
-> segue o DER de [`DER.md`](../../docs/DER.md).
+> segue o DER de [`DER.md`](DER.md).
 
 <details>
 <summary>▶️🏠 <b>1. Project Overview</b></summary>
 
 <p align="center">
-<img src="../img/supabase.png" width="800" alt="Project Overview do Supabase com requisições por serviço e Advisor sem problemas">
+<img src="../supabase/img/supabase.png" width="800" alt="Project Overview do Supabase com requisições por serviço e Advisor sem problemas">
 </p>
 
 </details>
 
 <details>
-<summary>▶️🗂️ <b>2. Tabelas (7)</b></summary>
+<summary>▶️🎲 <b>2. Tabelas (7)</b></summary>
 
 <p align="center">
-<img src="../img/Database%20Tables.png" width="800" alt="Database Tables do Supabase listando as 7 tabelas">
+<img src="../supabase/img/Database%20Tables.png" width="800" alt="Database Tables do Supabase listando as 7 tabelas">
 </p>
 
 </details>
@@ -314,16 +526,16 @@ Prints salvos em [`supabase/img/`](../img/). ✅ = já tirado · ⏳ = pendente.
 <summary>▶️🩸 <b>3. Colunas de <code>bolsa_hemocomponente</code></b></summary>
 
 <p align="center">
-<img src="../img/Colunas_exemplo(bolsa_hemocomponente).png" width="800" alt="Colunas da tabela bolsa_hemocomponente com tipos e constraints">
+<img src="../supabase/img/Colunas_exemplo(bolsa_hemocomponente).png" width="800" alt="Colunas da tabela bolsa_hemocomponente com tipos e constraints">
 </p>
 
 </details>
 
 <details>
-<summary>▶️🧩 <b>6. Schema Visualizer</b></summary>
+<summary>▶️🧭 <b>6. Schema Visualizer</b></summary>
 
 <p align="center">
-<img src="../img/Schema_Vizualizer.png" width="800" alt="Schema Visualizer do Supabase com as 7 tabelas e seus relacionamentos">
+<img src="../supabase/img/Schema_Vizualizer.png" width="800" alt="Schema Visualizer do Supabase com as 7 tabelas e seus relacionamentos">
 </p>
 
 </details>
@@ -332,16 +544,16 @@ Prints salvos em [`supabase/img/`](../img/). ✅ = já tirado · ⏳ = pendente.
 <summary>▶️📜 <b>8. Migrations</b></summary>
 
 <p align="center">
-<img src="../img/Migrations_no_supabase.png" width="800" alt="Database Migrations do Supabase com as duas migrations aplicadas">
+<img src="../supabase/img/Migrations_no_supabase.png" width="800" alt="Database Migrations do Supabase com as duas migrations aplicadas">
 </p>
 
 </details>
 
 <details>
-<summary>▶️🪵 <b>9. Logs do Postgres</b></summary>
+<summary>▶️🐘 <b>9. Logs do Postgres</b></summary>
 
 <p align="center">
-<img src="../img/logs_postgres.png" width="800" alt="Logs do Postgres mostrando a execução do SQL das migrations">
+<img src="../supabase/img/logs_postgres.png" width="800" alt="Logs do Postgres mostrando a execução do SQL das migrations">
 </p>
 
 </details>

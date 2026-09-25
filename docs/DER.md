@@ -1,5 +1,5 @@
 <h1 align="center">
-  Rota Vital — Modelo Relacional (DER) <br> Supabase / PostgreSQL 🗄️🩸
+  Rota Vital — Modelo Relacional (DER) <br> Supabase / PostgreSQL
 </h1>
 
 <p align="center">
@@ -10,8 +10,8 @@
     <img src="https://img.shields.io/badge/Tabelas-14-3ECF8E?style=for-the-badge" alt="Tabelas"/>
 </p>
 
-> Estrutura relacional do domínio do Rota Vital, registrada em **Mermaid** dentro do repositório: o DER é
-> versionado junto com o código e com as migrations em [`supabase/migrations/`](../supabase/migrations/).
+> Estrutura relacional do domínio do Rota Vital, registrada em **Mermaid** dentro do repositório: o
+> **DER (Diagrama Entidade-Relacionamento)** é versionado junto com o código e com as migrations em [`supabase/migrations/`](../supabase/migrations/).
 > Parte do schema já aplicado no Supabase (PI3-139: 7 tabelas) e o estende para cobrir todas as histórias
 > de usuário do MVP. Espelha o pacote `com.rotavital.dominio` ([`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md))
 > e o contrato [`openapi.yaml`](openapi.yaml).
