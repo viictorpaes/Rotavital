@@ -43,7 +43,7 @@ roteirização de entregas e telemetria da cadeia fria.
 <p align="center">
   <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg" width="32" height="32" alt="VS Code"/> <br>
   <img src="https://img.shields.io/badge/-Java_21-111827?style=flat-square&logo=openjdk&logoColor=orange"/>
-    <img src="https://img.shields.io/badge/-Spring Boot-111827?style=flat-square&logo=springboot&logoColor=green"/>
+  <img src="https://img.shields.io/badge/-Spring Boot-111827?style=flat-square&logo=springboot&logoColor=green"/>
   <img src="https://img.shields.io/badge/-Maven-111827?style=flat-square&logo=apachemaven&logoColor=C71A36"/>
   <img src="https://img.shields.io/badge/-JUnit_5-111827?style=flat-square&logo=junit5&logoColor=25A162"/>
   <img src="https://img.shields.io/badge/-OpenAPI_3.0.3-111827?style=flat-square&logo=openapiinitiative&logoColor=6BA539"/>
@@ -56,11 +56,13 @@ roteirização de entregas e telemetria da cadeia fria.
   <img src="https://img.shields.io/badge/-ESLint-111827?style=flat-square&logo=eslint&logoColor=4B32C3"/> <br>
   <img src="https://img.shields.io/badge/-Docker-111827?style=flat-square&logo=docker&logoColor=2496ED"/>
   <img src="https://img.shields.io/badge/-Docker%20Compose-111827?style=flat-square&logo=docker&logoColor=2496ED"/>
+    <img src="https://img.shields.io/badge/-Postman-111827?style=flat-square&logo=postman&logoColor=FF6C37"/>
+  <img src="https://img.shields.io/badge/-Insomnia-111827?style=flat-square&logo=insomnia&logoColor=4000BF"/>
   <img src="https://img.shields.io/badge/-Figma-111827?style=flat-square&logo=figma&logoColor=F24E1E"/>
   <img src="https://img.shields.io/badge/Architecture-111827?style=flat-square&logo=instructure&logoColor=white"/> <br>
   <img src="https://img.shields.io/badge/-Git-111827?style=flat-square&logo=git&logoColor=F05032"/>
   <img src="https://img.shields.io/badge/-GitHub-111827?style=flat-square&logo=github&logoColor=white"/>
-  <img src="https://img.shields.io/badge/-GitHub%20Desktop-111827?style=flat-square&logo=github&logoColor=6F42C1"/>
+  <img src="https://img.shields.io/badge/-GitHub%20Desktop-111827?style=flat-square&logo=github&logoColor=6F42C1"/> <br>
 </p>
 
 <h2 align="center" id="entregas">🚀 Entregas do Projeto Integrador <br>
@@ -191,7 +193,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Escolher meu tipo de acesso ("Médico — acesso hospitalar completo" ou "Doador — portal de doações") e informar meu nome |
 | **Para que** | Eu veja a tela adequada ao meu papel sem precisar de um cadastro completo |
 | **Tela do Figma** | Tela inicial "Cesar Life · Estoque Inteligente" — cartões `Médico`/`Doador`, campo `Nome`, botão `Entrar` |
-| **Nível de código** | `POST /acesso` (`AcessoController`) devolve a tela inicial e o menu do papel escolhido — é só identificação, como no protótipo: sem senha nem sessão real |
+| **Nível de código** | `POST /api/v1/acessos` (`AcessoController`) devolve a tela inicial e o menu do papel escolhido — é só identificação, como no protótipo: sem senha nem sessão real |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -227,7 +229,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Consultar o estoque agrupado por tipo sanguíneo, com detalhe de cada lote (validade, temperatura, localização) |
 | **Para que** | Eu saiba exatamente quais lotes estão em risco de vencer ou fora da faixa de temperatura ideal |
 | **Tela do Figma** | "Estoque" — filtro por tipo sanguíneo (A+ … O-), cartão de lote com código, unidades, volume, validade e temperatura (com etiqueta "FORA DA FAIXA") |
-| **Nível de código** | Parcialmente coberto por `Estoque`/`BolsaHemocomponente` e `GET /estoque/{bancoId}` — mas o contrato atual não tem campos de localização física (rack/posição) nem de temperatura por lote |
+| **Nível de código** | Parcialmente coberto por `Estoque`/`BolsaHemocomponente` e `GET /api/v1/bancos/{bancoId}/estoque` — mas o contrato atual não tem campos de localização física (rack/posição) nem de temperatura por lote |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -245,7 +247,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Preencher uma requisição informando hemocomponente, tipo sanguíneo, ala de destino, quantidade, paciente e urgência |
 | **Para que** | Eu atenda o paciente rapidamente usando o lote mais próximo do vencimento, sem precisar escolher manualmente |
 | **Tela do Figma** | "Requisição" → aba "Solicitar" — formulário completo + painel lateral "Lote Sugerido (FEFO)" |
-| **Nível de código** | Corresponde a `POST /requisicoes` + à lógica de FEFO já em `Estoque.buscarDisponiveis()`; o contrato atual não modela `alaMedica` nem `nomePaciente` |
+| **Nível de código** | Corresponde a `POST /api/v1/requisicoes` + à lógica de FEFO já em `Estoque.buscarDisponiveis()`; o contrato atual não modela `alaMedica` nem `nomePaciente` |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -263,7 +265,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Registrar o recebimento físico de hemocomponentes vindos de outras instituições |
 | **Para que** | As unidades recebidas sejam somadas automaticamente ao estoque, sem lançamento manual |
 | **Tela do Figma** | "Requisição" → aba "Recebidas" — lista de recebimentos (`INC-001`…`INC-004`) com origem, tipo e quantidade |
-| **Nível de código** | Sem endpoint equivalente — é um fluxo de entrada diferente do cadastro manual de `POST /hemocomponentes` |
+| **Nível de código** | Sem endpoint equivalente — é um fluxo de entrada diferente do cadastro manual de `POST /api/v1/hemocomponentes` |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -381,7 +383,7 @@ publicado no <a href="https://youtu.be/3RlgYAGPyaE" target="_blank">YouTube</a>,
 | :--- | :--- | :---: |
 | ✅ Histórias implementadas | Mínimo de 2 HUs em código real (não só Figma) | <img src="https://img.shields.io/badge/5%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
 | 🔁 Versionamento atuante | Commits de código direto na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Commits_semanais_na_main-22C55E?style=flat-square" height="18"/> **Feito** — PRs #2 e #10 mesclados na `main` em 14/09, com commits também em 23/08, 09/09 e 12/09, mantendo cadência semanal |
-| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/6_abertas_%2F_1_fechada-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues registradas no GitHub (label `bug`), 1 já fechada, com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
+| 🐞 Issue/Bug Tracker | GitHub Issues atualizado todas as semanas + print no README | <img src="https://img.shields.io/badge/5_abertas_%2F_2_fechadas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues registradas no GitHub (label `bug`), 2 já fechadas (#2 e #5), com prints na seção [Issue/Bug Tracker](#issue-tracker) abaixo |
 
 | Artefato | Descrição | Link |
 | :--- | :--- | :--- |
@@ -419,30 +421,31 @@ no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada
 > ✅ Frontend — [`PaginaPortalDoador.tsx`](./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx) (nesta branch)
 
 <h4 align="center" id="issue-tracker">🐛 Issue/Bug Tracker — Entrega 02 <br>
-<img src="https://img.shields.io/badge/6_Issues_Abertas-red?style=flat-square&logo=github&logoColor=white" height="20"/>
-<img src="https://img.shields.io/badge/1_Issue_Fechada-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
+<img src="https://img.shields.io/badge/5_Issues_Abertas-red?style=flat-square&logo=github&logoColor=white" height="20"/>
+<img src="https://img.shields.io/badge/2_Issues_Fechadas-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
 </h4>
 
 <p align="center">
 7 issues registradas no <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> do repositório,
 todas com a label <code>bug</code>, registrando gaps reais encontrados entre o protótipo Figma, a documentação
-técnica (<code>docs/</code>) e o código que de fato roda hoje (backend Spring Boot + frontend React). A Issue #2 já
-foi fechada nesta entrega; as demais viram trabalho de entrada da Entrega 03.
+técnica (<code>docs/</code>) e o código que de fato roda hoje (backend Spring Boot + frontend React). As Issues #2 e #5
+já foram fechadas; as demais viram trabalho de entrada da Entrega 03.
 </p>
 
 <p align="center">
-<img src="./img/issue-tracker_lista-geral.png" width="800"/>
+<img src="./img/issues_abertas.png" width="800"/>
+<img src="./img/issues_fechadas.png" width="800"/>
 </p>
 
 | Imagem | Título | Descrição |
 | :---: | :--- | :--- |
 | <img src="./img/issue-tracker_issue1-testes-junit_1.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (contexto) | Cobertura de testes em 0%: o projeto já tem `junit-jupiter` no `pom.xml`, mas `TesteFluxo.java` ainda usa `main()` em vez de `@Test`. Tarefas para convertê-lo, adicionar `spring-boot-starter-test` e cobrir `AcessoController`/`EstoqueController`. |
-| <img src="./img/issue-tracker_issue1-testes-junit_2.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (cenários e pipeline) | Matriz mínima de cenários de teste por endpoint (`POST /acesso`, `GET /estoque/{id}`) e pipeline de CI sugerido, bloqueando o merge quando `mvn test` falha. |
+| <img src="./img/issue-tracker_issue1-testes-junit_2.png" width="260"/> | 🔴 Issue #1 — Testes JUnit 5 + CI (cenários e pipeline) | Matriz mínima de cenários de teste por endpoint (`POST /api/v1/acessos`, `GET /api/v1/bancos/{id}/estoque`) e pipeline de CI sugerido, bloqueando o merge quando `mvn test` falha. |
 | <img src="./img/issue2_done.png" width="260"/> | ✅ Issue #2 — Screencasts da Entrega 02 (fechada) | Checklist para gravar e publicar os 2 vídeos exigidos nesta entrega (uso do sistema rodando e explicação do código) concluído; vídeos publicados no YouTube e issue fechada no GitHub. |
-| <img src="./img/issue-tracker_issue3-estoque.png" width="260"/> | 🔴 Issue #3 — Implementar tela de Estoque (HU‑03) | O backend já expõe `GET /estoque/{bancoId}?tipoSanguineo=`; falta a `PaginaEstoque.tsx` sair do placeholder `EmBreve` e consumir esse endpoint de verdade. |
+| <img src="./img/issue-tracker_issue3-estoque.png" width="260"/> | 🔴 Issue #3 — Implementar tela de Estoque (HU‑03) | O backend já expõe `GET /api/v1/bancos/{bancoId}/estoque?tipoSanguineo=`; falta a `PaginaEstoque.tsx` sair do placeholder `EmBreve` e consumir esse endpoint de verdade. |
 | <img src="./img/issue-tracker_issue4-integracao-backend.png" width="260"/> | 🔴 Issue #4 — Integrar frontend ao backend real | Hoje o frontend roda 100% sobre dados mockados (`pessoasMock.ts`, login só em memória). Plano para criar uma camada `api.ts`, trocar login/estoque por chamadas HTTP reais e configurar CORS no Spring Boot. |
-| <img src="./img/issue-tracker_issue5-docs-roteirizacao_1.png" width="260"/> | 🟠 Issue #5 — Docs desatualizados sobre Roteirização (achado) | `docs/MODULOS.md` classifica o módulo de Roteirização como "só lat/long, sem grafo", mas o código já implementa o grafo/Dijkstra (`RedeDistribuicao`, `Conexao`, `RotaCalculada`) usado no protótipo. |
-| <img src="./img/issue-tracker_issue5-docs-roteirizacao_2.png" width="260"/> | 🟠 Issue #5 — Docs desatualizados sobre Roteirização (status e fluxo alvo) | Tabela comparando documentação vs. código real e fluxo alvo para expor o cálculo de rota via um novo endpoint `POST /rotas/calcular`. |
+| <img src="./img/issue-tracker_issue5-docs-roteirizacao_1.png" width="260"/> | ✅ Issue #5 — Docs desatualizados sobre Roteirização (fechada) | `docs/MODULOS.md` classifica o módulo de Roteirização como "só lat/long, sem grafo", mas o código já implementa o grafo/Dijkstra (`RedeDistribuicao`, `Conexao`, `RotaCalculada`) usado no protótipo. |
+| <img src="./img/issue-tracker_issue5-docs-roteirizacao_2.png" width="260"/> | ✅ Issue #5 — Docs desatualizados sobre Roteirização (resolução) | Resolvida com o novo `RotaController`, que expõe `GET /api/v1/pontos`, `GET /api/v1/conexoes` e `GET /api/v1/rotas?origemId=&destinoId=` (o `POST /rotas/calcular` proposto virou consulta `GET` idempotente), e com o `docs/MODULOS.md` marcando o módulo como implementado (grafo + Dijkstra). |
 | <img src="./img/issue-tracker_issue6-painel-operacional.png" width="260"/> | 🟠 Issue #6 — Implementar Painel Operacional (HU‑02) | Escopo e cenários BDD para tirar a `PaginaPainel.tsx` do placeholder `EmBreve` e implementar os cards de "Números Rápidos" e a caixa de avisos com alertas críticos. |
 | <img src="./img/issue-tracker_issue7-doador-campanha.png" width="260"/> | 🟠 Issue #7 — Modelar Doador e Campanha de Doação | Diagrama de classes proposto (`Doador`, `CampanhaDoacao`, `AgendamentoDoacao`) — hoje não existe conceito de doador nem de campanha pública no domínio, o que bloqueia versões não mockadas de HU‑06, HU‑09 e HU‑10. |
 
@@ -463,6 +466,7 @@ Rotavital🩸/
 ├── backend <img src="https://img.shields.io/badge/-Java_21-111827?style=flat&logo=openjdk&logoColor=orange" height="18"/> <img src="https://img.shields.io/badge/-Maven-111827?style=flat&logo=apachemaven&logoColor=C71A36" height="18"/>/
 │   ├── pom.xml <img src="https://img.shields.io/badge/-Maven_POM-111827?style=flat&logo=apachemaven&logoColor=C71A36" height="18"/>
 │   └── src <img src="https://img.shields.io/badge/src-111827?style=flat&logo=openjdk&logoColor=orange" height="18"/>/
+│       ├── main/resources/application.properties <img src="https://img.shields.io/badge/-Conexão_Supabase_(Session_Pooler)-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/>
 │       ├── main/java/com/rotavital <img src="https://img.shields.io/badge/-Java-111827?style=flat&logo=openjdk&logoColor=orange" height="18"/>/
 │       │   ├── api/dto <img src="https://img.shields.io/badge/-DTO-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>/
 │       │   │   ├── comum <img src="https://img.shields.io/badge/-Comum-111827?style=flat-square&logo=openjdk&logoColor=orange" height="18"/>/
@@ -488,6 +492,7 @@ Rotavital🩸/
 │   ├── vite.config.ts <img src="https://img.shields.io/badge/-Vite_Config-111827?style=flat-square&logo=vite&logoColor=646CFF" height="18"/>
 │   ├── tailwind.config.ts <img src="https://img.shields.io/badge/-Tailwind_Config-111827?style=flat-square&logo=tailwindcss&logoColor=38BDF8" height="18"/>
 │   ├── postcss.config.js <img src="https://img.shields.io/badge/-PostCSS-111827?style=flat-square&logo=postcss&logoColor=DD3A0A" height="18"/>
+│   ├── eslint.config.js <img src="https://img.shields.io/badge/-ESLint-111827?style=flat-square&logo=eslint&logoColor=4B32C3" height="18"/>
 │   ├── tsconfig.json <img src="https://img.shields.io/badge/-TS_Config-111827?style=flat-square&logo=typescript&logoColor=3178C6" height="18"/>
 │   └── src <img src="https://img.shields.io/badge/-TSX_·_TS-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>/
 │       ├── main.tsx <img src="https://img.shields.io/badge/-Entry_Point-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>
@@ -543,7 +548,25 @@ Rotavital🩸/
 │   ├── MODELO_DE_DOMINIO.md <img src="https://img.shields.io/badge/Modelo_de_Domínio-111827?style=flat&logo=markdown&logoColor=purple" height="18"/>
 │   ├── CONTRATOS_DE_API.md <img src="https://img.shields.io/badge/Contratos_de_API-111827?style=flat&logo=markdown&logoColor=6BA539" height="18"/>
 │   ├── MODULOS.md <img src="https://img.shields.io/badge/Módulos-111827?style=flat&logo=markdown&logoColor=6BA539" height="18"/>
-│   └── openapi.yaml <img src="https://img.shields.io/badge/OpenAPI_3.0-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│   ├── DER.md <img src="https://img.shields.io/badge/DER_·_Constraints-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│   ├── SUPABASE.md <img src="https://img.shields.io/badge/Detalhamento_do_Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/>
+│   ├── INVENTARIO_COMPONENTES.md <img src="https://img.shields.io/badge/Inventário_de_Componentes-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
+│   ├── RELATORIO_ATIVIDADE_PARALELISMO.md <img src="https://img.shields.io/badge/Relatório_de_Paralelismo-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
+│   ├── diagrama-arquitetura.drawio <img src="https://img.shields.io/badge/Diagrama_de_Arquitetura-111827?style=flat&logo=diagramsdotnet&logoColor=F08705" height="18"/>
+│   ├── openapi.yaml <img src="https://img.shields.io/badge/OpenAPI_3.0-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│   └── evidencias <img src="https://img.shields.io/badge/-Evidências-111827?style=flat-square&logo=markdown&logoColor=white" height="18"/>/
+│       ├── PI3-14_endpoints_rest.md <img src="https://img.shields.io/badge/-Endpoints_REST-111827?style=flat&logo=markdown&logoColor=6BA539" height="18"/>
+│       ├── drawio(fluxo).png <img src="https://img.shields.io/badge/-PNG-111827?style=flat-square&logo=diagramsdotnet&logoColor=F08705" height="18"/>
+│       └── drawio_atualizado.png <img src="https://img.shields.io/badge/-PNG-111827?style=flat-square&logo=diagramsdotnet&logoColor=F08705" height="18"/>
+│
+├── supabase <img src="https://img.shields.io/badge/-Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/> <img src="https://img.shields.io/badge/-PostgreSQL-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>/
+│   ├── img <img src="https://img.shields.io/badge/-Prints_do_Supabase-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="18"/>/
+│   └── migrations <img src="https://img.shields.io/badge/-SQL-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>/
+│       ├── 20260924120000_schema_inicial.sql <img src="https://img.shields.io/badge/-Tabelas_·_PK_·_FK_·_RLS-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│       ├── 20260924120100_constraints_integridade.sql <img src="https://img.shields.io/badge/-NOT_NULL_·_UNIQUE_·_CHECK_·_Trigger-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│       ├── 20260925120000_ajustes_schema_existente.sql <img src="https://img.shields.io/badge/-Ajustes_do_Schema-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│       ├── 20260925120100_escopo_clinico.sql <img src="https://img.shields.io/badge/-Escopo_Clínico-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│       └── 20260925120200_views_painel.sql <img src="https://img.shields.io/badge/-Views_do_Painel-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 │
 ├── img/ <img src="https://img.shields.io/badge/Assets-green?style=flat&logo=image&logoColor=white" height="18"/>
 ├── .gitignore <img src="https://img.shields.io/badge/-GitIgnore-111827?style=flat&logo=git&logoColor=F05032" height="18"/>
@@ -559,24 +582,209 @@ Rotavital🩸/
 > O frontend implementa de fato 3 das 10 histórias da Entrega 01 — **HU‑01** (Login), **HU‑09** (Doações)
 > e **HU‑10** (Portal do Doador) — com dados mockados em `src/data/pessoasMock.ts`. As demais (**HU‑02** a
 > **HU‑08**) já têm rota e página criadas, mas renderizam o placeholder `EmBreve` até virarem telas reais.
+>
+> A persistência usa **Supabase (PostgreSQL)**: o backend conecta pelo Session Pooler
+> (`application.properties`, senha em `backend/.env`), e o schema é versionado em `supabase/migrations/` —
+> 7 tabelas (`ponto_rede`, `conexao`, `bolsa_hemocomponente`, `requisicao_hospitalar`, `alocacao`, `entrega`,
+> `leitura_telemetria`) com PKs, FKs, constraints de integridade e RLS ligado. O DER e o catálogo de
+> constraints estão em [`docs/DER.md`](./docs/DER.md), e o detalhamento do banco (conexão, variáveis, RLS,
+> validação e prints) em [`docs/SUPABASE.md`](./docs/SUPABASE.md).
+
+<h2 align="center" id="supabase">🟢 Banco de Dados — Supabase <br>
+<img src="https://img.shields.io/badge/-Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="22"/>
+<img src="https://img.shields.io/badge/-PostgreSQL-111827?style=flat&logo=postgresql&logoColor=4169E1" height="22"/>
+<img src="https://img.shields.io/badge/Tabelas-7-3ECF8E?style=flat&logo=supabase&logoColor=white" height="22"/>
+<img src="https://img.shields.io/badge/Testes_de_constraints-34%2F34-brightgreen?style=flat" height="22"/>
+
+<br>
+
+<img src="./supabase/img/supabase.png" width="440" alt="init supabase">
+</h2>
+
+<p align="center">
+A persistência do Rota Vital fica no <b>Supabase</b> (PostgreSQL gerenciado). O backend é o único cliente do
+banco; o frontend consome só a API <code>/api/v1</code>. Detalhamento completo em
+<a href="./docs/SUPABASE.md"><code>docs/SUPABASE.md</code></a> e DER em
+<a href="./docs/DER.md"><code>docs/DER.md</code></a>.
+</p>
+
+```mermaid
+flowchart LR
+    FE["🖥️ Frontend<br/>React + Vite (Nginx)"] -->|"HTTP /api/v1"| BE["☕ Backend<br/>Spring Boot (Java 21)"]
+    BE -->|"JDBC · SSL<br/>Session Pooler :5432"| SB[("🟢 Supabase<br/>PostgreSQL")]
+    MIG["📜 supabase/migrations/*.sql"] -->|"SQL Editor ou supabase db push"| SB
+    API["🔑 API REST do Supabase<br/>(chave anon)"] -. "bloqueada pelo RLS" .-> SB
+```
+
+| Item | Valor |
+| :--- | :--- |
+| 🆔 Project ref | `gilyfswvezmvtmlxgvrd` |
+| 🌍 URL do projeto | `https://gilyfswvezmvtmlxgvrd.supabase.co` |
+| 📍 Região | AWS `us-east-2` (Ohio) |
+| 🐘 Banco | PostgreSQL, database `postgres`, schema `public` |
+| 🔌 Pooler | `aws-0-us-east-2.pooler.supabase.com:5432` (Session mode, IPv4) |
+
+<details>
+<summary>▶️🔌 <b>Conexão do backend</b> (<code>application.properties</code>)</summary>
+
+```properties
+spring.datasource.url=jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require
+spring.datasource.username=postgres.gilyfswvezmvtmlxgvrd
+spring.datasource.password=${SUPABASE_DB_PASSWORD}
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.jpa.hibernate.ddl-auto=update
+```
+
+- `sslmode=require` 🔒 — o Supabase só aceita conexões criptografadas.
+- Session Pooler em vez da conexão direta — a direta é só IPv6; o pooler aceita IPv4 (rede da faculdade e Docker).
+- `ddl-auto=update` ⚠️ — quando as `@Entity` entrarem, trocar para `validate`: o schema passa a vir só das migrations.
+</details>
+
+<details>
+<summary>▶️🔑 <b>Variáveis de ambiente</b> (<code>backend/.env</code>)</summary>
+
+Copie [`backend/.env.example`](./backend/.env.example) para `backend/.env` (já está no `.gitignore`) e preencha:
+
+| Variável | Uso | Pode ir para o Git? |
+| :--- | :--- | :---: |
+| `SUPABASE_DB_PASSWORD` | Senha do banco (JDBC e `docker-compose.yml`) | ❌ |
+| `SUPABASE_URL` | URL pública do projeto (API REST/Auth) | ✅ |
+| `SUPABASE_KEY` | Chave `anon` da API do Supabase | ⚠️ só a `anon` |
+
+> [!WARNING]
+> A chave **`service_role`** ignora o RLS e dá acesso total ao banco — nunca vai para `.env.example`, commit ou frontend.
+</details>
+
+<details>
+<summary>▶️🗂️ <b>Tabelas e migrations</b></summary>
+
+| Tabela | Classe de domínio | PK |
+| :--- | :--- | :--- |
+| 📍 `ponto_rede` | `Hospital`, `BancoDeSangue` (+ `Endereco`) | `id` (text, ex.: `BS-01`) |
+| 🛣️ `conexao` | `Conexao` | `id` (identity) |
+| 🩸 `bolsa_hemocomponente` | `BolsaHemocomponente` | `id` (text, ex.: `CH-1042`) |
+| 🏥 `requisicao_hospitalar` | `RequisicaoHospitalar` | `id` (uuid) |
+| 🔗 `alocacao` | `AlocacaoDTO` | `id` (uuid) |
+| 🚑 `entrega` | `MonitoramentoEntregaDTO` | `id` (uuid) |
+| 🌡️ `leitura_telemetria` | `LeituraTelemetriaDTO` | `id` (identity) |
+
+| # | Migration | O que faz |
+| :---: | :--- | :--- |
+| 1️⃣ | [`20260924120000_schema_inicial.sql`](./supabase/migrations/20260924120000_schema_inicial.sql) | Cria as 7 tabelas, PKs, FKs e índices, e liga o RLS |
+| 2️⃣ | [`20260924120100_constraints_integridade.sql`](./supabase/migrations/20260924120100_constraints_integridade.sql) | NOT NULL, DEFAULT, UNIQUE, 33 CHECK, 7 FKs compostas e o gatilho `trg_alocacao_validar` |
+</details>
+
+<details>
+<summary>▶️🛡️ <b>Row Level Security (RLS)</b></summary>
+
+| Acesso | Role | Resultado hoje |
+| :--- | :--- | :--- |
+| ☕ Backend (JDBC) | `postgres` | ✅ lê e escreve (ignora RLS) |
+| 🌐 API REST com chave `anon` | `anon` | 🚫 bloqueado (RLS ligado, sem políticas) |
+| 👤 Usuário logado via Supabase Auth | `authenticated` | 🚫 bloqueado até existirem políticas |
+</details>
+
+<details>
+<summary>▶️🚀 <b>Como aplicar as migrations</b></summary>
+
+**Opção A — SQL Editor:** abrir o projeto → **SQL Editor** → rodar as duas migrations em ordem → conferir em **Table Editor**.
+
+**Opção B — Supabase CLI:**
+
+```bash
+npx supabase login
+npx supabase link --project-ref gilyfswvezmvtmlxgvrd
+npx supabase db push
+```
+</details>
+
+<details>
+<summary>▶️📸 <b>Prints do Supabase</b></summary>
+
+| Tabelas | Colunas de `bolsa_hemocomponente` |
+| :---: | :---: |
+| <img src="./supabase/img/Database%20Tables.png" width="400"/> | <img src="./supabase/img/Colunas_exemplo(bolsa_hemocomponente).png" width="400"/> |
+| **Schema Visualizer** | **Migrations** |
+| <img src="./supabase/img/Schema_Vizualizer.png" width="400"/> | <img src="./supabase/img/Migrations_no_supabase.png" width="400"/> |
+| **Logs do Postgres** | **Projeto** |
+| <img src="./supabase/img/logs_postgres.png" width="400"/> | <img src="./supabase/img/supabase.png" width="400"/> |
+</details>
 
 <h2 align="center" id="como-executar">🚀 Como Executar <br>
 <img src="https://img.shields.io/badge/Terminal-111827?style=flat&logo=gnubash&logoColor=white" height="22"/>
 </h2>
 
+**Pré-requisitos:** Java 21+, Maven 3.9+, Node.js 20+ e (opcional) Docker.
+
 ```bash
 git clone https://github.com/viictorpaes/Rotavital.git
-cd Rotavital/backend
-mvn compile
+cd Rotavital
+cp backend/.env.example backend/.env   # e preencha SUPABASE_DB_PASSWORD
 ```
+
+<details>
+<summary>🪟 <b>Windows (PowerShell)</b></summary>
+
+```powershell
+git clone https://github.com/viictorpaes/Rotavital.git
+cd Rotavital
+Copy-Item backend\.env.example backend\.env   # e preencha SUPABASE_DB_PASSWORD
+```
+</details>
+
+**Backend** (Spring Boot, a partir de `Rotavital/`):
+
+```bash
+cd backend
+mvn clean package              # compila, roda os testes JUnit e gera target/rotavital-backend-0.1.0-SNAPSHOT.jar
+set -a; source .env; set +a    # exporta SUPABASE_DB_PASSWORD para o Spring (ele não lê o .env sozinho)
+mvn spring-boot:run            # ou: java -jar target/rotavital-backend-0.1.0-SNAPSHOT.jar
+```
+
+<details>
+<summary>🪟 <b>Windows (PowerShell)</b></summary>
+
+```powershell
+cd backend
+mvn clean package
+# exporta as variáveis do .env para a sessão atual do PowerShell
+Get-Content .env | Where-Object { $_ -match '^\s*[^#].*=' } | ForEach-Object {
+    $nome, $valor = $_ -split '=', 2
+    Set-Item "env:$($nome.Trim())" $valor.Trim()
+}
+mvn spring-boot:run            # ou: java -jar target\rotavital-backend-0.1.0-SNAPSHOT.jar
+```
+</details>
+
+> A API sobe em `http://localhost:8080/api/v1` (ex.: `curl http://localhost:8080/api/v1/pontos`).
+
+| Comando (em `backend/`) | Descrição |
+| :--- | :--- |
+| `mvn compile` | Só compila o código de `src/main/java` |
+| `mvn test` | Compila e roda os testes JUnit 5 (`AuditoriaTelemetriaTest`) |
+| `mvn clean package` | Compila, testa e gera o `.jar` executável em `target/` |
+| `mvn spring-boot:run` | Sobe a API (precisa de `SUPABASE_DB_PASSWORD` exportada) |
 
 **Fluxo de demonstração do domínio** (`TesteFluxo`: cria banco de sangue, popula estoque, abre requisição e
 aloca por FEFO/ABO-Rh):
 
 ```bash
-javac -d out $(find src/main/java src/test/java -name "*.java")
-java -cp out com.rotavital.dominio.TesteFluxo
+cd backend
+mvn test-compile
+java -cp target/classes:target/test-classes com.rotavital.dominio.TesteFluxo
 ```
+
+<details>
+<summary>🪟 <b>Windows (PowerShell)</b></summary>
+
+No Windows o separador do classpath é `;` em vez de `:`:
+
+```powershell
+cd backend
+mvn test-compile
+java -cp "target/classes;target/test-classes" com.rotavital.dominio.TesteFluxo
+```
+</details>
 
 <h2 align="center" id="como-executar-frontend">🖥️ Como Executar o Frontend <br>
 <img src="https://img.shields.io/badge/Vite_+_React-111827?style=flat&logo=vite&logoColor=646CFF" height="22"/>
@@ -589,7 +797,7 @@ Interface em <b>React + TypeScript + Vite + Tailwind CSS</b>, com as telas já i
 </p>
 
 ```bash
-cd Rotavital/frontend
+cd frontend        # a partir de Rotavital/
 npm install
 npm run dev
 ```
@@ -609,12 +817,15 @@ npm run dev
 <p align="center">
 O <a href="./docker-compose.yml"><code>docker-compose.yml</code></a> na raiz do projeto sobe o backend Spring Boot
 e o frontend (build de produção servido via Nginx) já conectados ao banco <b>Supabase</b>. Crie um arquivo
-<code>backend/.env</code> com a variável <code>SUPABASE_DB_PASSWORD</code> antes de subir os containers.
+<code>backend/.env</code> com a variável <code>SUPABASE_DB_PASSWORD</code> antes de subir os containers
+(o compose injeta esse arquivo no container do backend).
 </p>
 
 ```bash
-cd Rotavital
-docker compose up --build
+# a partir de Rotavital/
+docker compose up --build -d   # compila as imagens e sobe os containers em segundo plano
+docker compose logs -f backend # acompanha os logs do Spring Boot
+docker compose down            # derruba os containers
 ```
 
 > Frontend em `http://localhost:80` e backend em `http://localhost:8080`.

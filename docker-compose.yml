@@ -8,8 +8,6 @@ services:
       - "8080:8080"
     env_file:
       - ./backend/.env
-    environment:
-      - SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD}
     restart: unless-stopped
 
   frontend:

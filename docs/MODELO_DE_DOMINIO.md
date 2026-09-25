@@ -29,11 +29,14 @@
 6. [Estoque](#6-estoque)
 7. [BolsaHemocomponente](#7-bolsahemocomponente)
 8. [RequisicaoHospitalar](#8-requisicaohospitalar)
-9. [Enums](#9-enums)
-10. [Fluxo de demonstração (TesteFluxo)](#10-testefluxo)
-11. [Como executar](#11-executar)
-12. [Onde o contrato de API diverge do domínio](#12-onde-o-contrato-diverge)
-13. [Resumo final](#13-resumo)
+9. [Conexao](#9-conexao)
+10. [RedeDistribuicao — grafo e rota mínima (Dijkstra)](#10-rededistribuicao)
+11. [RotaCalculada](#11-rotacalculada)
+12. [Enums](#12-enums)
+13. [Fluxo de demonstração (TesteFluxo)](#13-testefluxo)
+14. [Como executar](#14-executar)
+15. [Onde o contrato de API diverge do domínio](#15-onde-o-contrato-diverge)
+16. [Resumo final](#16-resumo)
 
 <h2 align="left" id="1-visao-geral">🗺️ 1. Visão geral: diagrama de classes</h2>
 
@@ -88,6 +91,30 @@ classDiagram
         +cancelar()
     }
 
+    class Conexao {
+        -PontoDeRede origem
+        -PontoDeRede destino
+        -double distanciaKm
+        -double tempoEstimadoMin
+    }
+
+    class RedeDistribuicao {
+        -List~PontoDeRede~ pontos
+        -List~Conexao~ conexoes
+        +adicionarPonto(ponto)
+        +adicionarConexao(origem, destino, km, min)
+        +calcularRotaMinima(origemId, destinoId, janela) RotaCalculada
+    }
+
+    class RotaCalculada {
+        -PontoDeRede origem
+        -PontoDeRede destino
+        -List~PontoDeRede~ nos
+        -double distanciaTotalKm
+        -double tempoEstimadoMin
+        -boolean dentroDaJanela
+    }
+
     PontoDeRede <|.. Hospital : implements
     PontoDeRede <|.. BancoDeSangue : implements
     Hospital *-- Endereco : composição
@@ -95,6 +122,11 @@ classDiagram
     BancoDeSangue *-- Estoque : composição
     Estoque o-- BolsaHemocomponente : possui *
     Hospital o-- RequisicaoHospitalar : possui *
+    RedeDistribuicao o-- PontoDeRede : possui *
+    RedeDistribuicao o-- Conexao : possui *
+    Conexao --> PontoDeRede : origem/destino
+    RedeDistribuicao ..> RotaCalculada : calcula
+    RotaCalculada --> PontoDeRede : nós do caminho
 ```
 
 - `Hospital` e `BancoDeSangue` **não têm relação de herança entre si**. Elas só compartilham o contrato da
@@ -106,6 +138,9 @@ classDiagram
   pertence, e é criado junto no construtor de `BancoDeSangue`.
 - `RequisicaoHospitalar` é criada por `Hospital.solicitar(...)` e mantida numa lista dentro do próprio
   hospital que a originou.
+- `RedeDistribuicao` é o grafo de distribuição: guarda os `PontoDeRede` (nós) e as `Conexao` (arestas) e
+  calcula o menor caminho entre dois pontos, devolvendo uma `RotaCalculada` — ver
+  [seção 10](#10-rededistribuicao).
 
 <h2 align="left" id="2-pontoderede">🔌 2. PontoDeRede — o contrato comum</h2>
 
@@ -161,8 +196,9 @@ sem o `BancoDeSangue` ao qual pertence.
 
 <h2 align="left" id="7-bolsahemocomponente">🩸 7. BolsaHemocomponente</h2>
 
-Unidade física de hemocomponente (bolsa) armazenada em um banco de sangue, com tipo, validade, volume e
-status. Nasce sempre com `status = DISPONIVEL`.
+Unidade física de hemocomponente (bolsa) armazenada em um banco de sangue, com tipo, validade, volume,
+`loteSintetico` (identificador do lote gerado para simulação com dados sintéticos) e status. Nasce sempre
+com `status = DISPONIVEL`.
 
 ```mermaid
 stateDiagram-v2
@@ -189,7 +225,53 @@ Representa o pedido de hemocomponentes feito por um `Hospital` a um banco de san
 | `marcarComoAlocada()` | Chamado quando uma bolsa compatível é encontrada e reservada para esta requisição |
 | `cancelar()` | Marca a requisição como `CANCELADA` |
 
-<h2 align="left" id="9-enums">🏷️ 9. Enums</h2>
+<h2 align="left" id="9-conexao">🔗 9. Conexao</h2>
+
+Aresta do grafo de distribuição: liga dois `PontoDeRede` (origem e destino) com a distância (`km`) e o tempo
+estimado (`min`) entre eles. Imutável — todos os campos são `final`, atribuídos só no construtor.
+
+| Atributo | Tipo |
+|---|---|
+| `origem` / `destino` | `PontoDeRede` |
+| `distanciaKm` | `double` |
+| `tempoEstimadoMin` | `double` |
+
+<h2 align="left" id="10-rededistribuicao">🕸️ 10. RedeDistribuicao — grafo e rota mínima (Dijkstra)</h2>
+
+O grafo de distribuição em si: uma lista de `PontoDeRede` (nós) e uma lista de `Conexao` (arestas). Entrega
+a Sprint W04 de "cálculo de rota mínima" (algoritmos de AED).
+
+| Método | O que faz |
+|---|---|
+| `adicionarPonto(ponto)` | Inclui um nó (`Hospital` ou `BancoDeSangue`) no grafo |
+| `adicionarConexao(origem, destino, km, min)` | Cria a aresta **nos dois sentidos** (duas `Conexao`, uma por direção) — o grafo é não-direcionado |
+| `calcularRotaMinima(origemId, destinoId, janelaEntregaLimite)` | Dijkstra sobre `distanciaKm` como peso; devolve uma `RotaCalculada` |
+
+`calcularRotaMinima` implementa o algoritmo de **Dijkstra** "na mão" (sem biblioteca de grafos), usando uma
+`PriorityQueue` ordenada pela distância acumulada e um mapa de predecessores para reconstruir o caminho.
+Também acumula o tempo estimado ao longo do caminho e verifica se o total cabe dentro de
+`janelaEntregaLimite` (quando informada). Lança `IllegalStateException` se não existir caminho até o
+destino, e `IllegalArgumentException` se `origemId`/`destinoId` não corresponder a nenhum ponto cadastrado.
+
+> ✅ Exposta via `RotaController` (`GET /api/v1/pontos`, `GET /api/v1/conexoes`, `GET /api/v1/rotas`),
+> populada em memória por `RedeDistribuicaoEmMemoria` (hemocentro `BS-01` + 6 hospitais). `TesteFluxo`
+> continua sem exercitá-la — a demonstração manual cobre só estoque/requisição. Ver
+> [seção 15](#15-onde-o-contrato-diverge).
+
+<h2 align="left" id="11-rotacalculada">🧭 11. RotaCalculada</h2>
+
+Resultado de `RedeDistribuicao.calcularRotaMinima(...)`: um objeto de retorno imutável, não uma entidade
+persistida.
+
+| Atributo | Tipo |
+|---|---|
+| `origem` / `destino` | `PontoDeRede` |
+| `nos` | `List<PontoDeRede>` — caminho completo, origem→destino |
+| `distanciaTotalKm` | `double` |
+| `tempoEstimadoMin` | `double` |
+| `dentroDaJanela` | `boolean` |
+
+<h2 align="left" id="12-enums">🏷️ 12. Enums</h2>
 
 | Enum | Valores | Usado em |
 |---|---|---|
@@ -198,7 +280,7 @@ Representa o pedido de hemocomponentes feito por um `Hospital` a um banco de san
 | `StatusBolsa` | `DISPONIVEL`, `RESERVADA`, `EM_TRANSITO`, `ENTREGUE`, `DESCARTADA` | `BolsaHemocomponente` |
 | `StatusRequisicao` | `PENDENTE`, `ALOCADA`, `EM_TRANSITO`, `ENTREGUE`, `CANCELADA` | `RequisicaoHospitalar` |
 
-<h2 align="left" id="10-testefluxo">🧪 10. Fluxo de demonstração (TesteFluxo)</h2>
+<h2 align="left" id="13-testefluxo">🧪 13. Fluxo de demonstração (TesteFluxo)</h2>
 
 [`TesteFluxo.java`](../backend/src/test/java/com/rotavital/dominio/TesteFluxo.java) é uma classe com `main`
 que simula manualmente o fluxo básico do domínio — não é um teste automatizado (JUnit), é só uma
@@ -223,7 +305,10 @@ flowchart TD
 | Iterar via `PontoDeRede` | Polimorfismo entre `Hospital` e `BancoDeSangue`, sem herança entre eles |
 | Listar vencidas | `Estoque.listarVencidas` |
 
-<h2 align="left" id="11-executar">▶️ 11. Como executar</h2>
+> `TesteFluxo` ainda não exercita `RedeDistribuicao`/`Conexao`/`RotaCalculada` — a demonstração cobre só o
+> fluxo de estoque + requisição. Ver [seção 10](#10-rededistribuicao).
+
+<h2 align="left" id="14-executar">▶️ 14. Como executar</h2>
 
 ```bash
 cd backend
@@ -231,22 +316,19 @@ javac -d out $(find src/main/java src/test/java -name "*.java")
 java -cp out com.rotavital.dominio.TesteFluxo
 ```
 
-<h2 align="left" id="12-onde-o-contrato-diverge">🕳️ 12. Onde o contrato de API diverge do domínio</h2>
+<h2 align="left" id="15-onde-o-contrato-diverge">🕳️ 15. Onde o contrato de API diverge do domínio</h2>
 
 O contrato REST ([`openapi.yaml`](openapi.yaml) / [`CONTRATOS_DE_API.md`](CONTRATOS_DE_API.md)) foi
-desenhado para espelhar 1:1 estas classes, mas antecipa alguns campos e estruturas que ainda não existem
-aqui:
+desenhado para espelhar 1:1 estas classes, mas ainda diverge em alguns pontos:
 
 | Gap | Detalhe |
 |---|---|
 | `urgencia` em `RequisicaoHospitalar` | Existe no contrato (`NivelUrgencia`), não no domínio |
-| `loteSintetico` em `BolsaHemocomponente` | Existe no contrato, não no domínio |
-| Estrutura de grafo para `/rotas/conexoes` | Não existe no domínio — só lat/long via `PontoDeRede` |
-| Classes de domínio para telemetria | Não existem — módulo `/telemetria` foi modelado só a partir da subtask |
+| Classes de domínio para telemetria | Não existem — módulo de telemetria (`/entregas/{id}/leituras`) foi modelado só a partir da subtask |
 
-> Ver a tabela completa em [`CONTRATOS_DE_API.md`, seção 8](CONTRATOS_DE_API.md#8-gaps).
+> Ver a tabela completa em [`CONTRATOS_DE_API.md`, seção 9](CONTRATOS_DE_API.md#9-gaps).
 
-<h2 align="left" id="13-resumo">📌 13. Resumo final</h2>
+<h2 align="left" id="16-resumo">📌 16. Resumo final</h2>
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -258,6 +340,8 @@ aqui:
 │  📦 Estoque         → composição de BancoDeSangue; busca FEFO      │
 │  🩸 BolsaHemocomponente → DISPONIVEL → RESERVADA/DESCARTADA        │
 │  📋 RequisicaoHospitalar → PENDENTE → ALOCADA/CANCELADA            │
+│  🔗 Conexao / 🕸️ RedeDistribuicao → grafo + Dijkstra, via RotaController │
+│  🧭 RotaCalculada   → retorno imutável de calcularRotaMinima(...)  │
 │  🧪 TesteFluxo      → demonstração manual, sem JUnit ainda         │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -265,5 +349,6 @@ aqui:
 > 🎓 **Conclusão:** a mesma composição `BancoDeSangue → Estoque → BolsaHemocomponente` e a mesma interface
 > `PontoDeRede`, sem herança entre `Hospital` e `BancoDeSangue`, sustentam tanto o `TesteFluxo` quanto o
 > contrato REST documentado em [`CONTRATOS_DE_API.md`](CONTRATOS_DE_API.md) — a API não inventa uma
-> modelagem nova, só expõe esta por HTTP
+> modelagem nova, só expõe esta por HTTP. O grafo de rotas (`RedeDistribuicao`) já chegou ao domínio e ao
+> `RotaController`
 > <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" height="15" style="vertical-align: middle;">.
