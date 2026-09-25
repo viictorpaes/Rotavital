@@ -274,23 +274,74 @@ values ('PQ-TESTE', 'BS-01', 'PLAQUETAS', 'O_NEGATIVO', current_date, current_da
 
 <h2 align="left" id="11-prints">📸 11. Prints / evidências</h2>
 
-Salvar em [`docs/evidencias/`](../../docs/evidencias/) com os nomes abaixo e trocar o ⏳ por ✅:
+Prints salvos em [`supabase/img/`](../img/). ✅ = já tirado · ⏳ = pendente.
 
 | # | Print | Onde tirar | Arquivo | Status |
 | :---: | :--- | :--- | :--- | :---: |
-| 1 | Home do projeto (nome, região, status *Healthy*) | Supabase → **Project Overview** | `supabase_01_projeto.png` | ⏳ |
-| 2 | Lista das 7 tabelas | **Table Editor** (barra lateral) | `supabase_02_tabelas.png` | ⏳ |
-| 3 | Colunas de `bolsa_hemocomponente` (tipos, nullable, defaults) | **Database → Tables** → `bolsa_hemocomponente` → *Columns* | `supabase_03_colunas_bolsa.png` | ⏳ |
+| 1 | Home do projeto (requisições por serviço, *Advisor found no issues*) | Supabase → **Project Overview** | [`supabase.png`](../img/supabase.png) | ✅ |
+| 2 | Lista das 7 tabelas | **Database → Tables** | [`Database Tables.png`](../img/Database%20Tables.png) | ✅ |
+| 3 | Colunas de `bolsa_hemocomponente` (tipos, PK, FKs, nullable) | **Database → Tables** → `bolsa_hemocomponente` → *View columns* | [`Colunas_exemplo(bolsa_hemocomponente).png`](<../img/Colunas_exemplo(bolsa_hemocomponente).png>) | ✅ |
 | 4 | Lista das constraints | **SQL Editor**, rodando a consulta da seção 10 | `supabase_04_constraints.png` | ⏳ |
 | 5 | Constraint recusando um dado | **SQL Editor**, rodando o `insert` inválido da seção 10 | `supabase_05_check_violado.png` | ⏳ |
-| 6 | Diagrama gerado pelo Supabase | **Database → Schema Visualizer** | `supabase_06_schema_visualizer.png` | ⏳ |
+| 6 | Diagrama gerado pelo Supabase | **Database → Schema Visualizer** | [`Schema_Vizualizer.png`](../img/Schema_Vizualizer.png) | ✅ |
 | 7 | RLS ligado nas 7 tabelas | **Authentication → Policies** | `supabase_07_rls.png` | ⏳ |
-| 8 | Histórico das migrations | **Database → Migrations** (se aplicado pela CLI) | `supabase_08_migrations.png` | ⏳ |
+| 8 | Histórico das migrations | **Database → Migrations** | [`Migrations_no_supabase.png`](../img/Migrations_no_supabase.png) | ✅ |
+| 9 | Logs do Postgres executando as migrations | **Logs → Postgres** | [`logs_postgres.png`](../img/logs_postgres.png) | ✅ |
 
 > [!TIP]
 > O print 6 (**Schema Visualizer**) desenha o DER a partir do banco real. Serve de evidência de que o banco
 > segue o DER de [`DER.md`](../../docs/DER.md).
 
+<details>
+<summary>▶️🏠 <b>1. Project Overview</b></summary>
 
-<h2 align="center">
-<img src="../img/supabase.png" width="500" alt="Supabase initial screen"></h2>
+<p align="center">
+<img src="../img/supabase.png" width="800" alt="Project Overview do Supabase com requisições por serviço e Advisor sem problemas">
+</p>
+
+</details>
+
+<details>
+<summary>▶️🗂️ <b>2. Tabelas (7)</b></summary>
+
+<p align="center">
+<img src="../img/Database%20Tables.png" width="800" alt="Database Tables do Supabase listando as 7 tabelas">
+</p>
+
+</details>
+
+<details>
+<summary>▶️🩸 <b>3. Colunas de <code>bolsa_hemocomponente</code></b></summary>
+
+<p align="center">
+<img src="../img/Colunas_exemplo(bolsa_hemocomponente).png" width="800" alt="Colunas da tabela bolsa_hemocomponente com tipos e constraints">
+</p>
+
+</details>
+
+<details>
+<summary>▶️🧩 <b>6. Schema Visualizer</b></summary>
+
+<p align="center">
+<img src="../img/Schema_Vizualizer.png" width="800" alt="Schema Visualizer do Supabase com as 7 tabelas e seus relacionamentos">
+</p>
+
+</details>
+
+<details>
+<summary>▶️📜 <b>8. Migrations</b></summary>
+
+<p align="center">
+<img src="../img/Migrations_no_supabase.png" width="800" alt="Database Migrations do Supabase com as duas migrations aplicadas">
+</p>
+
+</details>
+
+<details>
+<summary>▶️🪵 <b>9. Logs do Postgres</b></summary>
+
+<p align="center">
+<img src="../img/logs_postgres.png" width="800" alt="Logs do Postgres mostrando a execução do SQL das migrations">
+</p>
+
+</details>
