@@ -463,7 +463,6 @@ endpoints e classes de domínio, em <a href="./docs/MODULOS.md"><code>docs/MODUL
 Rotavital🩸/
 ├── backend <img src="https://img.shields.io/badge/-Java_21-111827?style=flat&logo=openjdk&logoColor=orange" height="18"/> <img src="https://img.shields.io/badge/-Maven-111827?style=flat&logo=apachemaven&logoColor=C71A36" height="18"/>/
 │   ├── pom.xml <img src="https://img.shields.io/badge/-Maven_POM-111827?style=flat&logo=apachemaven&logoColor=C71A36" height="18"/>
-│   ├── .env.example <img src="https://img.shields.io/badge/-SUPABASE__DB__PASSWORD-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/>
 │   └── src <img src="https://img.shields.io/badge/src-111827?style=flat&logo=openjdk&logoColor=orange" height="18"/>/
 │       ├── main/resources/application.properties <img src="https://img.shields.io/badge/-Conexão_Supabase_(Session_Pooler)-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/>
 │       ├── main/java/com/rotavital <img src="https://img.shields.io/badge/-Java-111827?style=flat&logo=openjdk&logoColor=orange" height="18"/>/
