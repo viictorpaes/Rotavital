@@ -21,10 +21,6 @@
 3. [Contratos de API](#3-api)
 4. [Contrato OpenAPI (openapi.yaml)](#4-openapi)
 5. [Módulos do Sistema](#5-modulos)
-6. [Protótipo (Figma)](#6-figma)
-7. [Visualizando o contrato REST](#7-visualizar)
-8. [Inventário de Componentes (arquitetura)](#8-inventario)
-9. [Banco de dados (Supabase)](#9-supabase)
 
 <h2 align="left" id="1-mapa">🗺️ 1. Mapa dos documentos</h2>
 
@@ -34,6 +30,9 @@ flowchart TD
     IDX --> DOM["MODELO_DE_DOMINIO.md<br/>classes Java (POO)"]
     IDX --> API["CONTRATOS_DE_API.md<br/>endpoints REST"]
     IDX --> MOD["MODULOS.md<br/>catálogo dos 4 módulos"]
+    IDX --> NET["LIGACOES_E_REDES.md<br/>ligações e redes"]
+    IDX --> DIA["DIAGRAMA_ROTAVITAL.md<br/>desenho em draw.io"]
+    IDX --> PDF["MONTAGEM_PDF_FINAL.md<br/>documento final para PDF"]
     API --> SPEC["openapi.yaml<br/>fonte da verdade"]
     DOM -. "espelhado 1:1 por" .-> API
     MOD -. "cruza" .-> DOM
@@ -52,6 +51,9 @@ flowchart TD
 | [`CONTRATOS_DE_API.md`](CONTRATOS_DE_API.md) | Markdown + Mermaid | Os 4 módulos REST, padrão de erro (RFC 7807), diagramas de sequência, gaps | se for desenhar ou consumir um endpoint |
 | [`openapi.yaml`](openapi.yaml) | OpenAPI 3.0.3 | Fonte da verdade do contrato — schemas, exemplos, respostas | se for importar no Swagger/Postman/Insomnia |
 | [`MODULOS.md`](MODULOS.md) | Markdown + Mermaid | Catálogo dos 4 módulos cruzando domínio ↔ contrato | quiser uma visão geral rápida do sistema |
+| [`LIGACOES_E_REDES.md`](LIGACOES_E_REDES.md) | Markdown | Tabela de ligações, protocolos e redes/sub-redes com isolamento lógico | quiser validar a comunicação e a arquitetura de rede |
+| [`DIAGRAMA_ROTAVITAL.md`](DIAGRAMA_ROTAVITAL.md) | Markdown + draw.io | Desenho da arquitetura com sub-redes, rótulos e legenda | quiser consultar o diagrama da solução |
+| [`MONTAGEM_PDF_FINAL.md`](MONTAGEM_PDF_FINAL.md) | Markdown | Compilação final com capa, descrição, diagrama e verificação cruzada | quiser montar o PDF final |
 | [`../RotaVital.fig`](../RotaVital.fig) | Texto (link) | Aponta para o protótipo publicado no Figma | se for discutir UI/UX do frontend |
 | [`INVENTARIO_COMPONENTES.md`](INVENTARIO_COMPONENTES.md) | Markdown | Levantamento do que executa código/guarda dado, validado contra o repositório | antes de desenhar o diagrama de arquitetura no draw.io |
 | [`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio) | draw.io (mxGraph XML) | Diagrama de contêineres com os 8 componentes da Etapa 1, ativo × planejado | para visualizar/editar a arquitetura no draw.io |
@@ -80,7 +82,31 @@ Fonte da verdade do contrato REST, em OpenAPI 3.0.3. Validado com
 Visão de catálogo dos 4 módulos (Estoque, Requisições, Rotas, Telemetria), cruzando o que cada um expõe no
 contrato com a classe de domínio que ele espelha — ver [`MODULOS.md`](MODULOS.md).
 
-<h2 align="left" id="6-figma">🎨 6. Protótipo (Figma)</h2>
+<h2 align="left" id="6-redes">🌐 6. Ligações e Redes</h2>
+
+Documenta a arquitetura de comunicação do sistema, incluindo:
+
+- tabela de ligações e protocolos;
+- portas de comunicação;
+- isolamento por redes e sub-redes;
+- regras de entrada e saída para cada segmento.
+
+O detalhe completo está em [`LIGACOES_E_REDES.md`](LIGACOES_E_REDES.md).
+
+<h2 align="left" id="7-diagrama">🗺️ 7. Diagrama draw.io</h2>
+
+Arquivo do desenho da arquitetura com sub-redes, fluxos de dados e legenda, pronto para abrir em draw.io/app.diagrams.net e exportar em PNG/PDF.
+
+- [`DIAGRAMA_ROTAVITAL.drawio`](DIAGRAMA_ROTAVITAL.drawio)
+- [`DIAGRAMA_ROTAVITAL.md`](DIAGRAMA_ROTAVITAL.md)
+
+<h2 align="left" id="8-pdf">📄 8. Montagem do PDF final</h2>
+
+Documento compilado com as sete seções exigidas, pronta para exportação em PDF final e com verificação cruzada das dependências entre endpoints, ligações e redes.
+
+- [`MONTAGEM_PDF_FINAL.md`](MONTAGEM_PDF_FINAL.md)
+
+<h2 align="left" id="9-figma">🎨 9. Protótipo (Figma)</h2>
 
 Protótipo Lo-Fi publicado no Figma, com link em [`RotaVital.fig`](../RotaVital.fig) (arquivo de texto na
 raiz do repositório, apontando para o protótipo online) — acesso direto:
@@ -89,7 +115,7 @@ raiz do repositório, apontando para o protótipo online) — acesso direto:
 > As histórias de usuário (BDD) da Entrega 01 estão no [`README.md`](../README.md#-entrega-01) principal,
 > na seção "Entrega 01", em blocos expansíveis (▶️).
 
-<h2 align="left" id="7-visualizar">🔎 7. Visualizando o contrato REST</h2>
+<h2 align="left" id="10-visualizar">🔎 10. Visualizando o contrato REST</h2>
 
 **Swagger UI (via Docker):**
 
