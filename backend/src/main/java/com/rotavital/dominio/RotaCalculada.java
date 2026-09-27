@@ -56,7 +56,7 @@ public class RotaCalculada
     public String toString()
     {
         return "Rota " + origem.getNome() + " -> " + destino.getNome()
-                + " (" + distanciaTotalKm + "km, " + tempoEstimadoMin + "min) - "
-                + (dentroDaJanela ? "dentro da janela" : "fora da janela");
+        + " (" + distanciaTotalKm + "km, " + tempoEstimadoMin + "min) - "
+        + (dentroDaJanela ? "dentro da janela" : "fora da janela");
     }
 }

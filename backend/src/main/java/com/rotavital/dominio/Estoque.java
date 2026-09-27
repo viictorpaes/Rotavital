@@ -21,27 +21,27 @@ public class Estoque
     }
 
     public List<BolsaHemocomponente> buscarDisponiveis(TipoComponente tipoComponente,
-                                                         TipoSanguineo tipoSanguineo)
+    TipoSanguineo tipoSanguineo)
     {
         return bolsas.stream()
-                .filter(BolsaHemocomponente::estaDisponivel)
-                .filter(b -> b.getTipoComponente() == tipoComponente)
-                .filter(b -> b.getTipoSanguineo() == tipoSanguineo)
-                .collect(Collectors.toList());
+        .filter(BolsaHemocomponente::estaDisponivel)
+        .filter(b -> b.getTipoComponente() == tipoComponente)
+        .filter(b -> b.getTipoSanguineo() == tipoSanguineo)
+        .collect(Collectors.toList());
     }
 
     public List<BolsaHemocomponente> buscarPorTipoSanguineo(TipoSanguineo tipoSanguineo)
     {
         return bolsas.stream()
-                .filter(b -> b.getTipoSanguineo() == tipoSanguineo)
-                .collect(Collectors.toList());
+        .filter(b -> b.getTipoSanguineo() == tipoSanguineo)
+        .collect(Collectors.toList());
     }
 
     public List<BolsaHemocomponente> listarVencidas(LocalDate dataReferencia)
     {
         return bolsas.stream()
-                .filter(b -> b.estaVencida(dataReferencia))
-                .collect(Collectors.toList());
+        .filter(b -> b.estaVencida(dataReferencia))
+        .collect(Collectors.toList());
     }
 
     public BancoDeSangue getBancoDeSangue()

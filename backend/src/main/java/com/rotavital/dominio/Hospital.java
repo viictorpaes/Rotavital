@@ -28,11 +28,11 @@ public class Hospital implements PontoDeRede
     }
 
     public RequisicaoHospitalar solicitar(TipoComponente tipoComponente,
-                                           TipoSanguineo tipoSanguineo,
-                                           int quantidade)
+    TipoSanguineo tipoSanguineo,int quantidade)
     {
         RequisicaoHospitalar requisicao = new RequisicaoHospitalar(
-                this, tipoComponente, tipoSanguineo, quantidade);
+        this, tipoComponente, tipoSanguineo, quantidade);
+        
         requisicoes.add(requisicao);
         return requisicao;
     }

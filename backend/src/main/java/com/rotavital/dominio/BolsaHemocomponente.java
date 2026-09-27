@@ -15,10 +15,10 @@ public class BolsaHemocomponente
     private StatusBolsa status;
     private final BancoDeSangue bancoOrigem;
 
-    public BolsaHemocomponente(String id, TipoComponente tipoComponente, TipoSanguineo tipoSanguineo,
-                                LocalDate dataColeta, LocalDate dataValidade, String loteSintetico,
-                                double volumeMl, double temperaturaCelsius, String localizacao,
-                                BancoDeSangue bancoOrigem)
+    public BolsaHemocomponente(String id, TipoComponente tipoComponente, 
+    TipoSanguineo tipoSanguineo, LocalDate dataColeta, LocalDate dataValidade, 
+    String loteSintetico, double volumeMl, double temperaturaCelsius, 
+    String localizacao, BancoDeSangue bancoOrigem)
     {
         this.id = id;
         this.tipoComponente = tipoComponente;
@@ -41,7 +41,7 @@ public class BolsaHemocomponente
     public boolean estaForaDaFaixa()
     {
         return temperaturaCelsius < tipoComponente.getTemperaturaMinima()
-                || temperaturaCelsius > tipoComponente.getTemperaturaMaxima();
+        || temperaturaCelsius > tipoComponente.getTemperaturaMaxima();
     }
 
     public boolean estaDisponivel()

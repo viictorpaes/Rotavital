@@ -9,10 +9,12 @@ import com.rotavital.benchmark.model.RegistroTelemetria;
 import com.rotavital.benchmark.model.ResultadoAuditoria;
 import com.rotavital.benchmark.service.AuditoriaTelemetriaService;
 
-public class AuditoriaTelemetriaTest {
+public class AuditoriaTelemetriaTest 
+{
 
     @Test
-    public void testarConcorrenciaEConsistenciaDeResultados() throws Exception {
+    public void testarConcorrenciaEConsistenciaDeResultados() throws Exception 
+    {
         AuditoriaTelemetriaService service = new AuditoriaTelemetriaService();
         List<RegistroTelemetria> dados = service.gerarMassaDados(50000);
 
@@ -40,4 +42,3 @@ public class AuditoriaTelemetriaTest {
         Assertions.assertEquals(seq.getDesvioPadraoTemperatura(), vt.getDesvioPadraoTemperatura(), 0.001);
     }
 }
-

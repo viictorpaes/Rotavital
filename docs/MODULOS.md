@@ -13,7 +13,8 @@
 
 > Catálogo dos 4 módulos que compõem o Rota Vital, cruzando o que o contrato REST expõe
 > ([`CONTRATOS_DE_API.md`](CONTRATOS_DE_API.md) / [`openapi.yaml`](openapi.yaml)) com as classes do modelo
-> de domínio que cada um espelha ([`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md)). O README principal só
+> de domínio que cada um espelha ([`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md)) e com as tabelas que o
+> persistem no Supabase ([`DER.md`](DER.md)). O README principal só
 > referencia este arquivo — o detalhe de cada módulo vive aqui.
 
 <h2 align="left">🧭 Sumário: </h2>
@@ -42,17 +43,23 @@ flowchart LR
     M4 -. "sem classe de domínio ainda" .-> D4["gap"]
 ```
 
-| Módulo | Recursos | Espelha no domínio | Status |
-| :--- | :--- | :--- | :---: |
-| 📦 Estoque e Hemocomponentes | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ Domínio + contrato prontos; só `GET /api/v1/bancos/{bancoId}/estoque` implementado |
-| 🏥 Requisições e Alocação | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ⚠️ Domínio + contrato prontos; nenhum controller ainda |
-| 🚚 Roteirização e Logística | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ Implementado (`RotaController`, grafo + Dijkstra) |
-| 🌡️ Telemetria e Cadeia Fria | `/entregas/{id}/leituras` | *(nenhuma)* | ⚠️ Só contrato, sem domínio nem controller |
+| Módulo | Recursos | Espelha no domínio | Tabelas no banco ([DER](DER.md)) | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| 📦 Estoque e Hemocomponentes | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | `bolsa_hemocomponente`, `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ⚠️ Domínio + contrato prontos; só `GET /api/v1/bancos/{bancoId}/estoque` implementado |
+| 🏥 Requisições e Alocação | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | `requisicao_hospitalar`, `alocacao` | ⚠️ Domínio + contrato prontos; nenhum controller ainda |
+| 🚚 Roteirização e Logística | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | `ponto_rede`, `conexao`, `entrega` | ✅ Implementado (`RotaController`, grafo + Dijkstra) |
+| 🌡️ Telemetria e Cadeia Fria | `/entregas/{id}/leituras` | *(nenhuma)* | `entrega`, `leitura_telemetria` | ⚠️ Contrato + tabelas; sem domínio nem controller |
 
 > ⚠️ **Fora deste catálogo de 4:** `POST /api/v1/acessos` (HU-01) está implementado em `AcessoController`,
 > funcionando de fato **e já documentado** em `openapi.yaml`/`CONTRATOS_DE_API.md` — só não entra aqui
 > porque este catálogo cruza contrato com classe de domínio, e Acesso não espelha nenhuma. Ver
 > [`CONTRATOS_DE_API.md`, seção 3](CONTRATOS_DE_API.md#3-acesso).
+>
+> 📊 **Também fora do catálogo:** `GET`/`POST /api/v1/benchmarks/auditoria-telemetria`, implementados em
+> `BenchmarkController` (pacote `com.rotavital.benchmark`). É a auditoria sequencial × paralela da cadeia fria
+> sobre uma massa sintética, sem persistir nada e sem classe em `com.rotavital.dominio`. Ver
+> [`CONTRATOS_DE_API.md`, seção 2](CONTRATOS_DE_API.md#2-padroes) e
+> [`RELATORIO_ATIVIDADE_PARALELISMO.md`](RELATORIO_ATIVIDADE_PARALELISMO.md).
 
 <h2 align="left" id="2-estoque">📦 2. Estoque e Hemocomponentes</h2>
 
@@ -141,8 +148,10 @@ trânsito, para acompanhar a cadeia fria dos hemocomponentes.
 | `POST` | `/api/v1/entregas/{id}/leituras` | Registra uma leitura (timestamp, GPS, temperatura em °C) |
 | `GET` | `/api/v1/entregas/{id}/leituras` | Histórico de leituras de uma entrega, em ordem cronológica |
 
-Este módulo ainda **não tem nenhuma classe de domínio correspondente** — foi modelado só a partir do
-contrato. Detalhes: [`CONTRATOS_DE_API.md`, seção 7](CONTRATOS_DE_API.md#7-telemetria).
+Este módulo ainda **não tem nenhuma classe de domínio correspondente** — foi modelado a partir do
+contrato. No banco, já existe onde gravar: as tabelas `entrega` e `leitura_telemetria` estão aplicadas no
+Supabase ([`DER.md`](DER.md)). A auditoria de telemetria do `BenchmarkController` usa um modelo próprio
+(`benchmark.model.RegistroTelemetria`), com dados sintéticos, e não substitui este módulo. Detalhes: [`CONTRATOS_DE_API.md`, seção 7](CONTRATOS_DE_API.md#7-telemetria).
 
 <h2 align="left" id="6-resumo">📌 6. Resumo final</h2>
 
@@ -153,8 +162,9 @@ contrato. Detalhes: [`CONTRATOS_DE_API.md`, seção 7](CONTRATOS_DE_API.md#7-tel
 │  📦 Estoque        → domínio+contrato prontos; só GET implementado │
 │  🏥 Requisições    → domínio+contrato prontos; sem controller      │
 │  🚚 Rotas          → GET /pontos, /conexoes, /rotas → Dijkstra ✅   │
-│  🌡️ Telemetria     → cadeia fria simulada — gap de domínio         │
+│  🌡️ Telemetria     → contrato + tabelas; gap de domínio e controller │
 │  🔑 Acesso (HU-01) → implementado e documentado, sem espelho no domínio │
+│  📊 Benchmarks     → auditoria sequencial × paralela, fora do domínio │
 └──────────────────────────────────────────────────────────────────┘
 ```
 

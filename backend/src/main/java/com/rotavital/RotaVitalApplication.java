@@ -57,7 +57,7 @@ public class RotaVitalApplication
                             }
                         }
                     }
-                    System.out.println("📄 Arquivo .env carregado de: " + caminho.toAbsolutePath());
+                    System.out.println("Arquivo .env carregado de: " + caminho.toAbsolutePath());
                     break;
                 }
                 catch (IOException ignored) 

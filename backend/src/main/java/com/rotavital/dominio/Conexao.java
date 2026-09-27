@@ -7,7 +7,8 @@ public class Conexao
     private final double distanciaKm;
     private final double tempoEstimadoMin;
 
-    public Conexao(PontoDeRede origem, PontoDeRede destino, double distanciaKm, double tempoEstimadoMin)
+    public Conexao(PontoDeRede origem, PontoDeRede destino, 
+    double distanciaKm, double tempoEstimadoMin)
     {
         this.origem = origem;
         this.destino = destino;
@@ -39,6 +40,6 @@ public class Conexao
     public String toString()
     {
         return origem.getNome() + " -> " + destino.getNome()
-                + " (" + distanciaKm + "km, " + tempoEstimadoMin + "min)";
+        + " (" + distanciaKm + "km, " + tempoEstimadoMin + "min)";
     }
 }
