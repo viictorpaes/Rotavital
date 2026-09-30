@@ -666,12 +666,13 @@ Rotavital🩸/
 │
 ├── supabase <img src="https://img.shields.io/badge/-Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/> <img src="https://img.shields.io/badge/-PostgreSQL-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>/
 │   ├── img <img src="https://img.shields.io/badge/-Prints_do_Supabase-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="18"/>/
-│   └── migrations <img src="https://img.shields.io/badge/-5_migrations_·_14_tabelas_·_2_views-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>/
-│       ├── 20260924120000_schema_inicial.sql <img src="https://img.shields.io/badge/-Tabelas_·_PK_·_FK_·_RLS-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
-│       ├── 20260924120100_constraints_integridade.sql <img src="https://img.shields.io/badge/-NOT_NULL_·_UNIQUE_·_CHECK_·_Trigger-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
-│       ├── 20260925120000_ajustes_schema_existente.sql <img src="https://img.shields.io/badge/-Ajustes_do_Schema-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
-│       ├── 20260925120100_escopo_clinico.sql <img src="https://img.shields.io/badge/-Escopo_Clínico-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
-│       └── 20260925120200_views_painel.sql <img src="https://img.shields.io/badge/-Views_do_Painel-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│   ├── migrations <img src="https://img.shields.io/badge/-5_migrations_·_14_tabelas_·_2_views-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>/
+│   │   ├── 20260924120000_schema_inicial.sql <img src="https://img.shields.io/badge/-Tabelas_·_PK_·_FK_·_RLS-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│   │   ├── 20260924120100_constraints_integridade.sql <img src="https://img.shields.io/badge/-NOT_NULL_·_UNIQUE_·_CHECK_·_Trigger-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│   │   ├── 20260925120000_ajustes_schema_existente.sql <img src="https://img.shields.io/badge/-Ajustes_do_Schema-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│   │   ├── 20260925120100_escopo_clinico.sql <img src="https://img.shields.io/badge/-Escopo_Clínico-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│   │   └── 20260925120200_views_painel.sql <img src="https://img.shields.io/badge/-Views_do_Painel-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│   └── seed.sql <img src="https://img.shields.io/badge/-Dados_de_exemplo_·_idempotente-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 │
 ├── img <img src="https://img.shields.io/badge/Assets-green?style=flat&logo=image&logoColor=white" height="18"/>/
 ├── docker-compose.yml <img src="https://img.shields.io/badge/-Docker_Compose-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
@@ -810,7 +811,7 @@ Copie [`backend/.env.example`](./backend/.env.example) para `backend/.env` (já 
 <details>
 <summary>▶️🚀 <b>Como aplicar as migrations</b></summary>
 
-**Opção A — SQL Editor:** abrir o projeto → **SQL Editor** → rodar as 5 migrations em ordem (pelo prefixo de data) → conferir em **Table Editor**.
+**Opção A — SQL Editor:** abrir o projeto → **SQL Editor** → rodar as 5 migrations em ordem (pelo prefixo de data) → rodar `supabase/seed.sql` para carregar os dados de exemplo → conferir em **Table Editor**.
 
 **Opção B — Supabase CLI:**
 
@@ -819,6 +820,9 @@ npx supabase login
 npx supabase link --project-ref gilyfswvezmvtmlxgvrd
 npx supabase db push
 ```
+
+> O `db push` aplica só as migrations. A carga inicial ([`supabase/seed.sql`](./supabase/seed.sql)) é rodada pelo
+> **SQL Editor**; o script é idempotente e pode ser executado mais de uma vez sem duplicar dados.
 </details>
 
 <details>

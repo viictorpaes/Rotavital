@@ -453,8 +453,8 @@ dados-semente do backend (`BancosEmMemoria` e `RedeDistribuicaoEmMemoria`). Resu
 | Passo | Ação |
 | :---: | :--- |
 | 1 | Abrir o projeto → **SQL Editor** → **New query** |
-| 2 | Colar e rodar `20260924120000_schema_inicial.sql` |
-| 3 | Colar e rodar `20260924120100_constraints_integridade.sql` |
+| 2 | Colar e rodar as 5 migrations de `supabase/migrations/`, em ordem (pelo prefixo de data) |
+| 3 | Colar e rodar `supabase/seed.sql` (dados de exemplo do backend; pode rodar mais de uma vez) |
 | 4 | Conferir em **Table Editor** e **Database → Tables** |
 
 **Opção B: Supabase CLI** 💻
