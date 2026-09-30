@@ -11,15 +11,15 @@
           <mxGeometry x="150" y="40" width="1430" height="500" as="geometry" />
         </mxCell>
         <mxCell id="layerAplicacao" value="Sub-redes privadas de aplicação e dados" style="shape=swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#ECFDF5;strokeColor=#22C55E;swimlaneFillColor=#F0FFF6;" vertex="1" parent="layerRede">
-          <mxGeometry x="810" y="0" width="600" height="460" as="geometry" />
+          <mxGeometry x="650" y="0" width="760" height="460" as="geometry" />
         </mxCell>
 
         <mxCell id="publicSubnet" value="Sub-rede pública&#xa;10.0.1.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=2;" vertex="1" parent="layerRede">
-          <mxGeometry x="30" y="70" width="760" height="260" as="geometry" />
+          <mxGeometry x="30" y="70" width="600" height="260" as="geometry" />
         </mxCell>
 
         <mxCell id="appSubnet" value="Sub-rede privada de aplicação&#xa;10.0.10.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;" vertex="1" parent="layerAplicacao">
-          <mxGeometry x="30" y="70" width="560" height="260" as="geometry" />
+          <mxGeometry x="30" y="70" width="730" height="260" as="geometry" />
         </mxCell>
 
         <mxCell id="dataSubnet" value="Sub-rede privada de dados&#xa;10.0.20.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7C3AED;strokeWidth=2;" vertex="1" parent="layerAplicacao">
@@ -38,20 +38,24 @@
           <mxGeometry x="430" y="130" width="140" height="100" as="geometry" />
         </mxCell>
 
-        <mxCell id="dns" value="DNS Resolver&#xa;VPC gerenciado" style="shape=mxgraph.networks.server;html=1;whiteSpace=wrap;fillColor=#DBEAFE;strokeColor=#2563EB;" vertex="1" parent="layerRede">
-          <mxGeometry x="610" y="350" width="180" height="70" as="geometry" />
-        </mxCell>
-
-        <mxCell id="dnsNote" value="Serviço compartilhado da VPC; não é um workload alocado em sub-rede." style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="layerRede">
-          <mxGeometry x="585" y="425" width="210" height="40" as="geometry" />
-        </mxCell>
-
         <mxCell id="frontend" value="Frontend&#xa;React + Vite + Nginx" style="shape=mxgraph.networks.web_server;html=1;whiteSpace=wrap;fillColor=#BBF7D0;strokeColor=#15803D;" vertex="1" parent="layerAplicacao">
           <mxGeometry x="80" y="120" width="150" height="110" as="geometry" />
         </mxCell>
 
         <mxCell id="backend" value="Backend API&#xa;Spring Boot" style="shape=mxgraph.networks.server;html=1;whiteSpace=wrap;fillColor=#A7F3D0;strokeColor=#16A34A;" vertex="1" parent="layerAplicacao">
           <mxGeometry x="340" y="120" width="150" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="worker" value="Worker assíncrono&#xa;(proposto)" style="shape=mxgraph.networks.server;html=1;whiteSpace=wrap;fillColor=#A7F3D0;strokeColor=#16A34A;" vertex="1" parent="layerAplicacao">
+          <mxGeometry x="80" y="245" width="150" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="broker" value="RabbitMQ&#xa;Fila de eventos (proposta)" style="shape=mxgraph.networks.server;html=1;whiteSpace=wrap;fillColor=#BBF7D0;strokeColor=#15803D;" vertex="1" parent="layerAplicacao">
+          <mxGeometry x="340" y="245" width="150" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dns" value="DNS Resolver/Forwarder&#xa;privado (endpoint)" style="shape=mxgraph.networks.server;html=1;whiteSpace=wrap;fillColor=#DCFCE7;strokeColor=#16A34A;" vertex="1" parent="layerAplicacao">
+          <mxGeometry x="550" y="120" width="180" height="80" as="geometry" />
         </mxCell>
 
         <mxCell id="db" value="PostgreSQL autogerenciado&#xa;Banco de dados" style="shape=mxgraph.networks.database;html=1;whiteSpace=wrap;fillColor=#E9D5FF;strokeColor=#7C3AED;" vertex="1" parent="layerAplicacao">
@@ -78,6 +82,14 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
+        <mxCell id="line6" value="AMQP 0-9-1/5672" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#15803D;strokeWidth=2;dashed=1;dashPattern=6 4;endArrow=classic;endFill=1;" edge="1" parent="1" source="backend" target="broker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="line7" value="AMQP 0-9-1/5672" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#15803D;strokeWidth=2;dashed=1;dashPattern=6 4;endArrow=classic;endFill=1;" edge="1" parent="1" source="broker" target="worker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
         <mxCell id="legendTitle" value="Legenda" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=16;" vertex="1" parent="1">
           <mxGeometry x="150" y="565" width="120" height="30" as="geometry" />
         </mxCell>
@@ -94,7 +106,7 @@
           <mxGeometry x="150" y="645" width="70" height="0" as="geometry" />
         </mxCell>
 
-        <mxCell id="legendAsync" value="Tracejada: assíncrono (fila/evento; não configurado)" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="legendAsync" value="Tracejada: assíncrono (fila/evento; arquitetura proposta)" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="230" y="630" width="410" height="30" as="geometry" />
         </mxCell>
 
@@ -118,7 +130,7 @@
           <mxGeometry x="680" y="665" width="270" height="30" as="geometry" />
         </mxCell>
 
-        <mxCell id="legendShapes" value="Formas: pessoa = usuário; roteador = Load Balancer/NAT; servidor web = Frontend; servidor = Backend/DNS; banco de dados = PostgreSQL." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="legendShapes" value="Formas: pessoa = usuário; roteador = Load Balancer/NAT; servidor web = Frontend; servidor = Backend, Worker, RabbitMQ e DNS privado; banco = PostgreSQL." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="1000" y="595" width="520" height="100" as="geometry" />
         </mxCell>
       </root>
