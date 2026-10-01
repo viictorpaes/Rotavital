@@ -2,6 +2,7 @@ package com.rotavital.dominio;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Estoque
 {
@@ -14,7 +15,7 @@ public class Estoque
 
     public void adicionarBolsa(BolsaHemocomponente bolsa)
     {
-        bolsas.add(bolsa);
+        bolsas.add(Objects.requireNonNull(bolsa, "A bolsa não pode ser nula."));
     }
 
     public List<BolsaHemocomponente> buscarDisponiveis(TipoComponente tipoComponente,

@@ -38,6 +38,13 @@ class EstoqueTest
     }
 
     @Test
+    void naoPermiteAdicionarBolsaNula()
+    {
+        assertThrows(NullPointerException.class, () -> estoque.adicionarBolsa(null));
+        assertTrue(estoque.getBolsas().isEmpty());
+    }
+
+    @Test
     void estoquePodeSerUsadoIndependentementeDoEstoqueDoBancoDeOrigem()
     {
         BolsaHemocomponente bolsa = criarBolsa(
