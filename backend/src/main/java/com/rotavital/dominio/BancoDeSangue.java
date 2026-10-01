@@ -6,14 +6,17 @@ import java.util.List;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Transient;
 
 @Entity
 @DiscriminatorValue("BANCO_DE_SANGUE")
 public class BancoDeSangue extends PontoDeRedeBase
 {
-    // Bolsas armazenadas neste banco (lado inverso de BolsaHemocomponente.bancoOrigem).
+    // Bolsas armazenadas neste banco (lado inverso de BolsaHemocomponente.bancoOrigem),
+    // da que vence primeiro para a que vence por último (FEFO).
     @OneToMany(mappedBy = "bancoOrigem")
+    @OrderBy("dataValidade ASC, id ASC")
     private List<BolsaHemocomponente> bolsas = new ArrayList<>();
 
     @Transient

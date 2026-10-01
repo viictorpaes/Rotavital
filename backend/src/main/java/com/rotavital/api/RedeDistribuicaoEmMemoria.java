@@ -14,11 +14,13 @@ public class RedeDistribuicaoEmMemoria
 {
     private final RedeDistribuicao rede;
 
-    public RedeDistribuicaoEmMemoria(BancosEmMemoria bancos)
+    public RedeDistribuicaoEmMemoria()
     {
         rede = new RedeDistribuicao();
 
-        BancoDeSangue hemope = bancos.buscarPorId("BS-01");
+        // Temporário até a PI3-152 trocar a rede para o banco de dados (o estoque já vem do banco desde a PI3-151).
+        BancoDeSangue hemope = new BancoDeSangue("BS-01", "Hemope Central",
+                new Endereco("Av. Central, 100 - Recife/PE", -8.0578, -34.8829));
         rede.adicionarPonto(hemope);
 
         Hospital hospitalDasClinicas = new Hospital("HOSP-01", "Hospital das Clinicas",
@@ -44,7 +46,7 @@ public class RedeDistribuicaoEmMemoria
         hospitais.forEach(rede::adicionarPonto);
 
         // Topologia em estrela a partir do hemocentro — distância/tempo sintéticos (sem roteador real aqui),
-        // mesma convenção de dado simulado usada em BancosEmMemoria e na telemetria.
+        // mesma convenção de dado simulado usada no supabase/seed.sql e na telemetria.
         rede.adicionarConexao(hemope, hospitalDasClinicas, 3.2, 9);
         rede.adicionarConexao(hemope, hcPe, 7.8, 18);
         rede.adicionarConexao(hemope, realPortugues, 2.1, 7);
