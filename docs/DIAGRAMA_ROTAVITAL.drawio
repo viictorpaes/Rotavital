@@ -14,15 +14,15 @@
           <mxGeometry x="650" y="0" width="760" height="460" as="geometry" />
         </mxCell>
 
-        <mxCell id="publicSubnet" value="Sub-rede pública&#xa;10.0.1.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=2;" vertex="1" parent="layerRede">
+        <mxCell id="publicSubnet" value="Sub-rede pública&#xa;10.0.1.0/24" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=8;spacingLeft=10;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=2;" vertex="1" parent="layerRede">
           <mxGeometry x="30" y="70" width="600" height="260" as="geometry" />
         </mxCell>
 
-        <mxCell id="appSubnet" value="Sub-rede privada de aplicação&#xa;10.0.10.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;" vertex="1" parent="layerAplicacao">
+        <mxCell id="appSubnet" value="Sub-rede privada de aplicação&#xa;10.0.10.0/24" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=8;spacingLeft=10;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;" vertex="1" parent="layerAplicacao">
           <mxGeometry x="30" y="70" width="730" height="260" as="geometry" />
         </mxCell>
 
-        <mxCell id="dataSubnet" value="Sub-rede privada de dados&#xa;10.0.20.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7C3AED;strokeWidth=2;" vertex="1" parent="layerAplicacao">
+        <mxCell id="dataSubnet" value="Sub-rede privada de dados&#xa;10.0.20.0/24" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=8;spacingLeft=10;fillColor=#F3E8FF;strokeColor=#7C3AED;strokeWidth=2;" vertex="1" parent="layerAplicacao">
           <mxGeometry x="30" y="350" width="560" height="110" as="geometry" />
         </mxCell>
 
