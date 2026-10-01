@@ -81,6 +81,9 @@ stateDiagram-v2
     RESERVADA --> DESCARTADA : descartar()
 ```
 
+Hoje só `GET /api/v1/bancos/{bancoId}/estoque` roda no backend: o `EstoqueController` usa o `EstoqueService`,
+que lê o banco de sangue e as suas bolsas das tabelas `ponto_rede` e `bolsa_hemocomponente` do Supabase.
+
 Detalhes de schema e DTOs Java: [`CONTRATOS_DE_API.md`, seção 4](CONTRATOS_DE_API.md#4-estoque).
 
 <h2 align="left" id="3-requisicoes">🏥 3. Requisições e Alocação</h2>
@@ -128,13 +131,15 @@ entre origem e destino — algoritmos de menor caminho da disciplina de AED.
 | `GET` | `/api/v1/conexoes` | Lista as arestas do grafo (distância/tempo) | `RedeDistribuicao.getConexoes()` |
 | `GET` | `/api/v1/rotas?origemId=&destinoId=&janelaEntregaLimite=` | Calcula a rota de menor custo | `RedeDistribuicao.calcularRotaMinima(...)` (Dijkstra) |
 
-`Hospital` e `BancoDeSangue` **não têm herança entre si** — só implementam `PontoDeRede`, o que permite
-tratá-los como nós intercambiáveis do mesmo grafo dentro de `RedeDistribuicao`.
+`Hospital` e `BancoDeSangue` herdam de `PontoDeRedeBase`, que implementa `PontoDeRede` — o que permite
+tratá-los como nós intercambiáveis do mesmo grafo dentro de `RedeDistribuicao` (a herança existe para o JPA
+gravar os dois na mesma tabela `ponto_rede`).
 
 O domínio resolve o grafo e o menor caminho com Dijkstra
 ([`MODELO_DE_DOMINIO.md`, seção 10](MODELO_DE_DOMINIO.md#10-rededistribuicao)) e os três endpoints acima já
-rodam via `RotaController`, sobre uma rede populada em memória (`RedeDistribuicaoEmMemoria`: hemocentro
-`BS-01` + 6 hospitais em topologia de estrela).
+rodam via `RotaController`. A cada chamada, `RedeDistribuicaoService` monta a rede com as tabelas
+`ponto_rede` e `conexao` do banco (Supabase); com o `supabase/seed.sql`, são o hemocentro `BS-01` + 6
+hospitais em topologia de estrela.
 
 Detalhes de schema e DTOs Java: [`CONTRATOS_DE_API.md`, seção 6](CONTRATOS_DE_API.md#6-rotas).
 
@@ -171,4 +176,5 @@ Supabase ([`DER.md`](DER.md)). A auditoria de telemetria do `BenchmarkController
 > Ver o modelo de domínio completo em [`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md) e a tabela integral de
 > gaps entre contrato e domínio em [`CONTRATOS_DE_API.md`, seção 9](CONTRATOS_DE_API.md#9-gaps). Dos 4
 > módulos do catálogo, **Estoque** (só `GET /api/v1/bancos/{bancoId}/estoque`) e **Rotas** (os 3 endpoints) já rodam em
-> código hoje — Requisições e Telemetria ainda descrevem só o contrato aprovado, não o backend em produção.
+> código hoje, lendo do banco (Supabase) — Requisições e Telemetria ainda descrevem só o contrato aprovado, não o
+> backend em produção.

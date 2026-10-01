@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2026-09-22T12:00:00.000Z" agent="rotavital" version="24.0.0" type="device">
+<mxfile host="app.diagrams.net" modified="2026-10-01T12:00:00.000Z" agent="rotavital" version="24.0.0" type="device">
   <diagram id="rotavital-conteineres" name="Rota Vital - Diagrama de Conteineres">
     <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="750" math="0" shadow="0">
       <root>
@@ -45,13 +45,8 @@
           <mxGeometry x="620" y="200" width="280" height="200" as="geometry" />
         </mxCell>
 
-        <!-- In-memory store -->
-        <mxCell id="memoria" value="Memoria do processo (HashMap)&#10;BancosEmMemoria&#10;RedeDistribuicaoEmMemoria&#10;&#10;some a cada restart" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;boundedLbl=1;fontSize=11;size=15;" vertex="1" parent="1">
-          <mxGeometry x="655" y="420" width="210" height="110" as="geometry" />
-        </mxCell>
-
-        <!-- Supabase/Postgres (planned, outside boundary) -->
-        <mxCell id="supabase" value="PostgreSQL / Supabase&#10;(gerenciado, pooler)&#10;&#10;PLANEJADO: conexao testada no boot,&#10;nenhum @Entity/@Repository usa ainda" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;fontSize=11;size=15;" vertex="1" parent="1">
+        <!-- Supabase/Postgres (managed, outside boundary) -->
+        <mxCell id="supabase" value="PostgreSQL / Supabase&#10;(gerenciado, pooler)&#10;&#10;ponto_rede, conexao,&#10;bolsa_hemocomponente" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;boundedLbl=1;fontSize=11;size=15;" vertex="1" parent="1">
           <mxGeometry x="980" y="420" width="220" height="110" as="geometry" />
         </mxCell>
 
@@ -68,10 +63,7 @@
         <mxCell id="e4" value="PLANEJADO &#8212; proxy /api/* -&gt; :8080/api/* ja configurado,&#10;mas sem trafego real (SPA usa mocks locais)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" edge="1" parent="1" source="nginx" target="backend">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e5" value="le / escreve" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=11;fontStyle=1;" edge="1" parent="1" source="backend" target="memoria">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e6" value="PLANEJADO &#8212; conexao testada no boot,&#10;nenhum dado passa por aqui hoje" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" edge="1" parent="1" source="backend" target="supabase">
+        <mxCell id="e6" value="JDBC (pooler) &#183; le via JPA&#10;(EstoqueController, RotaController)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=10;fontStyle=1;" edge="1" parent="1" source="backend" target="supabase">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
