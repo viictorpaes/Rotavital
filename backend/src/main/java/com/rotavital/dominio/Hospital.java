@@ -1,25 +1,35 @@
 package com.rotavital.dominio;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Hospital implements PontoDeRede
 {
     private final String id;
     private final String nome;
     private final Endereco endereco;
-    private final List<RequisicaoHospitalar> requisicoes;
+    private final FilaRequisicoesHospitalares requisicoes;
 
     public Hospital(String id, String nome, Endereco endereco)
     {
         this.id = id;
         this.nome = nome;
         this.endereco = endereco;
-        this.requisicoes = new ArrayList<>();
+        this.requisicoes = new FilaRequisicoesHospitalares();
     }
 
     public List<RequisicaoHospitalar> getRequisicoes()
     {
-        return requisicoes;
+        return requisicoes.listar();
+    }
+
+    public Optional<RequisicaoHospitalar> consultarProximaRequisicao()
+    {
+        return requisicoes.consultarProxima();
+    }
+
+    public Optional<RequisicaoHospitalar> retirarProximaRequisicao()
+    {
+        return requisicoes.retirarProxima();
     }
 
     public Endereco getEndereco()
@@ -33,7 +43,7 @@ public class Hospital implements PontoDeRede
     {
         RequisicaoHospitalar requisicao = new RequisicaoHospitalar(
                 this, tipoComponente, tipoSanguineo, quantidade);
-        requisicoes.add(requisicao);
+        requisicoes.adicionar(requisicao);
         return requisicao;
     }
 
