@@ -71,7 +71,7 @@ spring.datasource.url=jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432
 spring.datasource.username=postgres.gilyfswvezmvtmlxgvrd
 spring.datasource.password=${SUPABASE_DB_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
-spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.ddl-auto=validate
 ```
 
 | Propriedade | Por quê |
@@ -79,7 +79,7 @@ spring.jpa.hibernate.ddl-auto=update
 | `sslmode=require` 🔒 | O Supabase só aceita conexões criptografadas |
 | `postgres.<project-ref>` 👤 | No pooler, o usuário leva o id do projeto como sufixo |
 | `${SUPABASE_DB_PASSWORD}` 🔑 | A senha nunca vai para o Git; vem do `backend/.env` |
-| `ddl-auto=update` ⚠️ | Hoje ainda não há `@Entity`. Quando as entidades entrarem, trocar para `validate`: o schema passa a vir só das migrations |
+| `ddl-auto=validate` ✅ | O Hibernate só confere se as `@Entity` batem com as tabelas e nunca altera o banco: o schema vem só das migrations. Se algo não bater, a aplicação não sobe (PI3-150) |
 
 <h2 align="left" id="4-variaveis">🔑 4. Variáveis de ambiente</h2>
 
