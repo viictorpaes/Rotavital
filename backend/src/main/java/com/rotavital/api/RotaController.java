@@ -55,9 +55,9 @@ public class RotaController
     }
 
     @GetMapping("/rotas")
-    public ResponseEntity<?> calcularRota(@RequestParam(required = false) String origemId,
-    @RequestParam(required = false) String destinoId,
-    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime janelaEntregaLimite)
+    public ResponseEntity<?> calcularRota(@RequestParam(name = "origemId", required = false) String origemId,
+    @RequestParam(name = "destinoId", required = false) String destinoId,
+    @RequestParam(name = "janelaEntregaLimite", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime janelaEntregaLimite)
     {
         if (origemId == null || origemId.isBlank() || destinoId == null || destinoId.isBlank())
         {

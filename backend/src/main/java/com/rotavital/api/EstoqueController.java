@@ -31,8 +31,8 @@ public class EstoqueController
     }
 
     @GetMapping("/bancos/{bancoId}/estoque")
-    public ResponseEntity<?> consultarEstoque(@PathVariable String bancoId,
-    @RequestParam(required = false) TipoSanguineo tipoSanguineo)
+    public ResponseEntity<?> consultarEstoque(@PathVariable("bancoId") String bancoId,
+    @RequestParam(name = "tipoSanguineo", required = false) TipoSanguineo tipoSanguineo)
     {
         Optional<List<BolsaHemocomponente>> resultado = estoqueService.buscarBolsas(bancoId, tipoSanguineo);
 
