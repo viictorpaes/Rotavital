@@ -12,7 +12,7 @@ public final class BancoDeSangue implements PontoDeRede
         this.id = id;
         this.nome = nome;
         this.endereco = endereco;
-        this.estoque = new Estoque(this);
+        this.estoque = new Estoque();
     }
 
     public Estoque getEstoque()

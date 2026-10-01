@@ -102,8 +102,8 @@ classDiagram
   usado pelos algoritmos de rota (disciplina de AED).
 - `Endereco` é um **value object** usado por **composição** dentro de `Hospital` e `BancoDeSangue` — não
   existe fora de um dono.
-- `Estoque` é **composição** de `BancoDeSangue`: um estoque não existe sem o banco de sangue ao qual
-  pertence, e é criado junto no construtor de `BancoDeSangue`.
+- `BancoDeSangue` cria e mantém um `Estoque`, mas `Estoque` não mantém referência ao banco de sangue.
+  Assim, a estrutura pode ser instanciada e testada independentemente.
 - `RequisicaoHospitalar` é criada por `Hospital.solicitar(...)` e mantida numa lista dentro do próprio
   hospital que a originou.
 
@@ -145,19 +145,22 @@ Cria uma nova `RequisicaoHospitalar` vinculada a este hospital, adiciona à list
 
 <h2 align="left" id="5-bancodesangue">🏦 5. BancoDeSangue</h2>
 
-`BancoDeSangue implements PontoDeRede`. Tem um `Endereco` (composição) e um `Estoque` — **composição criada
-automaticamente no construtor**: não é possível ter um `BancoDeSangue` sem `Estoque`.
+`BancoDeSangue implements PontoDeRede`. Tem um `Endereco` (composição) e cria seu `Estoque`
+automaticamente no construtor. O estoque gerencia as bolsas sem depender diretamente do banco.
 
 <h2 align="left" id="6-estoque">📦 6. Estoque</h2>
 
-Controla o conjunto de `BolsaHemocomponente` de um `BancoDeSangue`. É composição: não existe um `Estoque`
-sem o `BancoDeSangue` ao qual pertence.
+Gerencia sua própria coleção de `BolsaHemocomponente`, sem referência a `BancoDeSangue`. Embora o banco
+crie e exponha seu estoque, a classe pode ser instanciada e testada de forma independente. As consultas
+retornam listas não modificáveis, preservando o encapsulamento da coleção interna.
 
 | Método | O que faz |
 |---|---|
 | `adicionarBolsa(bolsa)` | Inclui uma bolsa no estoque |
 | `buscarDisponiveis(tipoComponente, tipoSanguineo)` | Filtra bolsas `DISPONIVEL` que casam com o tipo pedido — base do algoritmo de alocação (compatibilidade ABO/Rh) |
+| `buscarPorTipoSanguineo(tipoSanguineo)` | Filtra bolsas pelo tipo sanguíneo |
 | `listarVencidas(dataReferencia)` | Filtra bolsas cuja `dataValidade` já passou |
+| `getBolsas()` | Retorna uma cópia não modificável da lista de bolsas |
 
 <h2 align="left" id="7-bolsahemocomponente">🩸 7. BolsaHemocomponente</h2>
 
@@ -255,10 +258,10 @@ aqui:
 │  🔌 PontoDeRede     → interface comum, sem herança entre os dois   │
 │  🏥 Hospital        → composição Endereco + lista de Requisições   │
 │  🏦 BancoDeSangue   → composição Endereco + Estoque                │
-│  📦 Estoque         → composição de BancoDeSangue; busca FEFO      │
+│  📦 Estoque         → coleção encapsulada; busca FEFO              │
 │  🩸 BolsaHemocomponente → DISPONIVEL → RESERVADA/DESCARTADA        │
 │  📋 RequisicaoHospitalar → PENDENTE → ALOCADA/CANCELADA            │
-│  🧪 TesteFluxo      → demonstração manual, sem JUnit ainda         │
+│  🧪 TesteFluxo      → demonstração manual; EstoqueTest → JUnit     │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
