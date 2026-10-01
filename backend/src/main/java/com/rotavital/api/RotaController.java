@@ -21,22 +21,25 @@ import com.rotavital.dominio.Conexao;
 import com.rotavital.dominio.PontoDeRede;
 import com.rotavital.dominio.RedeDistribuicao;
 import com.rotavital.dominio.RotaCalculada;
+import com.rotavital.servico.RedeDistribuicaoService;
 
 @RestController
 
 @RequestMapping("/api/v1")
 public class RotaController
 {
-    private final RedeDistribuicao rede;
+    private final RedeDistribuicaoService redeService;
 
-    public RotaController(RedeDistribuicaoEmMemoria redeDistribuicaoEmMemoria)
+    public RotaController(RedeDistribuicaoService redeService)
     {
-        this.rede = redeDistribuicaoEmMemoria.getRede();
+        this.redeService = redeService;
     }
 
     @GetMapping("/pontos")
     public ResponseEntity<List<PontoRedeDTO>> listarPontos()
     {
+        RedeDistribuicao rede = redeService.carregarRede();
+
         List<PontoRedeDTO> pontos = rede.getPontos().stream()
                 .map(this::paraPontoRedeDTO)
                 .toList();
@@ -47,6 +50,8 @@ public class RotaController
     @GetMapping("/conexoes")
     public ResponseEntity<List<ConexaoDTO>> listarConexoes()
     {
+        RedeDistribuicao rede = redeService.carregarRede();
+
         List<ConexaoDTO> conexoes = rede.getConexoes().stream()
                 .map(this::paraConexaoDTO)
                 .toList();
@@ -68,6 +73,7 @@ public class RotaController
 
         try
         {
+            RedeDistribuicao rede = redeService.carregarRede();
             RotaCalculada rota = rede.calcularRotaMinima(origemId, destinoId, janelaEntregaLimite);
 
             List<String> nos = rota.getNos().stream().map(PontoDeRede::getId).toList();

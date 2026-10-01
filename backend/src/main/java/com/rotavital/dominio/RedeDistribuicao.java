@@ -29,6 +29,13 @@ public class RedeDistribuicao
         conexoes.add(new Conexao(destino, origem, distanciaKm, tempoEstimadoMin));
     }
 
+    // Adiciona exatamente esta aresta, em um único sentido. Usado para as conexões lidas do banco,
+    // que já guarda ida e volta como duas linhas (adicionarConexao duplicaria as arestas).
+    public void adicionarConexaoDirigida(Conexao conexao)
+    {
+        conexoes.add(conexao);
+    }
+
     public List<PontoDeRede> getPontos()
     {
         return pontos;
