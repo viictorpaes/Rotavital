@@ -19,11 +19,11 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode })
     try
     {
       const bruto = sessionStorage.getItem(CHAVE_ARMAZENAMENTO);
-      return bruto ? (JSON.parse(bruto) as Usuario) : { nome: "Dr. Ana Lima", papel: "medico" };
+      return bruto ? (JSON.parse(bruto) as Usuario) : null;
     }
     catch
     {
-      return { nome: "Dr. Ana Lima", papel: "medico" };
+      return null;
     }
   });
 

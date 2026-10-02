@@ -1,8 +1,21 @@
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAutenticacao } from "@/context/ContextoAutenticacao";
 import { BarraLateral } from "./BarraLateral";
 
 export function LayoutPrincipal()
 {
+  const { usuario } = useAutenticacao();
+
+  if (!usuario)
+  {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (usuario.papel === "doador")
+  {
+    return <Navigate to="/portal-doador" replace />;
+  }
+
   return (
     <div className="flex min-h-screen bg-rota-bg">
       <BarraLateral />
