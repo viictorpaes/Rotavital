@@ -1,6 +1,6 @@
 // API Client centralizado para comunicação do Frontend com o Backend Spring Boot
-
-const API_BASE_URL = "/api/v1";
+import { clienteHttp, ErroHttp } from "./clienteHttp";
+export { clienteHttp, ErroHttp };
 
 export interface RespostaAcesso
 {
@@ -116,24 +116,10 @@ export async function autenticarUsuario(nome: string, papel: "medico" | "doador"
   if (papel === "doador") tipoAcessoBackend = "DOADOR";
   if (papel === "admin") tipoAcessoBackend = "ADMIN";
 
-  const resposta = await fetch(`${API_BASE_URL}/acessos`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      nome,
-      tipoAcesso: tipoAcessoBackend,
-    }),
+  return clienteHttp.post<RespostaAcesso>("/acessos", {
+    nome,
+    tipoAcesso: tipoAcessoBackend,
   });
-
-  if (!resposta.ok)
-  {
-    const erro = await resposta.json().catch(() => ({}));
-    throw new Error(erro.detail || erro.title || "Erro ao autenticar usuário.");
-  }
-
-  return resposta.json();
 }
 
 /**
@@ -141,22 +127,9 @@ export async function autenticarUsuario(nome: string, papel: "medico" | "doador"
  */
 export async function buscarEstoque(bancoId: string = "BS-01", tipoSanguineo?: string): Promise<EstoqueDTO>
 {
-  const params = new URLSearchParams();
-  if (tipoSanguineo)
-  {
-    params.set("tipoSanguineo", tipoSanguineo);
-  }
-
-  const query = params.toString() ? `?${params.toString()}` : "";
-  const resposta = await fetch(`${API_BASE_URL}/bancos/${bancoId}/estoque${query}`);
-
-  if (!resposta.ok)
-  {
-    const erro = await resposta.json().catch(() => ({}));
-    throw new Error(erro.detail || erro.title || `Erro ao buscar estoque do banco ${bancoId}`);
-  }
-
-  return resposta.json();
+  return clienteHttp.get<EstoqueDTO>(`/bancos/${bancoId}/estoque`, {
+    params: { tipoSanguineo },
+  });
 }
 
 /**
@@ -164,14 +137,7 @@ export async function buscarEstoque(bancoId: string = "BS-01", tipoSanguineo?: s
  */
 export async function listarPontosRede(): Promise<PontoRedeDTO[]>
 {
-  const resposta = await fetch(`${API_BASE_URL}/pontos`);
-
-  if (!resposta.ok)
-  {
-    throw new Error("Erro ao carregar os pontos da rede de distribuição.");
-  }
-
-  return resposta.json();
+  return clienteHttp.get<PontoRedeDTO[]>("/pontos");
 }
 
 /**
@@ -179,21 +145,9 @@ export async function listarPontosRede(): Promise<PontoRedeDTO[]>
  */
 export async function calcularRota(origemId: string, destinoId: string, partida?: string): Promise<RotaCalculadaDTO>
 {
-  const params = new URLSearchParams({ origemId, destinoId });
-  if (partida)
-  {
-    params.set("partida", partida);
-  }
-
-  const resposta = await fetch(`${API_BASE_URL}/rotas?${params.toString()}`);
-
-  if (!resposta.ok)
-  {
-    const erro = await resposta.json().catch(() => ({}));
-    throw new Error(erro.detail || erro.title || "Erro ao calcular rota entre os pontos informados.");
-  }
-
-  return resposta.json();
+  return clienteHttp.get<RotaCalculadaDTO>("/rotas", {
+    params: { origemId, destinoId, partida },
+  });
 }
 
 /**
@@ -201,13 +155,6 @@ export async function calcularRota(origemId: string, destinoId: string, partida?
  */
 export async function obterDiagnostico(): Promise<DiagnosticoDados>
 {
-  const resposta = await fetch(`${API_BASE_URL}/diagnostico`);
-
-  if (!resposta.ok)
-  {
-    throw new Error(`Falha ao obter diagnóstico do backend (HTTP ${resposta.status}).`);
-  }
-
-  return resposta.json();
+  return clienteHttp.get<DiagnosticoDados>("/diagnostico");
 }
 
