@@ -161,3 +161,5 @@ export interface RequisicaoRecebida
   chegadaEm: string;
 }
 
+export * from "./dtos";
+

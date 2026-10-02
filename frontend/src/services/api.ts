@@ -2,106 +2,14 @@
 import { clienteHttp, ErroHttp } from "./clienteHttp";
 export { clienteHttp, ErroHttp };
 
-export interface RespostaAcesso
-{
-  nome: string;
-  tipoAcesso: "MEDICO" | "DOADOR" | "ADMIN";
-  painelPrincipal: string;
-  modulosDisponiveis: string[];
-}
-
-export interface LogHttpItemDTO
-{
-  id: string;
-  horario: string;
-  metodo: string;
-  rota: string;
-  status: number;
-  duracaoMs: number;
-  statusTag: string;
-}
-
-export interface BackendInfo
-{
-  status: string;
-  uptimeSegundos: number;
-  versaoJava: string;
-  versaoSpringBoot: string;
-  dataHora: string;
-}
-
-export interface BancoInfo
-{
-  status: string;
-  latenciaMs: number;
-  produto?: string;
-  catalogo?: string;
-  schema?: string;
-  urlMascarada?: string;
-  totalPontosRede: number;
-  totalBolsasEstoque: number;
-  totalConexoes: number;
-  estadoTabelas: string;
-  mensagemErro?: string;
-}
-
-export interface DiagnosticoDados
-{
-  backend: BackendInfo;
-  bancoDeDados: BancoInfo;
-  logsRecentes: LogHttpItemDTO[];
-}
-
-export interface BolsaHemocomponenteDTO
-{
-  id: string;
-  tipoComponente: string;
-  tipoSanguineo: string;
-  dataValidade: string;
-  volumeMl: number;
-  status: string;
-  dataColeta?: string;
-  loteSintetico?: string;
-  temperaturaCelsius?: number;
-  temperaturaAtual?: number;
-  temperaturaIdealMinima?: number;
-  temperaturaIdealMaxima?: number;
-  foraDaFaixa?: boolean;
-  foraDaFaixaIdeal?: boolean;
-  localizacao?: string;
-  localizacaoFisica?: string;
-  bancoOrigemId?: string;
-}
-
-export interface EstoqueDTO
-{
-  bancoDeSangueId: string;
-  totalBolsas: number;
-  bolsas: BolsaHemocomponenteDTO[];
-}
-
-export interface PontoRedeDTO
-{
-  id: string;
-  nome: string;
-  tipo: "BANCO_DE_SANGUE" | "HOSPITAL";
-  latitude: number;
-  longitude: number;
-}
-
-export interface RotaCalculadaDTO
-{
-  origemId: string;
-  origemNome: string;
-  destinoId: string;
-  destinoNome: string;
-  distanciaKmTotal: number;
-  duracaoMinutosTotal: number;
-  partidaEstimada: string;
-  chegadaEstimada: string;
-  atendeJanelaTempo: boolean;
-  caminho: PontoRedeDTO[];
-}
+export * from "@/types/dtos";
+import type {
+  RespostaAcesso,
+  EstoqueDTO,
+  PontoRedeDTO,
+  RotaCalculadaDTO,
+  DiagnosticoDados,
+} from "@/types/dtos";
 
 // ----------------------------------------------------------------------
 // Funções de Chamada à API
