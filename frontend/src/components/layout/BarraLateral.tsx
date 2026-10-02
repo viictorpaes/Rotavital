@@ -7,6 +7,7 @@ import {
   Package,
   ClipboardList,
   Stethoscope,
+  Terminal,
 } from "lucide-react";
 import { useAutenticacao } from "@/context/ContextoAutenticacao";
 import { cn } from "@/lib/utilitarios";
@@ -19,6 +20,7 @@ const ITENS_NAVEGACAO =
   { to: "/rede", label: "Rede", icon: Network },
   { to: "/pacientes", label: "Pacientes", icon: Stethoscope },
   { to: "/doacoes", label: "Doações", icon: HeartHandshake },
+  { to: "/admin", label: "Diagnóstico & Logs", icon: Terminal },
 ];
 
 export function BarraLateral()
@@ -65,7 +67,7 @@ export function BarraLateral()
       </nav>
 
       <div className="border-t border-rota-border px-5 py-4">
-        <p className="text-sm font-bold text-gray-900">{usuario?.nome}</p>
+        <p className="text-sm font-bold text-gray-900">{usuario?.nome || "Dr. Ana Lima"}</p>
         <p className="font-mono text-[11px] text-gray-400">HEMOPE · Recife — PE</p>
         <button
           type="button"

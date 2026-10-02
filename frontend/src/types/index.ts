@@ -1,6 +1,6 @@
 export type TipoSanguineo = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
 
-export type PapelUsuario = "medico" | "doador";
+export type PapelUsuario = "medico" | "doador" | "admin";
 
 export interface Usuario
 {
@@ -160,3 +160,4 @@ export interface RequisicaoRecebida
   /** Momento da chegada, já formatado para exibição (mock). */
   chegadaEm: string;
 }
+

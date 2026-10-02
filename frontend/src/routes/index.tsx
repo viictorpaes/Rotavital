@@ -8,6 +8,7 @@ import PaginaRede from "@/pages/RedeHospitalar/PaginaRede";
 import PaginaPacientes from "@/pages/Pacientes/PaginaPacientes";
 import PaginaDoacoes from "@/pages/Doacoes/PaginaDoacoes";
 import PaginaPortalDoador from "@/pages/PortalDoador/PaginaPortalDoador";
+import PaginaAdmin from "@/pages/Admin/PaginaAdmin";
 
 export function AppRoutes()
 {
@@ -25,9 +26,11 @@ export function AppRoutes()
         <Route path="/rede" element={<PaginaRede />} />
         <Route path="/pacientes" element={<PaginaPacientes />} />
         <Route path="/doacoes" element={<PaginaDoacoes />} />
+        <Route path="/admin" element={<PaginaAdmin />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
+
