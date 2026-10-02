@@ -518,7 +518,7 @@ novas, com timestamp posterior:
 | 3 | `20260925120000_ajustes_schema_existente.sql` | Colunas novas em `ponto_rede`, `bolsa_hemocomponente`, `requisicao_hospitalar` e `alocacao`; índice parcial da alocação; gatilho de alocação atualizado; status `UTILIZADA`; remoção das FKs simples redundantes com as compostas | ✅ aplicada |
 | 4 | `20260925120100_escopo_clinico.sql` | `usuario`, `paciente`, `remessa`, `campanha_doacao`, `agendamento_doacao`, `procedimento`, `procedimento_bolsa`, gatilhos novos e RLS | ✅ aplicada |
 | 5 | `20260925120200_views_painel.sql` | `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ✅ aplicada |
-| — | `supabase/seed.sql` | Pontos e conexões de `RedeDistribuicaoEmMemoria`, bolsas de `BancosEmMemoria`, pacientes e remessas dos mocks do frontend | 🆕 |
+| — | `supabase/seed.sql` | Pontos e conexões de `RedeDistribuicaoEmMemoria` e bolsas de `BancosEmMemoria` (PI3-149). Pacientes e remessas dos mocks do frontend ainda não entraram | ✅ criado |
 
 > A migration 4 cria `remessa` e `paciente`, que são alvo das FKs novas de `bolsa_hemocomponente` e
 > `requisicao_hospitalar`. Essas FKs são adicionadas no fim da migration 4, depois de as tabelas existirem.

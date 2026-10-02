@@ -68,7 +68,7 @@ flowchart TD
 | [`MONTAGEM_PDF_FINAL.md`](MONTAGEM_PDF_FINAL.md) | Markdown | Compilação final com capa, descrição, diagrama e verificação cruzada | quiser montar o PDF final |
 | [`../RotaVital.fig`](../RotaVital.fig) | Texto (link) | Aponta para o protótipo publicado no Figma | se for discutir UI/UX do frontend |
 | [`INVENTARIO_COMPONENTES.md`](INVENTARIO_COMPONENTES.md) | Markdown | Levantamento do que executa código/guarda dado, validado contra o repositório | antes de desenhar o diagrama de arquitetura no draw.io |
-| [`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio) | draw.io (mxGraph XML) | Diagrama de contêineres com os 8 componentes da Etapa 1, ativo × planejado | para visualizar/editar a arquitetura no draw.io |
+| [`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio) | draw.io (mxGraph XML) | Diagrama de contêineres com os 7 componentes da Etapa 1, ativo × planejado | para visualizar/editar a arquitetura no draw.io |
 | [`docs/SUPABASE.md`](SUPABASE.md) | Markdown + Mermaid | Projeto Supabase, conexão do backend, variáveis de ambiente, migrations, RLS, validação e prints | se for mexer no banco ou configurar o `.env` |
 | [`DER.md`](DER.md) | Markdown + Mermaid | DER das 14 tabelas e 2 views, dicionário de dados, gatilhos, plano das 5 migrations e catálogo de constraints | se for criar tabela, entidade JPA ou consulta |
 | [`RELATORIO_ATIVIDADE_PARALELISMO.md`](RELATORIO_ATIVIDADE_PARALELISMO.md) | Markdown + LaTeX | Justificativa, complexidade e resultados da auditoria de telemetria sequencial × paralela (`BenchmarkController`) | se for mexer em `com.rotavital.benchmark` ou avaliar o ganho com threads |
@@ -163,8 +163,8 @@ guarda dado no Rota Vital hoje — e o que é só planejado. Ver
 [`INVENTARIO_COMPONENTES.md`](INVENTARIO_COMPONENTES.md).
 
 **Etapa 2 — diagrama de contêineres:** [`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio), com os
-8 componentes da Etapa 1, distinguindo visualmente o que já é real (linha sólida) do que é só planejado
-(linha tracejada — Supabase/Postgres e a integração SPA→Backend). Abra no
+7 componentes da Etapa 1, distinguindo visualmente o que já é real (linha sólida) do que é só planejado
+(linha tracejada — a integração SPA→Backend). Abra no
 [app.diagrams.net](https://app.diagrams.net) (`File → Open from → Device`) ou na extensão draw.io do
 VS Code.
 

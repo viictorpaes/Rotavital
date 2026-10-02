@@ -2,6 +2,7 @@ package com.rotavital.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,45 +15,35 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rotavital.api.dto.comum.ErroDTO;
 import com.rotavital.api.dto.estoque.BolsaHemocomponenteDTO;
 import com.rotavital.api.dto.estoque.EstoqueDTO;
-import com.rotavital.dominio.BancoDeSangue;
 import com.rotavital.dominio.BolsaHemocomponente;
 import com.rotavital.dominio.TipoSanguineo;
+import com.rotavital.servico.EstoqueService;
 
 @RestController
 @RequestMapping("/api/v1")
 public class EstoqueController
 {
-    private final BancosEmMemoria bancos;
+    private final EstoqueService estoqueService;
 
-    public EstoqueController(BancosEmMemoria bancos)
+    public EstoqueController(EstoqueService estoqueService)
     {
-        this.bancos = bancos;
+        this.estoqueService = estoqueService;
     }
 
     @GetMapping("/bancos/{bancoId}/estoque")
-    public ResponseEntity<?> consultarEstoque(@PathVariable String bancoId,
-    @RequestParam(required = false) TipoSanguineo tipoSanguineo)
+    public ResponseEntity<?> consultarEstoque(@PathVariable("bancoId") String bancoId,
+    @RequestParam(name = "tipoSanguineo", required = false) TipoSanguineo tipoSanguineo)
     {
-        BancoDeSangue banco = bancos.buscarPorId(bancoId);
+        Optional<List<BolsaHemocomponente>> resultado = estoqueService.buscarBolsas(bancoId, tipoSanguineo);
 
-        if (banco == null)
+        if (resultado.isEmpty())
         {
             ErroDTO erro = new ErroDTO(null, "Recurso não encontrado", 404,
                     "Nenhum banco de sangue encontrado com id " + bancoId, "/api/v1/bancos/" + bancoId + "/estoque");
             return ResponseEntity.status(404).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
         }
 
-        List<BolsaHemocomponente> bolsas;
-
-        if (tipoSanguineo == null)
-        {
-            bolsas = banco.getEstoque().getBolsas();
-        }
-
-        else
-        {
-            bolsas = banco.getEstoque().buscarPorTipoSanguineo(tipoSanguineo);
-        }
+        List<BolsaHemocomponente> bolsas = resultado.get();
 
         List<BolsaHemocomponenteDTO> bolsasDTO = new ArrayList<>();
 
@@ -74,7 +65,7 @@ public class EstoqueController
             ));
         }
 
-        EstoqueDTO estoque = new EstoqueDTO(banco.getId(), bolsasDTO.size(), bolsasDTO);
+        EstoqueDTO estoque = new EstoqueDTO(bancoId, bolsasDTO.size(), bolsasDTO);
         return ResponseEntity.ok(estoque);
     }
 }

@@ -192,7 +192,7 @@ na linha *PLANEJADO (só contrato)*.
 <h3 align="left" id="2-4-principais">🔎 2.4 Os 6 endpoints principais, em detalhe</h3>
 
 Os seis endpoints abaixo cobrem o fluxo central do MVP: entrar → consultar estoque → registrar o pedido →
-alocar a bolsa → calcular a rota. Os exemplos usam os dados em memória (`BS-01`, `HOSP-01`). Os
+alocar a bolsa → calcular a rota. Os exemplos usam os dados do `supabase/seed.sql` (`BS-01`, `HOSP-01`), que o backend lê do banco. Os
 marcados com ✅ foram conferidos com `curl` contra o backend.
 
 **1. `POST /api/v1/acessos`** ✅ · Pública
@@ -309,6 +309,11 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 | `status` | enum | `DISPONIVEL` \| `RESERVADA` \| `EM_TRANSITO` \| `ENTREGUE` \| `DESCARTADA` |
 | `bancoOrigemId` | `string` | — |
 
+> ✅ **Implementado em parte.** Só `GET /api/v1/bancos/{bancoId}/estoque` roda hoje: o `EstoqueController`
+> usa o `EstoqueService`, que lê o banco de sangue e as suas bolsas das tabelas `ponto_rede` e
+> `bolsa_hemocomponente` do banco (Supabase), ordenadas por `dataValidade`. Banco de sangue inexistente →
+> `404`. Os endpoints de `/hemocomponentes` continuam só no contrato.
+
 **DTOs Java equivalentes** (`backend/src/main/java/com/rotavital/api/dto/estoque/`):
 [`BolsaHemocomponenteDTO`](../backend/src/main/java/com/rotavital/api/dto/estoque/BolsaHemocomponenteDTO.java) ·
 [`NovaBolsaHemocomponenteRequest`](../backend/src/main/java/com/rotavital/api/dto/estoque/NovaBolsaHemocomponenteRequest.java) ·
@@ -373,15 +378,16 @@ Consulta do grafo de distribuição e cálculo de rota mínima com janela de tem
 | `GET` | `/api/v1/rotas?origemId=&destinoId=&janelaEntregaLimite=` | Calcula a rota de menor custo entre origem e destino, avaliando a janela de entrega (consulta idempotente, por isso `GET`) | algoritmo de menor caminho sobre o grafo |
 
 **Schema `PontoRede`**: `id`, `nome`, `tipo` (`HOSPITAL`/`BANCO_DE_SANGUE`), `latitude`, `longitude` —
-corresponde à interface `PontoDeRede`, implementada por `Hospital` e `BancoDeSangue` **sem relação de
-herança entre si** (só o contrato em comum — ver [`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md#1-visao-geral)).
+corresponde à interface `PontoDeRede`, implementada por `PontoDeRedeBase`, a classe abstrata da qual
+`Hospital` e `BancoDeSangue` herdam (ver [`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md#1-visao-geral)). O
+campo `tipo` é a mesma coluna `tipo` da tabela `ponto_rede`.
 
 > ✅ **Implementado.** O grafo de distribuição existe no domínio —
 > [`RedeDistribuicao`](MODELO_DE_DOMINIO.md#10-rededistribuicao) guarda nós (`PontoDeRede`) e arestas
-> (`Conexao`) e calcula o menor caminho com Dijkstra, devolvendo `RotaCalculada`. Os três endpoints abaixo
-> rodam via `RotaController`, sobre uma `RedeDistribuicao` populada em memória por
-> `RedeDistribuicaoEmMemoria` (hemocentro `BS-01` + 6 hospitais, topologia em estrela — dados sintéticos,
-> mesma convenção de `BancosEmMemoria`).
+> (`Conexao`) e calcula o menor caminho com Dijkstra, devolvendo `RotaCalculada`. Os três endpoints acima
+> rodam via `RotaController`, sobre uma `RedeDistribuicao` montada a cada chamada com as tabelas
+> `ponto_rede` e `conexao` do banco (Supabase) — com o `supabase/seed.sql`, o hemocentro `BS-01` + 6
+> hospitais em topologia de estrela (dados sintéticos).
 
 **DTOs Java equivalentes** (`backend/src/main/java/com/rotavital/api/dto/rota/`):
 [`PontoRedeDTO`](../backend/src/main/java/com/rotavital/api/dto/rota/PontoRedeDTO.java) ·
