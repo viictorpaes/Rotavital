@@ -155,6 +155,6 @@ export async function calcularRota(origemId: string, destinoId: string, partida?
  */
 export async function obterDiagnostico(): Promise<DiagnosticoDados>
 {
-  return clienteHttp.get<DiagnosticoDados>("/diagnostico");
+  return clienteHttp.get<DiagnosticoDados>("/diagnostico", { silencioso: true });
 }
 

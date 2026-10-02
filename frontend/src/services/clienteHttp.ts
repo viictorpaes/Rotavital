@@ -8,10 +8,21 @@
  * - Interceptors para tratamento global de respostas e erros HTTP (401, 403, 500, RFC 7807)
  */
 
+export type NotificadorGlobal = (tipo: "erro" | "aviso" | "sucesso" | "info", titulo: string, mensagem: string) => void;
+
+let notificadorGlobal: NotificadorGlobal | null = null;
+
+export function registrarNotificadorHttp(notificador: NotificadorGlobal): void
+{
+  notificadorGlobal = notificador;
+}
+
 export interface ConfiguracaoRequisicao extends RequestInit
 {
   timeoutMs?: number;
   params?: Record<string, string | number | boolean | undefined | null>;
+  /** Se verdadeiro, não dispara notificação de erro visual automaticamente */
+  silencioso?: boolean;
 }
 
 export interface ErroApi
@@ -130,11 +141,18 @@ class ClienteHttp
     {
       if (erro.name === "AbortError")
       {
-        throw new ErroHttp({
+        const erroTimeout = new ErroHttp({
           status: 408,
-          titulo: "Tempo Limite Excedido",
+          titulo: "Tempo Limite Excedido (408)",
           detalhe: `A requisição demorou mais de ${this.timeoutPadraoMs / 1000}s para responder. Verifique sua conexão com o servidor.`,
         });
+
+        if (notificadorGlobal)
+        {
+          notificadorGlobal("erro", erroTimeout.titulo, erroTimeout.detalhe);
+        }
+
+        throw erroTimeout;
       }
       throw erro;
     });
@@ -234,17 +252,31 @@ class ClienteHttp
           ? (corpoErro.detail || corpoErro.mensagem || corpoErro.message || corpoErro.title || "Erro na operação.")
           : (typeof corpoErro === "string" && corpoErro.length > 0 ? corpoErro : `Falha na requisição com código ${resposta.status}`);
 
-        const titulo = typeof corpoErro === "object" && corpoErro !== null
+        let titulo = typeof corpoErro === "object" && corpoErro !== null
           ? (corpoErro.title || "Erro do Servidor")
           : "Erro na Requisição";
 
-        throw new ErroHttp({
+        if (resposta.status === 404) titulo = "Recurso Não Encontrado (404)";
+        else if (resposta.status === 400) titulo = "Requisição Inválida (400)";
+        else if (resposta.status === 401) titulo = "Sessão Não Autorizada (401)";
+        else if (resposta.status === 403) titulo = "Acesso Negado (403)";
+        else if (resposta.status >= 500) titulo = "Falha no Servidor (500)";
+
+        const erroHttp = new ErroHttp({
           status: resposta.status,
           titulo,
           detalhe,
           rota: url,
           raw: corpoErro,
         });
+
+        // Dispara feedback visual global (Toast) automaticamente para 4xx e 5xx
+        if (!config.silencioso && notificadorGlobal)
+        {
+          notificadorGlobal("erro", titulo, detalhe);
+        }
+
+        throw erroHttp;
       }
 
       // Se a resposta for 204 No Content
@@ -300,5 +332,8 @@ class ClienteHttp
   }
 }
 
+const URL_BASE_ENV = (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) || "/api/v1";
+const TIMEOUT_ENV = (typeof import.meta !== "undefined" && Number(import.meta.env?.VITE_API_TIMEOUT_MS)) || 10000;
+
 // Instância Singleton exportada para uso em toda a aplicação
-export const clienteHttp = new ClienteHttp();
+export const clienteHttp = new ClienteHttp(URL_BASE_ENV, TIMEOUT_ENV);
