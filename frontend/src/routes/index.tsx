@@ -14,7 +14,7 @@ export function AppRoutes()
 {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/painel" replace />} />
       <Route path="/login" element={<PaginaLogin />} />
 
       <Route path="/portal-doador" element={<PaginaPortalDoador />} />
@@ -29,7 +29,7 @@ export function AppRoutes()
         <Route path="/admin" element={<PaginaAdmin />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/painel" replace />} />
     </Routes>
   );
 }

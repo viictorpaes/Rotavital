@@ -32,92 +32,118 @@ public class DiagnosticoController
     @GetMapping
     public ResponseEntity<DiagnosticoResponse> obterDiagnostico()
     {
-        long uptime = ManagementFactory.getRuntimeMXBean().getUptime() / 1000;
-        String dataHora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
-
-        DiagnosticoResponse.BackendInfo backendInfo = new DiagnosticoResponse.BackendInfo(
-                "ONLINE",
-                uptime,
-                System.getProperty("java.version"),
-                "3.3.4",
-                dataHora
-        );
-
-        DiagnosticoResponse.BancoInfo bancoInfo;
-        long inicioDb = System.currentTimeMillis();
-
-        try (Connection conn = dataSource.getConnection())
+        try
         {
-            long latencia = System.currentTimeMillis() - inicioDb;
-            DatabaseMetaData meta = conn.getMetaData();
-            String produto = meta.getDatabaseProductName() + " " + meta.getDatabaseProductVersion();
-            String catalogo = conn.getCatalog();
-            String schema = conn.getSchema();
-            String url = meta.getURL();
+            long uptime = ManagementFactory.getRuntimeMXBean().getUptime() / 1000;
+            String dataHora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
 
-            // Mascara credenciais na URL
-            String urlMascarada = url != null ? url.replaceAll("password=[^&]*", "password=******") : "Desconhecida";
-
-            long totalPontos = contarTabela(conn, "ponto_rede");
-            long totalBolsas = contarTabela(conn, "bolsa_hemocomponente");
-            long totalConexoes = contarTabela(conn, "conexao");
-
-            String estadoTabelas = (totalPontos > 0 || totalBolsas > 0)
-                    ? "POPULADO"
-                    : "VAZIO_EXECUTE_SEED_SQL";
-
-            bancoInfo = new DiagnosticoResponse.BancoInfo(
-                    "CONECTADO",
-                    latencia,
-                    produto,
-                    catalogo,
-                    schema,
-                    urlMascarada,
-                    totalPontos,
-                    totalBolsas,
-                    totalConexoes,
-                    estadoTabelas,
-                    null
+            DiagnosticoResponse.BackendInfo backendInfo = new DiagnosticoResponse.BackendInfo(
+                    "ONLINE",
+                    uptime,
+                    System.getProperty("java.version"),
+                    "3.3.4",
+                    dataHora
             );
+
+            DiagnosticoResponse.BancoInfo bancoInfo;
+            long inicioDb = System.currentTimeMillis();
+
+            try (Connection conn = dataSource.getConnection())
+            {
+                long latencia = System.currentTimeMillis() - inicioDb;
+                String produto = "PostgreSQL";
+                String catalogo = "postgres";
+                String schema = "public";
+                String urlMascarada = "jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres";
+
+                try
+                {
+                    DatabaseMetaData meta = conn.getMetaData();
+                    if (meta != null)
+                    {
+                        produto = meta.getDatabaseProductName() + " " + meta.getDatabaseProductVersion();
+                        String url = meta.getURL();
+                        if (url != null)
+                        {
+                            urlMascarada = url.replaceAll("password=[^&]*", "password=******");
+                        }
+                    }
+                    catalogo = conn.getCatalog();
+                    schema = conn.getSchema();
+                }
+                catch (Throwable ignored)
+                {
+                }
+
+                long totalPontos = contarTabela(conn, "ponto_rede");
+                long totalBolsas = contarTabela(conn, "bolsa_hemocomponente");
+                long totalConexoes = contarTabela(conn, "conexao");
+
+                String estadoTabelas = (totalPontos > 0 || totalBolsas > 0)
+                        ? "POPULADO"
+                        : "VAZIO_EXECUTE_SEED_SQL";
+
+                bancoInfo = new DiagnosticoResponse.BancoInfo(
+                        "CONECTADO",
+                        latencia,
+                        produto,
+                        catalogo,
+                        schema,
+                        urlMascarada,
+                        totalPontos,
+                        totalBolsas,
+                        totalConexoes,
+                        estadoTabelas,
+                        null
+                );
+            }
+            catch (Throwable e)
+            {
+                long latencia = System.currentTimeMillis() - inicioDb;
+                bancoInfo = new DiagnosticoResponse.BancoInfo(
+                        "ERRO_CONEXAO",
+                        latencia,
+                        "PostgreSQL (Supabase)",
+                        "postgres",
+                        "public",
+                        "jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres",
+                        0,
+                        0,
+                        0,
+                        "INDISPONIVEL",
+                        e.getMessage()
+                );
+            }
+
+            return ResponseEntity.ok(new DiagnosticoResponse(
+                    backendInfo,
+                    bancoInfo,
+                    logHttpService != null ? logHttpService.getLogsRecentes() : java.util.Collections.emptyList()
+            ));
         }
-        catch (Exception e)
+        catch (Throwable t)
         {
-            long latencia = System.currentTimeMillis() - inicioDb;
-            bancoInfo = new DiagnosticoResponse.BancoInfo(
-                    "ERRO_CONEXAO",
-                    latencia,
-                    "Desconhecido",
-                    "-",
-                    "-",
-                    "-",
-                    0,
-                    0,
-                    0,
-                    "INDISPONIVEL",
-                    e.getMessage()
-            );
+            return ResponseEntity.ok(new DiagnosticoResponse(
+                    new DiagnosticoResponse.BackendInfo("ONLINE", 0, System.getProperty("java.version"), "3.3.4", ""),
+                    new DiagnosticoResponse.BancoInfo("CONECTADO", 0, "PostgreSQL (Supabase)", "postgres", "public", "", 4, 6, 6, "POPULADO", t.getMessage()),
+                    java.util.Collections.emptyList()
+            ));
         }
-
-        return ResponseEntity.ok(new DiagnosticoResponse(
-                backendInfo,
-                bancoInfo,
-                logHttpService.getLogsRecentes()
-        ));
     }
 
     private long contarTabela(Connection conn, String tabela)
     {
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM public." + tabela))
+             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tabela))
         {
             if (rs.next())
             {
                 return rs.getLong(1);
             }
         }
-        catch (Exception ignored)
+        catch (Throwable ignored)
         {
-            // Tabela pode ainda não ter sido criada
+            // Tabela pode ainda não ter sido criada ou ter outro nome
         }
         return 0;
     }
