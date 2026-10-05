@@ -89,8 +89,20 @@ spring.jpa.hibernate.ddl-auto=validate
 | `SUPABASE_URL` | Clientes da API REST/Auth do Supabase | `backend/.env` | ✅ (é pública) |
 | `SUPABASE_KEY` | Chave `anon` para a API do Supabase | `backend/.env` | ⚠️ só a `anon`, nunca a `service_role` |
 
-O modelo fica em [`backend/.env.example`](../backend/.env.example): copie para `backend/.env` e preencha.
-O `.env` está no `.gitignore`.
+O modelo fica em [`backend/.env.example`](../backend/.env.example). Para configurar o ambiente local:
+
+1. No painel do Supabase, abra o projeto e copie a **Project URL** e a chave pública **anon** (ou **publishable key**). A URL aparece em **Connect** ou em **Project Settings → API**; as chaves ficam em **Project Settings → API Keys**. Em projetos com as chaves legadas, use `anon`.
+2. Obtenha a senha do banco em **Project Settings → Database**. Ela é diferente da chave da API; se não souber a senha, redefina-a nessa tela.
+3. Na raiz do repositório, copie o exemplo para o arquivo local:
+
+    ```bash
+    cp backend/.env.example backend/.env
+    ```
+
+    No PowerShell, use `Copy-Item backend\.env.example backend\.env`.
+4. Preencha `SUPABASE_URL`, `SUPABASE_KEY` e `SUPABASE_DB_PASSWORD` em `backend/.env`. Execute o backend da raiz do repositório ou use o Compose; ambos carregam esse arquivo.
+
+`SUPABASE_URL` e `SUPABASE_KEY` são as credenciais da API REST/Auth e não substituem a conexão JDBC do backend, que usa `SUPABASE_DB_PASSWORD`. A chave pública `anon`/`publishable` pode ser exposta, mas o RLS deve proteger os dados; não coloque uma chave secreta ou `service_role` aqui. O arquivo local `.env` está no `.gitignore`.
 
 > [!WARNING]
 > A chave **`service_role`** ignora o RLS e dá acesso total ao banco. Ela não entra em `.env.example`, em
@@ -375,15 +387,33 @@ quantidade.
 
 <h2 align="left" id="8-rls">🛡️ 8. Row Level Security (RLS)</h2>
 
-| Acesso | Role | RLS se aplica? | Resultado hoje |
+RLS está habilitado nas 14 tabelas. A migration [`20261005120000_politica_rls_bloqueio_inicial.sql`](../supabase/migrations/20261005120000_politica_rls_bloqueio_inicial.sql) adiciona a policy restritiva `bloqueio_inicial_api` para `anon` e `authenticated` em cada tabela.
+
+| Acesso | Role | RLS se aplica? | Resultado atual |
 | :--- | :--- | :---: | :--- |
-| ☕ Backend (JDBC) | `postgres` | ❌ (ignora RLS) | ✅ lê e escreve normalmente |
-| 🌐 API REST do Supabase com chave `anon` | `anon` | ✅ | 🚫 bloqueado (RLS ligado, sem políticas) |
-| 👤 Usuário logado via Supabase Auth | `authenticated` | ✅ | 🚫 bloqueado até existirem políticas |
+| ☕ Backend (JDBC) | `postgres` | ❌ (ignora RLS) | ✅ lê e escreve normalmente; credenciais devem permanecer somente no backend |
+| 🌐 API REST com chave pública | `anon` | ✅ | 🚫 bloqueado pela policy restritiva |
+| 👤 Sessão via Supabase Auth | `authenticated` | ✅ | 🚫 bloqueado pela policy restritiva |
+| 🔐 Chave `service_role` | `service_role` | ❌ (ignora RLS) | 🚫 não usar no frontend nem compartilhar |
 
 > [!IMPORTANT]
-> Toda tabela em `public` fica exposta pela API REST do Supabase. Com o RLS ligado e sem políticas, o acesso
-> público é negado por padrão. As políticas por papel (médico × doador) ficam para a subtarefa de RLS.
+> O login atual do frontend é local/mock e não fornece identidade Supabase confiável. Não é seguro criar policies médico × doador com base apenas no papel enviado pelo cliente. O bloqueio explícito fica em vigor até a integração de Supabase Auth e o vínculo validado entre `auth.uid()` e `usuario.auth_user_id`.
+
+> [!WARNING]
+> `bloqueio_inicial_api` é uma policy **restritiva**: policies permissivas futuras não liberam acesso enquanto ela existir. Ao implementar a autenticação, remova essa policy das tabelas que receberão acesso e crie policies específicas por operação e papel, sempre vinculadas à identidade autenticada. O role JDBC `postgres` e a chave `service_role` ignoram RLS; nunca os exponha a clientes.
+
+Para conferir o estado no SQL Editor do Supabase:
+
+```sql
+select c.relname as tabela, c.relrowsecurity as rls_habilitado,
+             p.policyname, p.permissive, p.roles, p.cmd
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+left join pg_policies p on p.schemaname = n.nspname and p.tablename = c.relname
+where n.nspname = 'public'
+    and c.relkind = 'r'
+order by c.relname, p.policyname;
+```
 
 <h2 align="left" id="9-validacao">🧪 9. Validação</h2>
 

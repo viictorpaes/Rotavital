@@ -766,7 +766,7 @@ spring.jpa.hibernate.ddl-auto=validate
 <details>
 <summary>▶️🔑 <b>Variáveis de ambiente</b> (<code>backend/.env</code>)</summary>
 
-Copie [`backend/.env.example`](./backend/.env.example) para `backend/.env` (já está no `.gitignore`) e preencha:
+Copie [`backend/.env.example`](./backend/.env.example) para `backend/.env` (já está no `.gitignore`) e preencha `SUPABASE_URL`, `SUPABASE_KEY` e `SUPABASE_DB_PASSWORD`. Consulte [`docs/SUPABASE.md`](./docs/SUPABASE.md#4-variaveis) para saber onde obter os valores no painel; use somente a chave pública `anon`/`publishable`, nunca `service_role`.
 
 | Variável | Uso | Pode ir para o Git? |
 | :--- | :--- | :---: |
@@ -860,7 +860,7 @@ npx supabase db push
 ```bash
 git clone https://github.com/viictorpaes/Rotavital.git
 cd Rotavital
-cp backend/.env.example backend/.env   # e preencha SUPABASE_DB_PASSWORD
+cp backend/.env.example backend/.env   # preencha URL, chave anon e senha do banco
 ```
 
 <details>
@@ -869,7 +869,7 @@ cp backend/.env.example backend/.env   # e preencha SUPABASE_DB_PASSWORD
 ```powershell
 git clone https://github.com/viictorpaes/Rotavital.git
 cd Rotavital
-Copy-Item backend\.env.example backend\.env   # e preencha SUPABASE_DB_PASSWORD
+Copy-Item backend\.env.example backend\.env   # preencha URL, chave anon e senha do banco
 ```
 </details>
 
