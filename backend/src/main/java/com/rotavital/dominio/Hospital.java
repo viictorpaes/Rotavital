@@ -1,20 +1,28 @@
 package com.rotavital.dominio;
+
 import java.util.List;
 import java.util.Optional;
 
-public class Hospital implements PontoDeRede
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
+
+@Entity
+@DiscriminatorValue("HOSPITAL")
+public class Hospital extends PontoDeRedeBase
 {
-    private final String id;
-    private final String nome;
-    private final Endereco endereco;
-    private final FilaRequisicoesHospitalares requisicoes;
+    // Requisições ainda não são gravadas no banco (fora do escopo da PI3-122).
+    @Transient
+    private final FilaRequisicoesHospitalares requisicoes = new FilaRequisicoesHospitalares();
+
+    // Exigido pelo Hibernate para criar o objeto ao ler do banco; no código, use o construtor com parâmetros.
+    protected Hospital()
+    {
+    }
 
     public Hospital(String id, String nome, Endereco endereco)
     {
-        this.id = id;
-        this.nome = nome;
-        this.endereco = endereco;
-        this.requisicoes = new FilaRequisicoesHospitalares();
+        super(id, nome, endereco);
     }
 
     public List<RequisicaoHospitalar> getRequisicoes()
@@ -32,48 +40,19 @@ public class Hospital implements PontoDeRede
         return requisicoes.retirarProxima();
     }
 
-    public Endereco getEndereco()
-    {
-        return endereco;
-    }
-
     public RequisicaoHospitalar solicitar(TipoComponente tipoComponente,
-                                           TipoSanguineo tipoSanguineo,
-                                           int quantidade)
+    TipoSanguineo tipoSanguineo, int quantidade)
     {
         RequisicaoHospitalar requisicao = new RequisicaoHospitalar(
-                this, tipoComponente, tipoSanguineo, quantidade);
+        this, tipoComponente, tipoSanguineo, quantidade);
+
         requisicoes.adicionar(requisicao);
         return requisicao;
     }
 
     @Override
-    public String getId()
-    {
-        return id;
-    }
-
-    @Override
-    public String getNome()
-    {
-        return nome;
-    }
-
-    @Override
-    public double getLatitude()
-    {
-        return endereco.getLatitude();
-    }
-
-    @Override
-    public double getLongitude()
-    {
-        return endereco.getLongitude();
-    }
-
-    @Override
     public String toString()
     {
-        return "Hospital " + nome + " (" + endereco + ")";
+        return "Hospital " + getNome() + " (" + getEndereco() + ")";
     }
 }

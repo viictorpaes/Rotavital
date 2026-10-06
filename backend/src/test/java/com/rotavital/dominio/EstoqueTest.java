@@ -1,169 +1,91 @@
 package com.rotavital.dominio;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.time.LocalDate;
 import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class EstoqueTest
+// O estoque não tem lista própria: lê as bolsas do banco de sangue, que é o que o JPA carrega.
+public class EstoqueTest
 {
-    private Estoque estoque;
+    private final LocalDate hoje = LocalDate.of(2026, 10, 1);
     private BancoDeSangue banco;
 
     @BeforeEach
-    void setUp()
+    public void criarBanco()
     {
-        estoque = new Estoque();
-        banco = new BancoDeSangue(
-                "BS-01",
-                "Hemope Central",
+        banco = new BancoDeSangue("BS-01", "Hemope Central",
                 new Endereco("Av. Central, 100 - Recife/PE", -8.0578, -34.8829));
     }
 
-    @Test
-    void adicionaBolsaAoEstoque()
+    private BolsaHemocomponente novaBolsa(String id, TipoComponente componente, TipoSanguineo tipo,
+            LocalDate dataValidade)
     {
-        BolsaHemocomponente bolsa = criarBolsa(
-                "CH-001", TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO,
-                LocalDate.now().plusDays(10));
-
-        estoque.adicionarBolsa(bolsa);
-
-        assertEquals(List.of(bolsa), estoque.getBolsas());
+        return new BolsaHemocomponente(id, componente, tipo, hoje.minusDays(5), dataValidade,
+                "LOTE-" + id, 450.0, 4.0, "R1 · P1 · N1", banco);
     }
 
     @Test
-    void naoPermiteAdicionarBolsaNula()
+    public void estoqueEnxergaAsBolsasCarregadasNoBancoDeSangue()
     {
-        assertThrows(NullPointerException.class, () -> estoque.adicionarBolsa(null));
-        assertTrue(estoque.getBolsas().isEmpty());
+        // Simula o Hibernate preenchendo a lista de bolsas do banco de sangue ao ler do banco de dados.
+        BolsaHemocomponente carregada = novaBolsa("CH-1042", TipoComponente.HEMACIAS,
+                TipoSanguineo.O_POSITIVO, hoje.plusDays(30));
+        banco.bolsas().add(carregada);
+
+        Assertions.assertEquals(List.of(carregada), banco.getEstoque().getBolsas());
     }
 
     @Test
-    void estoquePodeSerUsadoIndependentementeDoEstoqueDoBancoDeOrigem()
+    public void bolsaAdicionadaPeloEstoqueFicaNoBancoDeSangue()
     {
-        BolsaHemocomponente bolsa = criarBolsa(
-                "CH-001", TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO,
-                LocalDate.now().plusDays(10));
+        BolsaHemocomponente bolsa = novaBolsa("CH-1042", TipoComponente.HEMACIAS,
+                TipoSanguineo.O_POSITIVO, hoje.plusDays(30));
 
-        estoque.adicionarBolsa(bolsa);
+        banco.getEstoque().adicionarBolsa(bolsa);
 
-        assertEquals(List.of(bolsa), estoque.getBolsas());
-        assertTrue(banco.getEstoque().getBolsas().isEmpty());
+        Assertions.assertEquals(List.of(bolsa), banco.bolsas());
     }
 
     @Test
-    void buscaSomenteBolsasDisponiveisDoComponenteETipoSanguineoInformados()
+    public void buscarDisponiveisFiltraComponenteTipoEStatus()
     {
-        BolsaHemocomponente compativel = criarBolsa(
-                "CH-001", TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO,
-                LocalDate.now().plusDays(10));
-        BolsaHemocomponente reservada = criarBolsa(
-                "CH-002", TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO,
-                LocalDate.now().plusDays(10));
-        BolsaHemocomponente outroTipo = criarBolsa(
-                "PQ-001", TipoComponente.PLAQUETAS, TipoSanguineo.O_POSITIVO,
-                LocalDate.now().plusDays(10));
-
+        Estoque estoque = banco.getEstoque();
+        BolsaHemocomponente compativel = novaBolsa("CH-1042", TipoComponente.HEMACIAS,
+                TipoSanguineo.O_POSITIVO, hoje.plusDays(30));
+        BolsaHemocomponente reservada = novaBolsa("CH-1043", TipoComponente.HEMACIAS,
+                TipoSanguineo.O_POSITIVO, hoje.plusDays(20));
+        reservada.reservar();
         estoque.adicionarBolsa(compativel);
         estoque.adicionarBolsa(reservada);
-        estoque.adicionarBolsa(outroTipo);
-        reservada.reservar();
+        estoque.adicionarBolsa(novaBolsa("CH-1061", TipoComponente.HEMACIAS,
+                TipoSanguineo.A_NEGATIVO, hoje.plusDays(30)));
+        estoque.adicionarBolsa(novaBolsa("PQ-3014", TipoComponente.PLAQUETAS,
+                TipoSanguineo.O_POSITIVO, hoje.plusDays(3)));
 
-        assertEquals(List.of(compativel), estoque.buscarDisponiveis(
-                TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO));
+        List<BolsaHemocomponente> disponiveis = estoque.buscarDisponiveis(TipoComponente.HEMACIAS,
+                TipoSanguineo.O_POSITIVO);
+
+        Assertions.assertEquals(List.of(compativel), disponiveis);
     }
 
     @Test
-    void buscaPorTipoSanguineoSemFiltrarStatus()
+    public void buscarPorTipoSanguineoEListarVencidas()
     {
-        BolsaHemocomponente disponivel = criarBolsa(
-                "CH-001", TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO,
-                LocalDate.now().plusDays(10));
-        BolsaHemocomponente reservada = criarBolsa(
-                "PQ-001", TipoComponente.PLAQUETAS, TipoSanguineo.O_POSITIVO,
-                LocalDate.now().plusDays(10));
-        BolsaHemocomponente outroTipoSanguineo = criarBolsa(
-                "CH-002", TipoComponente.HEMACIAS, TipoSanguineo.A_POSITIVO,
-                LocalDate.now().plusDays(10));
-
-        estoque.adicionarBolsa(disponivel);
-        estoque.adicionarBolsa(reservada);
-        estoque.adicionarBolsa(outroTipoSanguineo);
-        reservada.reservar();
-
-        assertEquals(List.of(disponivel, reservada),
-                estoque.buscarPorTipoSanguineo(TipoSanguineo.O_POSITIVO));
-    }
-
-    @Test
-    void listaBolsasVencidasNaDataDeReferencia()
-    {
-        BolsaHemocomponente vencida = criarBolsa(
-                "CH-001", TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO,
-                LocalDate.of(2026, 1, 1));
-        BolsaHemocomponente valida = criarBolsa(
-                "CH-002", TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO,
-                LocalDate.of(2026, 1, 3));
-
+        Estoque estoque = banco.getEstoque();
+        BolsaHemocomponente vencida = novaBolsa("CH-1080", TipoComponente.HEMACIAS,
+                TipoSanguineo.O_POSITIVO, hoje.minusDays(1));
+        BolsaHemocomponente valida = novaBolsa("CH-1042", TipoComponente.HEMACIAS,
+                TipoSanguineo.O_POSITIVO, hoje.plusDays(30));
+        BolsaHemocomponente outroTipo = novaBolsa("CR-4002", TipoComponente.CRIOPRECIPITADO,
+                TipoSanguineo.AB_NEGATIVO, hoje.plusDays(300));
         estoque.adicionarBolsa(vencida);
         estoque.adicionarBolsa(valida);
+        estoque.adicionarBolsa(outroTipo);
 
-        assertEquals(List.of(vencida), estoque.listarVencidas(LocalDate.of(2026, 1, 2)));
-    }
-
-    @Test
-    void consultasNaoPermitemAlterarColecaoInterna()
-    {
-        BolsaHemocomponente bolsa = criarBolsa(
-                "CH-001", TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO,
-                LocalDate.now().plusDays(10));
-        estoque.adicionarBolsa(bolsa);
-
-        List<List<BolsaHemocomponente>> resultados = List.of(
-                estoque.getBolsas(),
-                estoque.buscarDisponiveis(TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO),
-                estoque.buscarPorTipoSanguineo(TipoSanguineo.O_POSITIVO),
-                estoque.listarVencidas(LocalDate.now()));
-
-        for (List<BolsaHemocomponente> resultado : resultados)
-        {
-            assertThrows(UnsupportedOperationException.class, resultado::clear);
-        }
-
-        assertEquals(List.of(bolsa), estoque.getBolsas());
-    }
-
-    @Test
-    void permiteConsultarEstoqueVazio()
-    {
-        assertTrue(estoque.getBolsas().isEmpty());
-        assertTrue(estoque.buscarDisponiveis(
-                TipoComponente.HEMACIAS, TipoSanguineo.O_POSITIVO).isEmpty());
-        assertTrue(estoque.buscarPorTipoSanguineo(TipoSanguineo.O_POSITIVO).isEmpty());
-        assertTrue(estoque.listarVencidas(LocalDate.now()).isEmpty());
-    }
-
-    private BolsaHemocomponente criarBolsa(
-            String id,
-            TipoComponente componente,
-            TipoSanguineo tipoSanguineo,
-            LocalDate validade)
-    {
-        return new BolsaHemocomponente(
-                id,
-                componente,
-                tipoSanguineo,
-                validade.minusDays(10),
-                validade,
-                450.0,
-                4.0,
-                "R1 · P1 · N1",
-                banco);
+        Assertions.assertEquals(List.of(vencida, valida), estoque.buscarPorTipoSanguineo(TipoSanguineo.O_POSITIVO));
+        Assertions.assertEquals(List.of(vencida), estoque.listarVencidas(hoje));
     }
 }

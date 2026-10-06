@@ -2,18 +2,42 @@ openapi: 3.0.3
 
 info:
   title: Rotavital API
-  description: >
-    Contratos REST do sistema Rotavital: gestão de estoque de hemocomponentes,
-    processamento de requisições hospitalares, alocação com regras de
-    compatibilidade/validade (FEFO), roteirização de entregas e telemetria
-    da cadeia fria. Os schemas espelham o modelo de domínio Java em
-    com.rotavital.dominio (ver docs/CONTRATOS_DE_API.md).
+  description: |
+    Contratos REST do sistema **Rotavital**: estoque de hemocomponentes,
+    requisições hospitalares, alocação por compatibilidade ABO/Rh e validade
+    (FEFO), roteirização de entregas e telemetria da cadeia fria.
+
+    **Base:** `http://localhost:8080/api/v1` (backend direto) ou
+    `http://localhost/api/v1` (via Nginx).
+
+    **Padrões REST**
+    - Versionamento no caminho: `/api/v1/...`
+    - Substantivos no plural, sem verbo na URL: `/requisicoes`, não `/criarRequisicao`
+    - Sub-recursos por hierarquia: `/bancos/{bancoId}/estoque`, `/requisicoes/{id}/alocacoes`
+    - Filtros e paginação na query string: `?tipoSanguineo=O_NEGATIVO&page=0&size=20`
+    - Status: `201` ao criar, `204` ao excluir, `400` entrada inválida,
+      `404` recurso inexistente, `422` regra de negócio violada
+    - Erros no formato RFC 7807 (`application/problem+json`)
+
+    **Autenticação:** nenhuma no MVP. `POST /acessos` só seleciona o perfil
+    (médico/doador), por isso nenhum endpoint devolve `401`/`403` hoje.
+
+    **Implementados hoje:** `acessos`, `bancos/{bancoId}/estoque`, `pontos`,
+    `conexoes`, `rotas` e `benchmarks`. Os demais (`hemocomponentes`,
+    `requisicoes`, `entregas`) existem só no contrato e respondem `404` até
+    ganharem controller.
+
+    Documentação completa: `docs/CONTRATOS_DE_API.md`, seção 2.3
+    "Endpoints REST do MVP, por recurso". Os schemas espelham o domínio Java
+    em `com.rotavital.dominio`.
   version: "0.1.0"
   contact:
     name: Equipe Rotavital
     url: https://github.com/viictorpaes/Rotavital
 
 tags:
+  - name: Acesso
+    description: Identificação do tipo de usuário (médico/doador) e tela inicial correspondente (HU-01).
   - name: Estoque
     description: Consulta consolidada do estoque por banco de sangue.
   - name: Hemocomponentes
@@ -24,22 +48,91 @@ tags:
     description: Grafo de distribuição e cálculo de rota mínima com janela de tempo.
   - name: Telemetria
     description: Telemetria simulada da cadeia fria durante o transporte.
+  - name: Benchmark
+    description: Auditoria de telemetria sequencial x paralela (atividade de paralelismo).
 
 servers:
-  - url: http://localhost:8080/api
-    description: Ambiente local (placeholder - Spring Boot ainda não integrado).
+  - url: http://localhost:8080/api/v1
+    description: >
+      Backend Spring Boot direto (mvn spring-boot:run ou docker compose up).
+      Todos os controllers ficam sob /api/v1.
+  - url: http://localhost/api/v1
+    description: >
+      Via proxy reverso do Nginx do frontend (docker compose up, container
+      rotavital-frontend na porta 80), que repassa /api/* intacto ao backend -
+      hoje sem uso real, a SPA ainda consome mocks locais.
 
 paths:
 
+  # -- Acesso --------------------------------------------------------------
+  /acessos:
+    post:
+      tags: [Acesso]
+      summary: Identifica o tipo de usuário e devolve a tela inicial (HU-01)
+      description: >
+        Recebe nome e tipo de acesso (MEDICO/DOADOR) e devolve a tela inicial
+        e o menu correspondentes. Não persiste nada e não valida credenciais -
+        é seleção de perfil, não autenticação. Por não criar recurso, responde
+        200 (e não 201).
+      operationId: entrar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NovoAcessoRequest' }
+            example:
+              nome: Dra. Ana
+              tipoAcesso: MEDICO
+      responses:
+        '200':
+          description: Acesso concedido, com a tela inicial e o menu do tipo de usuário.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Acesso' }
+              examples:
+                medico:
+                  summary: Acesso como médico
+                  value:
+                    nome: Dra. Ana
+                    tipoAcesso: MEDICO
+                    telaInicial: Painel Operacional
+                    menu: [Início, Estoque, Requisição, Rede, Pacientes, Doações]
+                doador:
+                  summary: Acesso como doador
+                  value:
+                    nome: João
+                    tipoAcesso: DOADOR
+                    telaInicial: Portal do Doador
+                    menu: []
+        '400':
+          description: Nome em branco ou tipo de acesso ausente.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Requisição inválida
+                status: 400
+                detail: "Informe o nome e o tipo de acesso para entrar"
+                instance: /api/v1/acessos
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
   # -- Estoque -----------------------------------------------------------
-  /estoque/{bancoId}:
+  /bancos/{bancoId}/estoque:
     get:
       tags: [Estoque]
       summary: Consulta o estoque consolidado de um banco de sangue
-      description: Retorna todas as bolsas de hemocomponentes vinculadas ao banco de sangue informado.
+      description: >
+        Sub-recurso singleton do banco de sangue (cada banco tem um único
+        estoque). Retorna as bolsas vinculadas ao banco, opcionalmente
+        filtradas por tipo sanguíneo.
       operationId: consultarEstoque
       parameters:
         - $ref: '#/components/parameters/BancoIdPath'
+        - name: tipoSanguineo
+          in: query
+          schema: { $ref: '#/components/schemas/TipoSanguineo' }
       responses:
         '200':
           description: Estoque do banco informado.
@@ -85,6 +178,8 @@ paths:
         - name: status
           in: query
           schema: { $ref: '#/components/schemas/StatusBolsa' }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
       responses:
         '200':
           description: Lista de bolsas que atendem aos filtros.
@@ -228,6 +323,8 @@ paths:
         - name: status
           in: query
           schema: { $ref: '#/components/schemas/StatusRequisicao' }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
       responses:
         '200':
           description: Lista de requisições.
@@ -258,7 +355,47 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
-  /requisicoes/{id}/alocar:
+    patch:
+      tags: [Requisicoes]
+      summary: Atualiza o status de uma requisição (ex. cancelar)
+      description: >
+        Transição de status da requisição. Cancelar é enviar
+        status CANCELADA, equivalente a RequisicaoHospitalar.cancelar() no
+        domínio - substitui o antigo POST /requisicoes/{id}/cancelar.
+      operationId: atualizarStatusRequisicao
+      parameters:
+        - $ref: '#/components/parameters/RequisicaoIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AtualizarStatusRequisicaoRequest' }
+            example: { status: CANCELADA }
+      responses:
+        '200':
+          description: Requisição atualizada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RequisicaoHospitalar' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Transição de status inválida (ex. cancelar uma requisição já ENTREGUE).
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Regra de negócio violada
+                status: 422
+                detail: "Requisição já ENTREGUE não pode ser cancelada."
+                instance: /api/v1/requisicoes/9f1c1e7e-2d3a-4b1a-8a1e-000000000001
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /requisicoes/{id}/alocacoes:
     post:
       tags: [Requisicoes]
       summary: Dispara o algoritmo de matching/alocação (compatibilidade ABO/Rh, priorização FEFO)
@@ -266,12 +403,13 @@ paths:
         Busca bolsas compatíveis no estoque, prioriza a de vencimento mais
         próximo (FEFO - First Expired, First Out) e reserva-a para a requisição, equivalente ao fluxo
         Estoque.buscarDisponiveis(...) + BolsaHemocomponente.reservar()
-        demonstrado em TesteFluxo.
+        demonstrado em TesteFluxo. Cria o sub-recurso Alocacao (201) -
+        substitui o antigo POST /requisicoes/{id}/alocar.
       operationId: alocarRequisicao
       parameters:
         - $ref: '#/components/parameters/RequisicaoIdPath'
       responses:
-        '200':
+        '201':
           description: Bolsa compatível encontrada e reservada; requisição passa para ALOCADA.
           content:
             application/json:
@@ -290,31 +428,12 @@ paths:
                 title: Regra de negócio violada
                 status: 422
                 detail: "Nenhuma bolsa compatível (HEMACIAS/O_POSITIVO) disponível no estoque."
-                instance: /requisicoes/9f1c1e7e-2d3a-4b1a-8a1e-000000000001/alocar
-        default:
-          $ref: '#/components/responses/InternalServerError'
-
-  /requisicoes/{id}/cancelar:
-    post:
-      tags: [Requisicoes]
-      summary: Cancela uma requisição
-      description: Marca a requisição como CANCELADA, equivalente a RequisicaoHospitalar.cancelar() no domínio.
-      operationId: cancelarRequisicao
-      parameters:
-        - $ref: '#/components/parameters/RequisicaoIdPath'
-      responses:
-        '200':
-          description: Requisição cancelada.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/RequisicaoHospitalar' }
-        '404':
-          $ref: '#/components/responses/NotFound'
+                instance: /api/v1/requisicoes/9f1c1e7e-2d3a-4b1a-8a1e-000000000001/alocacoes
         default:
           $ref: '#/components/responses/InternalServerError'
 
   # -- Rotas -----------------------------------------------------------------
-  /rotas/pontos:
+  /pontos:
     get:
       tags: [Rotas]
       summary: Lista os nós do grafo de distribuição (hospitais e bancos de sangue)
@@ -331,7 +450,7 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
-  /rotas/conexoes:
+  /conexoes:
     get:
       tags: [Rotas]
       summary: Lista as conexões (arestas) do grafo de distribuição
@@ -348,27 +467,51 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
-  /rotas/calcular:
-    post:
+  /rotas:
+    get:
       tags: [Rotas]
       summary: Calcula a rota de menor custo entre dois pontos, respeitando janela de tempo
-      description: Executa o algoritmo de menor caminho (AED) sobre o grafo de distribuição e avalia se o resultado cabe na janela de entrega informada.
+      description: >
+        Executa o algoritmo de menor caminho (Dijkstra) sobre o grafo de
+        distribuição e avalia se o resultado cabe na janela de entrega
+        informada. É uma consulta segura e idempotente (não grava nada), por
+        isso GET com filtros na query string - substitui o antigo
+        POST /rotas/calcular.
       operationId: calcularRota
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/CalcularRotaRequest' }
-            example:
-              origemId: BS-01
-              destinoId: HOSP-01
-              janelaEntregaLimite: "2026-08-22T21:00:00"
+      parameters:
+        - name: origemId
+          in: query
+          required: true
+          schema: { type: string }
+          example: BS-01
+        - name: destinoId
+          in: query
+          required: true
+          schema: { type: string }
+          example: HOSP-01
+        - name: janelaEntregaLimite
+          in: query
+          required: false
+          description: Limite ISO-8601 para a entrega; omitido, a rota é sempre considerada dentro da janela.
+          schema: { type: string, format: date-time }
+          example: "2026-08-22T21:00:00"
       responses:
         '200':
           description: Rota calculada.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RotaCalculada' }
+        '400':
+          description: origemId ou destinoId ausente.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Requisição inválida
+                status: 400
+                detail: "Informe origemId e destinoId na query string"
+                instance: /api/v1/rotas
         '404':
           $ref: '#/components/responses/NotFound'
         '422':
@@ -381,24 +524,28 @@ paths:
                 title: Regra de negócio violada
                 status: 422
                 detail: "Não existe caminho entre BS-01 e HOSP-01 no grafo de distribuição."
-                instance: /rotas/calcular
+                instance: /api/v1/rotas
         default:
           $ref: '#/components/responses/InternalServerError'
 
   # -- Telemetria --------------------------------------------------------
-  /telemetria/temperatura:
+  /entregas/{id}/leituras:
     post:
       tags: [Telemetria]
       summary: Registra uma leitura simulada de telemetria (localização e temperatura) de uma entrega
-      description: Ingesta uma leitura de telemetria da cadeia fria gerada por simulação (dados sintéticos), associada a uma entrega em trânsito.
+      description: >
+        Ingesta uma leitura de telemetria da cadeia fria gerada por simulação
+        (dados sintéticos) como sub-recurso da entrega em trânsito -
+        substitui o antigo POST /telemetria/temperatura.
       operationId: registrarTelemetria
+      parameters:
+        - $ref: '#/components/parameters/EntregaIdPath'
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/RegistrarTelemetriaRequest' }
             example:
-              entregaId: ENT-001
               timestamp: "2026-08-22T18:32:00"
               latitude: -8.0510
               longitude: -34.8790
@@ -411,23 +558,23 @@ paths:
               schema: { $ref: '#/components/schemas/LeituraTelemetria' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
         default:
           $ref: '#/components/responses/InternalServerError'
 
-  /entregas/{id}/monitoramento:
     get:
       tags: [Telemetria]
       summary: Consulta o histórico de telemetria de uma entrega
-      description: Retorna todas as leituras de localização/temperatura já registradas para a entrega informada, em ordem cronológica.
+      description: >
+        Retorna todas as leituras de localização/temperatura já registradas
+        para a entrega informada, em ordem cronológica - substitui o antigo
+        GET /entregas/{id}/monitoramento.
       operationId: obterMonitoramentoEntrega
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string }
-          example: ENT-001
+        - $ref: '#/components/parameters/EntregaIdPath'
       responses:
         '200':
           description: Histórico de leituras da entrega.
@@ -436,6 +583,54 @@ paths:
               schema: { $ref: '#/components/schemas/MonitoramentoEntrega' }
         '404':
           $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  # -- Benchmark ---------------------------------------------------------
+  /benchmarks/auditoria-telemetria:
+    get:
+      tags: [Benchmark]
+      summary: Executa a auditoria de telemetria com parâmetros na query string
+      description: >
+        Gera uma massa sintética de leituras em memória e audita em modo
+        sequencial e/ou paralelo, devolvendo tempos e speedup. Não persiste
+        nada (por isso 200).
+      operationId: executarBenchmarkViaGet
+      parameters:
+        - name: tamanho
+          in: query
+          schema: { type: integer, default: 100000, minimum: 1 }
+        - name: modo
+          in: query
+          schema: { $ref: '#/components/schemas/ModoBenchmark' }
+      responses:
+        '200':
+          description: Resultado da auditoria por modo de execução.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BenchmarkResponse' }
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Benchmark]
+      summary: Executa a auditoria de telemetria com parâmetros no corpo
+      description: Mesmo processamento do GET, com os parâmetros em JSON. Não persiste nada (por isso 200).
+      operationId: executarBenchmarkViaPost
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BenchmarkRequest' }
+            example:
+              quantidadeRegistros: 100000
+              modo: TODOS
+      responses:
+        '200':
+          description: Resultado da auditoria por modo de execução.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BenchmarkResponse' }
         default:
           $ref: '#/components/responses/InternalServerError'
 
@@ -463,6 +658,25 @@ components:
       required: true
       schema: { type: string }
       example: 9f1c1e7e-2d3a-4b1a-8a1e-000000000001
+
+    EntregaIdPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+      example: ENT-001
+
+    Page:
+      name: page
+      in: query
+      description: Página (base 0).
+      schema: { type: integer, minimum: 0, default: 0 }
+
+    Size:
+      name: size
+      in: query
+      description: Itens por página.
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
 
   # -- Schemas ---------------------------------------------------------------
   schemas:
@@ -503,6 +717,33 @@ components:
     TipoPontoRede:
       type: string
       enum: [HOSPITAL, BANCO_DE_SANGUE]
+
+    TipoAcesso:
+      type: string
+      enum: [MEDICO, DOADOR]
+
+    # ---- Acesso ----
+    NovoAcessoRequest:
+      type: object
+      properties:
+        nome: { type: string, example: Dra. Ana }
+        tipoAcesso: { $ref: '#/components/schemas/TipoAcesso' }
+      required: [nome, tipoAcesso]
+
+    Acesso:
+      type: object
+      properties:
+        nome: { type: string, example: Dra. Ana }
+        tipoAcesso: { $ref: '#/components/schemas/TipoAcesso' }
+        telaInicial:
+          type: string
+          description: "Painel Operacional (MEDICO) ou Portal do Doador (DOADOR)."
+          example: Painel Operacional
+        menu:
+          type: array
+          items: { type: string }
+          description: Itens de menu do tipo de usuário; vazio para DOADOR.
+      required: [nome, tipoAcesso, telaInicial, menu]
 
     # ---- Hemocomponentes / Estoque ----
     BolsaHemocomponente:
@@ -577,6 +818,12 @@ components:
         urgencia: { $ref: '#/components/schemas/NivelUrgencia' }
       required: [hospitalId, tipoComponente, tipoSanguineo, quantidade]
 
+    AtualizarStatusRequisicaoRequest:
+      type: object
+      properties:
+        status: { $ref: '#/components/schemas/StatusRequisicao' }
+      required: [status]
+
     Alocacao:
       type: object
       properties:
@@ -606,14 +853,6 @@ components:
         tempoEstimadoMin: { type: number, format: double }
       required: [origemId, destinoId, distanciaKm, tempoEstimadoMin]
 
-    CalcularRotaRequest:
-      type: object
-      properties:
-        origemId: { type: string }
-        destinoId: { type: string }
-        janelaEntregaLimite: { type: string, format: date-time, nullable: true }
-      required: [origemId, destinoId]
-
     RotaCalculada:
       type: object
       properties:
@@ -631,13 +870,13 @@ components:
     # ---- Telemetria ----
     RegistrarTelemetriaRequest:
       type: object
+      description: O entregaId vem do caminho (/entregas/{id}/leituras), não do corpo.
       properties:
-        entregaId: { type: string }
         timestamp: { type: string, format: date-time }
         latitude: { type: number, format: double }
         longitude: { type: number, format: double }
         temperaturaCelsius: { type: number, format: double }
-      required: [entregaId, timestamp, latitude, longitude, temperaturaCelsius]
+      required: [timestamp, latitude, longitude, temperaturaCelsius]
 
     LeituraTelemetria:
       type: object
@@ -658,6 +897,44 @@ components:
           type: array
           items: { $ref: '#/components/schemas/LeituraTelemetria' }
       required: [entregaId, statusEntrega, leituras]
+
+    # ---- Benchmark ----
+    ModoBenchmark:
+      type: string
+      enum: [TODOS, SEQUENCIAL, THREADS_2, THREADS_4, THREADS_8, VIRTUAL_THREADS]
+      default: TODOS
+
+    BenchmarkRequest:
+      type: object
+      properties:
+        quantidadeRegistros: { type: integer, minimum: 1, default: 100000 }
+        modo: { $ref: '#/components/schemas/ModoBenchmark' }
+
+    ItemExecucao:
+      type: object
+      properties:
+        modo: { type: string, example: THREADS_4 }
+        threads: { type: integer }
+        tempoExecucaoMs: { type: integer, format: int64 }
+        speedup: { type: number, format: double }
+        totalProcessado: { type: integer, format: int64 }
+        anomaliasDetectadas: { type: integer, format: int64 }
+        lotesCriticosDescarte: { type: integer, format: int64 }
+        mediaTemperatura: { type: number, format: double }
+        desvioPadraoTemperatura: { type: number, format: double }
+        indiceDegradacaoMedio: { type: number, format: double }
+      required: [modo, threads, tempoExecucaoMs, speedup, totalProcessado]
+
+    BenchmarkResponse:
+      type: object
+      properties:
+        tamanhoMassa: { type: integer }
+        todosResultadosIdenticos: { type: boolean }
+        mensagemConsistencia: { type: string }
+        execucoes:
+          type: array
+          items: { $ref: '#/components/schemas/ItemExecucao' }
+      required: [tamanhoMassa, todosResultadosIdenticos, mensagemConsistencia, execucoes]
 
     # ---- Erro (RFC 7807) ----
     Erro:
@@ -688,7 +965,7 @@ components:
             title: Requisição inválida
             status: 400
             detail: "O campo 'quantidade' é obrigatório e deve ser maior que zero."
-            instance: /requisicoes
+            instance: /api/v1/requisicoes
 
     NotFound:
       description: Recurso não encontrado.
@@ -700,7 +977,7 @@ components:
             title: Recurso não encontrado
             status: 404
             detail: "Nenhuma bolsa encontrada com id BOLSA-999."
-            instance: /hemocomponentes/BOLSA-999
+            instance: /api/v1/hemocomponentes/BOLSA-999
 
     UnprocessableEntity:
       description: Requisição bem formada, mas que viola uma regra de negócio do domínio.
@@ -712,7 +989,7 @@ components:
             title: Regra de negócio violada
             status: 422
             detail: "Bolsa BOLSA-002 está vencida e não pode ser reservada."
-            instance: /hemocomponentes/BOLSA-002
+            instance: /api/v1/hemocomponentes/BOLSA-002
 
     InternalServerError:
       description: Erro inesperado no servidor.
@@ -724,4 +1001,4 @@ components:
             title: Erro interno
             status: 500
             detail: "Ocorreu um erro inesperado ao processar a requisição."
-            instance: /
+            instance: /api/v1

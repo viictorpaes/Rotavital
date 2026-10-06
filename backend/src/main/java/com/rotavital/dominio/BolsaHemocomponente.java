@@ -1,29 +1,79 @@
 package com.rotavital.dominio;
 import java.time.LocalDate;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "bolsa_hemocomponente")
 public class BolsaHemocomponente
 {
-    private final String id;
-    private final TipoComponente tipoComponente;
-    private final TipoSanguineo tipoSanguineo;
-    private final LocalDate dataColeta;
-    private final LocalDate dataValidade;
-    private final double volumeMl;
-    private final double temperaturaCelsius;
-    private final String localizacao;
-    private StatusBolsa status;
-    private final BancoDeSangue bancoOrigem;
+    @Id
+    @Column(name = "id")
+    private String id;
 
-    public BolsaHemocomponente(String id, TipoComponente tipoComponente, TipoSanguineo tipoSanguineo,
-                                LocalDate dataColeta, LocalDate dataValidade, double volumeMl,
-                                double temperaturaCelsius, String localizacao,
-                                BancoDeSangue bancoOrigem)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_componente", nullable = false)
+    private TipoComponente tipoComponente;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_sanguineo", nullable = false)
+    private TipoSanguineo tipoSanguineo;
+
+    @Column(name = "data_coleta", nullable = false)
+    private LocalDate dataColeta;
+
+    @Column(name = "data_validade", nullable = false)
+    private LocalDate dataValidade;
+
+    @Column(name = "lote_sintetico", nullable = false)
+    private String loteSintetico;
+
+    // No banco, as colunas abaixo são numeric; no Java continuam double.
+    @JdbcTypeCode(SqlTypes.NUMERIC)
+    @Column(name = "volume_ml", nullable = false)
+    private double volumeMl;
+
+    @JdbcTypeCode(SqlTypes.NUMERIC)
+    @Column(name = "temperatura_celsius")
+    private double temperaturaCelsius;
+
+    @Column(name = "localizacao")
+    private String localizacao;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private StatusBolsa status;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "banco_origem_id", nullable = false)
+    private BancoDeSangue bancoOrigem;
+
+    // Exigido pelo Hibernate para criar o objeto ao ler do banco; no código, use o construtor com parâmetros.
+    protected BolsaHemocomponente()
+    {
+    }
+
+    public BolsaHemocomponente(String id, TipoComponente tipoComponente, 
+    TipoSanguineo tipoSanguineo, LocalDate dataColeta, LocalDate dataValidade, 
+    String loteSintetico, double volumeMl, double temperaturaCelsius, 
+    String localizacao, BancoDeSangue bancoOrigem)
     {
         this.id = id;
         this.tipoComponente = tipoComponente;
         this.tipoSanguineo = tipoSanguineo;
         this.dataColeta = dataColeta;
         this.dataValidade = dataValidade;
+        this.loteSintetico = loteSintetico;
         this.volumeMl = volumeMl;
         this.temperaturaCelsius = temperaturaCelsius;
         this.localizacao = localizacao;
@@ -39,7 +89,7 @@ public class BolsaHemocomponente
     public boolean estaForaDaFaixa()
     {
         return temperaturaCelsius < tipoComponente.getTemperaturaMinima()
-                || temperaturaCelsius > tipoComponente.getTemperaturaMaxima();
+        || temperaturaCelsius > tipoComponente.getTemperaturaMaxima();
     }
 
     public boolean estaDisponivel()
@@ -80,6 +130,11 @@ public class BolsaHemocomponente
     public LocalDate getDataValidade()
     {
         return dataValidade;
+    }
+
+    public String getLoteSintetico()
+    {
+        return loteSintetico;
     }
 
     public double getVolumeMl()

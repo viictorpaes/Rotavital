@@ -13,7 +13,7 @@ public class RequisicaoHospitalar
     private StatusRequisicao status;
 
     public RequisicaoHospitalar(Hospital hospital, TipoComponente tipoComponente,
-                                 TipoSanguineo tipoSanguineo, int quantidade)
+    TipoSanguineo tipoSanguineo, int quantidade)
     {
         this.id = UUID.randomUUID().toString();
         this.hospital = hospital;
@@ -73,6 +73,6 @@ public class RequisicaoHospitalar
     public String toString()
     {
         return "Requisicao[" + id + "] " + hospital.getNome() + " pede " + quantidade
-                + "x " + tipoComponente + " " + tipoSanguineo + " - " + status;
+        + "x " + tipoComponente + " " + tipoSanguineo + " - " + status;
     }
 }
