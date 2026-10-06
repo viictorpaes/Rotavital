@@ -92,6 +92,7 @@ class TesteFluxoTest
                 tipoSanguineo,
                 validade.minusDays(10),
                 validade,
+                "LOTE-" + id,
                 450.0,
                 4.0,
                 "R1 · P1 · N1",
