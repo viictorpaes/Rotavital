@@ -73,6 +73,7 @@ flowchart TD
 | [`DER.md`](DER.md) | Markdown + Mermaid | DER das 14 tabelas e 2 views, dicionário de dados, gatilhos, plano das 5 migrations e catálogo de constraints | se for criar tabela, entidade JPA ou consulta |
 | [`RELATORIO_ATIVIDADE_PARALELISMO.md`](RELATORIO_ATIVIDADE_PARALELISMO.md) | Markdown + LaTeX | Justificativa, complexidade e resultados da auditoria de telemetria sequencial × paralela (`BenchmarkController`) | se for mexer em `com.rotavital.benchmark` ou avaliar o ganho com threads |
 | [`evidencias/PI3-14_endpoints_rest.md`](evidencias/PI3-14_endpoints_rest.md) | Markdown | Chamadas reais (Postman/Insomnia) contra o backend, com status esperado × obtido | quiser conferir que os endpoints implementados respondem |
+| [`TRADUCAO_C_JAVA_AV1.md`](TRADUCAO_C_JAVA_AV1.md) | Markdown | Tradução comentada C ↔ Java (AV1 PI): equivalência de Lista, Fila e Pilha | para a entrega do Projeto Integrador — Unidade 1 |
 | [`../pdf/Arquitetura_RotaVital_Entrega_RSD.pdf`](../pdf/Arquitetura_RotaVital_Entrega_RSD.pdf) | PDF | Documento de arquitetura entregue (RSD), gerado a partir de `MONTAGEM_PDF_FINAL.md` | quiser a versão final entregue |
 
 <h2 align="left" id="2-dominio">🧬 2. Modelo de Domínio</h2>
