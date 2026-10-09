@@ -48,13 +48,13 @@ flowchart TD
     MOD -. "cruza" .-> API
     IDX --> FIG["RotaVital.fig<br/>link do protótipo (Figma)"]
     IDX --> INV["INVENTARIO_COMPONENTES.md<br/>Etapa 1: o que executa/guarda dado"]
-    INV --> DRAW["diagrama-arquitetura.drawio<br/>Etapa 2: diagrama de contêineres"]
+    INV --> DRAW["Arquitetura-RotaVital-Victor-Paes.drawio<br/>Etapa 2: diagrama de arquitetura (RSD)"]
     IDX --> SB["docs/SUPABASE.md<br/>banco, conexão, RLS, migrations"]
     SB --> DER["DER.md<br/>modelo relacional + constraints"]
     DOM -. "persistido como" .-> DER
     IDX --> PAR["RELATORIO_ATIVIDADE_PARALELISMO.md<br/>auditoria sequencial × paralela"]
     IDX --> EVD["evidencias/<br/>chamadas reais aos endpoints"]
-    PDF --> ENT["pdf/Arquitetura_RotaVital_Entrega_RSD.pdf<br/>PDF entregue"]
+    DRAW --> ENT["pdf/Arquitetura-RotaVital-Victor-Paes.pdf<br/>PDF entregue"]
 ```
 
 | Documento | Formato | Conteúdo | Leia quando... |
@@ -65,16 +65,16 @@ flowchart TD
 | [`MODULOS.md`](MODULOS.md) | Markdown + Mermaid | Catálogo dos 4 módulos cruzando domínio ↔ contrato | quiser uma visão geral rápida do sistema |
 | [`LIGACOES_E_REDES.md`](LIGACOES_E_REDES.md) | Markdown | Tabela de ligações, protocolos e redes/sub-redes com isolamento lógico | quiser validar a comunicação e a arquitetura de rede |
 | [`DIAGRAMA_ROTAVITAL.md`](DIAGRAMA_ROTAVITAL.md) | Markdown + draw.io | Desenho da arquitetura com sub-redes, rótulos e legenda | quiser consultar o diagrama da solução |
-| [`MONTAGEM_PDF_FINAL.md`](MONTAGEM_PDF_FINAL.md) | Markdown | Compilação final com capa, descrição, diagrama e verificação cruzada | quiser montar o PDF final |
+| [`MONTAGEM_PDF_FINAL.md`](MONTAGEM_PDF_FINAL.md) | Markdown | Versão em texto do PDF entregue (RSD): as sete seções, verificação cruzada e revisão contra os erros comuns | quiser ler ou citar o conteúdo do PDF entregue |
 | [`../RotaVital.fig`](../RotaVital.fig) | Texto (link) | Aponta para o protótipo publicado no Figma | se for discutir UI/UX do frontend |
 | [`INVENTARIO_COMPONENTES.md`](INVENTARIO_COMPONENTES.md) | Markdown | Levantamento do que executa código/guarda dado, validado contra o repositório | antes de desenhar o diagrama de arquitetura no draw.io |
-| [`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio) | draw.io (mxGraph XML) | Diagrama de contêineres com os 7 componentes da Etapa 1, ativo × planejado | para visualizar/editar a arquitetura no draw.io |
+| [`Arquitetura-RotaVital-Victor-Paes.drawio`](Arquitetura-RotaVital-Victor-Paes.drawio) | draw.io (mxGraph XML) | Diagrama de arquitetura entregue (RSD): VPC, 3 sub-redes, 6 componentes, setas `[nº] PROTOCOLO / porta` e legenda, em 3 camadas | para visualizar/editar a arquitetura no draw.io |
 | [`docs/SUPABASE.md`](SUPABASE.md) | Markdown + Mermaid | Projeto Supabase, conexão do backend, variáveis de ambiente, migrations, RLS, validação e prints | se for mexer no banco ou configurar o `.env` |
 | [`DER.md`](DER.md) | Markdown + Mermaid | DER das 14 tabelas e 2 views, dicionário de dados, gatilhos, plano das 5 migrations e catálogo de constraints | se for criar tabela, entidade JPA ou consulta |
 | [`RELATORIO_ATIVIDADE_PARALELISMO.md`](RELATORIO_ATIVIDADE_PARALELISMO.md) | Markdown + LaTeX | Justificativa, complexidade e resultados da auditoria de telemetria sequencial × paralela (`BenchmarkController`) | se for mexer em `com.rotavital.benchmark` ou avaliar o ganho com threads |
 | [`evidencias/PI3-14_endpoints_rest.md`](evidencias/PI3-14_endpoints_rest.md) | Markdown | Chamadas reais (Postman/Insomnia) contra o backend, com status esperado × obtido | quiser conferir que os endpoints implementados respondem |
 | [`TRADUCAO_C_JAVA_AV1.md`](TRADUCAO_C_JAVA_AV1.md) | Markdown | Tradução comentada C ↔ Java (AV1 PI): equivalência de Lista, Fila e Pilha | para a entrega do Projeto Integrador — Unidade 1 |
-| [`../pdf/Arquitetura_RotaVital_Entrega_RSD.pdf`](../pdf/Arquitetura_RotaVital_Entrega_RSD.pdf) | PDF | Documento de arquitetura entregue (RSD), gerado a partir de `MONTAGEM_PDF_FINAL.md` | quiser a versão final entregue |
+| [`../pdf/Arquitetura-RotaVital-Victor-Paes.pdf`](../pdf/Arquitetura-RotaVital-Victor-Paes.pdf) | PDF | Documento de arquitetura entregue (RSD) (capa, descrição, diagrama, endpoints, ligações, redes e legenda) | quiser a versão final entregue |
 
 <h2 align="left" id="2-dominio">🧬 2. Modelo de Domínio</h2>
 
@@ -116,15 +116,16 @@ O detalhe completo está em [`LIGACOES_E_REDES.md`](LIGACOES_E_REDES.md).
 
 Arquivo do desenho da arquitetura com sub-redes, fluxos de dados e legenda, pronto para abrir em draw.io/app.diagrams.net e exportar em PNG/PDF.
 
-- [`DIAGRAMA_ROTAVITAL.drawio`](DIAGRAMA_ROTAVITAL.drawio)
+- [`Arquitetura-RotaVital-Victor-Paes.drawio`](Arquitetura-RotaVital-Victor-Paes.drawio)
+- [`Arquitetura-RotaVital-Victor-Paes.png`](Arquitetura-RotaVital-Victor-Paes.png) (exportação PNG a 300%)
 - [`DIAGRAMA_ROTAVITAL.md`](DIAGRAMA_ROTAVITAL.md)
 
 <h2 align="left" id="8-pdf">📄 8. Montagem do PDF final</h2>
 
-Documento compilado com as sete seções exigidas, pronta para exportação em PDF final e com verificação cruzada das dependências entre endpoints, ligações e redes.
+Documento entregue com as sete seções exigidas (capa, descrição, diagrama, endpoints, ligações, redes e legenda) e a verificação cruzada entre endpoints, ligações e redes. O `.md` é a versão em texto do PDF.
 
 - [`MONTAGEM_PDF_FINAL.md`](MONTAGEM_PDF_FINAL.md)
-- PDF entregue: [`pdf/Arquitetura_RotaVital_Entrega_RSD.pdf`](../pdf/Arquitetura_RotaVital_Entrega_RSD.pdf)
+- PDF entregue: [`pdf/Arquitetura-RotaVital-Victor-Paes.pdf`](../pdf/Arquitetura-RotaVital-Victor-Paes.pdf)
 
 <h2 align="left" id="9-figma">🎨 9. Protótipo (Figma)</h2>
 
@@ -163,9 +164,9 @@ Etapa 1 do exercício de arquitetura: lista, validada contra o código real, de 
 guarda dado no Rota Vital hoje — e o que é só planejado. Ver
 [`INVENTARIO_COMPONENTES.md`](INVENTARIO_COMPONENTES.md).
 
-**Etapa 2 — diagrama de contêineres:** [`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio), com os
-7 componentes da Etapa 1, distinguindo visualmente o que já é real (linha sólida) do que é só planejado
-(linha tracejada — a integração SPA→Backend). Abra no
+**Etapa 2 — diagrama de arquitetura:** [`Arquitetura-RotaVital-Victor-Paes.drawio`](Arquitetura-RotaVital-Victor-Paes.drawio),
+com a VPC `10.0.0.0/16`, as sub-redes pública, de aplicação e de dados e as 5 ligações ativas rotuladas com
+protocolo e porta. Abra no
 [app.diagrams.net](https://app.diagrams.net) (`File → Open from → Device`) ou na extensão draw.io do
 VS Code.
 

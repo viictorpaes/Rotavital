@@ -528,6 +528,14 @@ Rotavital🩸/
 │       │       │   │   └── ResultadoAuditoria.java <img src="https://img.shields.io/badge/Modelo-111827?style=flat&logo=openjdk&logoColor=3B82F6" height="18"/>
 │       │       │   └── service <img src="https://img.shields.io/badge/-Service-111827?style=flat-square&logo=openjdk&logoColor=F46800" height="18"/>/
 │       │       │       └── AuditoriaTelemetriaService.java <img src="https://img.shields.io/badge/-Sequencial_×_Paralelo-111827?style=flat&logo=openjdk&logoColor=F46800" height="18"/>
+│       │       ├── config <img src="https://img.shields.io/badge/-Configuração-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
+│       │       │   ├── CorsConfig.java <img src="https://img.shields.io/badge/-CORS_·_origens_dev_e_produção-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │       │   └── HttpLoggingFilter.java <img src="https://img.shields.io/badge/-Log_das_requisições_HTTP-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │       ├── diagnostico <img src="https://img.shields.io/badge/-Diagnóstico_(admin)-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
+│       │       │   ├── DiagnosticoController.java <img src="https://img.shields.io/badge/-GET_%2Fdiagnostico-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │       │   ├── DiagnosticoResponse.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│       │       │   ├── LogHttpItem.java <img src="https://img.shields.io/badge/Record-111827?style=flat&logo=openjdk&logoColor=3B82F6" height="18"/>
+│       │       │   └── LogHttpService.java <img src="https://img.shields.io/badge/-Últimas_requisições_HTTP-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       ├── dominio <img src="https://img.shields.io/badge/-Domínio_(POO)-111827?style=flat-square&logo=openjdk&logoColor=purple" height="18"/>/
 │       │       │   ├── PontoDeRede.java <img src="https://img.shields.io/badge/Interface-111827?style=flat&logo=openjdk&logoColor=22C55E" height="18"/>
 │       │       │   ├── PontoDeRedeBase.java <img src="https://img.shields.io/badge/Classe_abstrata_·_herança_JPA-111827?style=flat&logo=openjdk&logoColor=22C55E" height="18"/>
@@ -540,6 +548,8 @@ Rotavital🩸/
 │       │       │   ├── RedeDistribuicao.java <img src="https://img.shields.io/badge/Entidade-111827?style=flat&logo=openjdk&logoColor=3B82F6" height="18"/> <img src="https://img.shields.io/badge/-Grafo_·_Dijkstra-111827?style=flat&logo=googlemaps&logoColor=34A853" height="18"/>
 │       │       │   ├── Conexao.java <img src="https://img.shields.io/badge/Entidade-111827?style=flat&logo=openjdk&logoColor=3B82F6" height="18"/>
 │       │       │   ├── RotaCalculada.java <img src="https://img.shields.io/badge/Entidade-111827?style=flat&logo=openjdk&logoColor=3B82F6" height="18"/>
+│       │       │   ├── FilaRequisicoesHospitalares.java <img src="https://img.shields.io/badge/-Fila_FIFO_·_ArrayDeque-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/> <img src="https://img.shields.io/badge/-Equivalente_ao_C-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
+│       │       │   ├── PilhaOperacoes.java <img src="https://img.shields.io/badge/-Pilha_LIFO_·_ArrayDeque-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/> <img src="https://img.shields.io/badge/-Equivalente_ao_C-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
 │       │       │   ├── TipoComponente.java <img src="https://img.shields.io/badge/Enum-111827?style=flat&logo=openjdk&logoColor=FFD700" height="18"/>
 │       │       │   ├── TipoSanguineo.java <img src="https://img.shields.io/badge/Enum-111827?style=flat&logo=openjdk&logoColor=FFD700" height="18"/>
 │       │       │   ├── StatusBolsa.java <img src="https://img.shields.io/badge/Enum-111827?style=flat&logo=openjdk&logoColor=FFD700" height="18"/>
@@ -557,17 +567,33 @@ Rotavital🩸/
 │           ├── dominio <img src="https://img.shields.io/badge/-Domínio-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
 │           │   ├── BolsaHemocomponenteTest.java <img src="https://img.shields.io/badge/-%40Test_·_status_e_validade-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           │   ├── EstoqueTest.java <img src="https://img.shields.io/badge/-%40Test_·_estoque_do_banco-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│           │   ├── FilaRequisicoesHospitalaresTest.java <img src="https://img.shields.io/badge/-%40Test_·_ordem_FIFO-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│           │   ├── PilhaOperacoesTest.java <img src="https://img.shields.io/badge/-%40Test_·_ordem_LIFO-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           │   ├── PontoDeRedeTest.java <img src="https://img.shields.io/badge/-%40Test_·_herança_e_igualdade-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           │   ├── RedeDistribuicaoTest.java <img src="https://img.shields.io/badge/-%40Test_·_grafo_·_Dijkstra-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
-│           │   └── TesteFluxo.java <img src="https://img.shields.io/badge/Fluxo_manual_(main)-111827?style=flat&logo=openjdk&logoColor=25A162" height="18"/>
+│           │   └── TesteFluxoTest.java <img src="https://img.shields.io/badge/-%40Test_·_fluxo_FEFO_+_ABO%2FRh-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           └── servico <img src="https://img.shields.io/badge/-Service-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
 │               ├── EstoqueServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_leitura_do_estoque-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │               ├── RedeDistribuicaoServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_montagem_da_rede-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │               └── RepositorioFalso.java <img src="https://img.shields.io/badge/-Repositório_falso_(sem_banco)-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │
+├── c <img src="https://img.shields.io/badge/-C99-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/> <img src="https://img.shields.io/badge/-Estruturas_de_Dados_(AV1)-111827?style=flat-square&logo=c&logoColor=A8B9CC" height="18"/>/
+│   ├── Makefile <img src="https://img.shields.io/badge/-make_·_make_run_·_make_clean-111827?style=flat&logo=gnu&logoColor=A8B9CC" height="18"/>
+│   ├── README.md <img src="https://img.shields.io/badge/-Como_compilar-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
+│   ├── rotavital_tipos.h <img src="https://img.shields.io/badge/-Enums_·_structs_do_domínio-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
+│   ├── rotavital_tipos.c <img src="https://img.shields.io/badge/-Conversão_de_enums-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
+│   ├── lista_estoque.h <img src="https://img.shields.io/badge/-Lista_encadeada_·_estoque-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
+│   ├── lista_estoque.c <img src="https://img.shields.io/badge/-malloc_·_free_·_ponteiros-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
+│   ├── fila_requisicoes.h <img src="https://img.shields.io/badge/-Fila_FIFO_·_requisições-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
+│   ├── fila_requisicoes.c <img src="https://img.shields.io/badge/-Enfileirar_·_desenfileirar-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
+│   ├── pilha_operacoes.h <img src="https://img.shields.io/badge/-Pilha_LIFO_·_histórico-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
+│   ├── pilha_operacoes.c <img src="https://img.shields.io/badge/-Empilhar_·_desempilhar-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
+│   └── main.c <img src="https://img.shields.io/badge/-Testes_com_assert()-111827?style=flat&logo=c&logoColor=25A162" height="18"/>
+│
 ├── frontend <img src="https://img.shields.io/badge/-React_18-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/> <img src="https://img.shields.io/badge/-TypeScript-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/> <img src="https://img.shields.io/badge/-Vite-111827?style=flat&logo=vite&logoColor=646CFF" height="18"/> <img src="https://img.shields.io/badge/-Tailwind_CSS-111827?style=flat&logo=tailwindcss&logoColor=38BDF8" height="18"/>/
 │   ├── Dockerfile <img src="https://img.shields.io/badge/-Build_+_Nginx-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
 │   ├── .dockerignore <img src="https://img.shields.io/badge/-Docker_Ignore-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
+│   ├── .env.example <img src="https://img.shields.io/badge/-VITE__API__URL_·_timeout-111827?style=flat&logo=vite&logoColor=646CFF" height="18"/>
 │   ├── nginx.conf <img src="https://img.shields.io/badge/-Proxy_%2Fapi_→_backend-111827?style=flat&logo=nginx&logoColor=009639" height="18"/>
 │   ├── .gitignore <img src="https://img.shields.io/badge/-GitIgnore-111827?style=flat&logo=git&logoColor=F05032" height="18"/>
 │   ├── index.html <img src="https://img.shields.io/badge/-HTML5-111827?style=flat&logo=html5&logoColor=E34F26" height="18"/>
@@ -587,7 +613,8 @@ Rotavital🩸/
 │       │   └── index.tsx <img src="https://img.shields.io/badge/-AppRoutes-111827?style=flat&logo=reactrouter&logoColor=CA4245" height="18"/>
 │       ├── context <img src="https://img.shields.io/badge/-Context_API-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
 │       │   ├── ContextoAutenticacao.tsx <img src="https://img.shields.io/badge/-Auth_Provider-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/> <img src="https://img.shields.io/badge/HU‑01-111827?style=flat-square&logoColor=white" height="18"/>
-│       │   └── ContextoDados.tsx <img src="https://img.shields.io/badge/-Estado_compartilhado_(mocks)-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/>
+│       │   ├── ContextoDados.tsx <img src="https://img.shields.io/badge/-Estoque_real_+_mocks-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/>
+│       │   └── ContextoNotificacao.tsx <img src="https://img.shields.io/badge/-Notificações_globais-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/>
 │       ├── components <img src="https://img.shields.io/badge/-Componentes-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
 │       │   ├── layout <img src="https://img.shields.io/badge/-Layout-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
 │       │   │   ├── LayoutPrincipal.tsx <img src="https://img.shields.io/badge/-Guarda_de_Rota-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/>
@@ -622,12 +649,14 @@ Rotavital🩸/
 │       │       ├── PontoStatus.tsx <img src="https://img.shields.io/badge/-Status-111827?style=flat&logo=react&logoColor=A855F7" height="18"/>
 │       │       └── EmBreve.tsx <img src="https://img.shields.io/badge/-Placeholder-111827?style=flat&logo=react&logoColor=A855F7" height="18"/>
 │       ├── pages <img src="https://img.shields.io/badge/-Páginas-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
+│       │   ├── Admin <img src="https://img.shields.io/badge/-Tela-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
+│       │   │   └── PaginaAdmin.tsx <img src="https://img.shields.io/badge/-Diagnóstico_·_só_admin-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/> <img src="https://img.shields.io/badge/-API_real-3B82F6?style=flat-square" height="18"/>
 │       │   ├── Login <img src="https://img.shields.io/badge/-Tela-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
 │       │   │   └── PaginaLogin.tsx <img src="https://img.shields.io/badge/HU‑01-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Implementada-22C55E?style=flat-square" height="18"/>
 │       │   ├── PainelOperacional <img src="https://img.shields.io/badge/-Tela-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
 │       │   │   └── PaginaPainel.tsx <img src="https://img.shields.io/badge/HU‑02-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Implementada-22C55E?style=flat-square" height="18"/>
 │       │   ├── Estoque <img src="https://img.shields.io/badge/-Tela-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
-│       │   │   └── PaginaEstoque.tsx <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Implementada-22C55E?style=flat-square" height="18"/>
+│       │   │   └── PaginaEstoque.tsx <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Implementada-22C55E?style=flat-square" height="18"/> <img src="https://img.shields.io/badge/-API_real-3B82F6?style=flat-square" height="18"/>
 │       │   ├── Requisicao <img src="https://img.shields.io/badge/-Tela-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
 │       │   │   └── PaginaRequisicao.tsx <img src="https://img.shields.io/badge/HU‑04_·_05_·_06-111827?style=flat-square&logoColor=white" height="18"/> <img src="https://img.shields.io/badge/-Implementada-22C55E?style=flat-square" height="18"/>
 │       │   ├── RedeHospitalar <img src="https://img.shields.io/badge/-Tela-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
@@ -653,7 +682,11 @@ Rotavital🩸/
 │       │   ├── requisicao.ts <img src="https://img.shields.io/badge/-Requisição-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │       │   ├── roteirizacao.ts <img src="https://img.shields.io/badge/-Roteirização-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │       │   └── utilitarios.ts <img src="https://img.shields.io/badge/-Utilitários-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
+│       ├── services <img src="https://img.shields.io/badge/-Integração_com_a_API-111827?style=flat-square&logo=typescript&logoColor=3178C6" height="18"/>/
+│       │   ├── clienteHttp.ts <img src="https://img.shields.io/badge/-Fetch_·_timeout_·_interceptors-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
+│       │   └── api.ts <img src="https://img.shields.io/badge/-Chamadas_a_%2Fapi%2Fv1-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │       └── types <img src="https://img.shields.io/badge/-TypeScript-111827?style=flat-square&logo=typescript&logoColor=3178C6" height="18"/>/
+│           ├── dtos.ts <img src="https://img.shields.io/badge/-DTOs_do_backend-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │           └── index.ts <img src="https://img.shields.io/badge/-Domain_Types-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │
 ├── docs <img src="https://img.shields.io/badge/Docs-111827?style=flat&logo=markdown&logoColor=blue" height="18"/>/
@@ -667,16 +700,19 @@ Rotavital🩸/
 │   ├── LIGACOES_E_REDES.md <img src="https://img.shields.io/badge/Ligações_e_Redes-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   ├── INVENTARIO_COMPONENTES.md <img src="https://img.shields.io/badge/Inventário_de_Componentes-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   ├── DIAGRAMA_ROTAVITAL.md <img src="https://img.shields.io/badge/Diagrama_(texto)-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
-│   ├── diagrama-arquitetura.drawio <img src="https://img.shields.io/badge/Diagrama_de_Arquitetura-111827?style=flat&logo=diagramsdotnet&logoColor=F08705" height="18"/>
+│   ├── Arquitetura-RotaVital-Victor-Paes.drawio <img src="https://img.shields.io/badge/Diagrama_de_Arquitetura_(entrega_RSD)-111827?style=flat&logo=diagramsdotnet&logoColor=F08705" height="18"/>
+│   ├── Arquitetura-RotaVital-Victor-Paes.png <img src="https://img.shields.io/badge/-PNG_300%25-111827?style=flat-square&logo=diagramsdotnet&logoColor=F08705" height="18"/>
+│   ├── REDES_SUBREDES_ROTAVITAL.svg <img src="https://img.shields.io/badge/Redes_e_Sub--redes-111827?style=flat&logo=svg&logoColor=FFB13B" height="18"/>
 │   ├── MONTAGEM_PDF_FINAL.md <img src="https://img.shields.io/badge/Roteiro_do_PDF-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   ├── RELATORIO_ATIVIDADE_PARALELISMO.md <img src="https://img.shields.io/badge/Relatório_de_Paralelismo-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
+│   ├── TRADUCAO_C_JAVA_AV1.md <img src="https://img.shields.io/badge/Tradução_C_↔_Java_(AV1)-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   └── evidencias <img src="https://img.shields.io/badge/-Evidências-111827?style=flat-square&logo=markdown&logoColor=white" height="18"/>/
 │       ├── PI3-14_endpoints_rest.md <img src="https://img.shields.io/badge/-Endpoints_REST-111827?style=flat&logo=markdown&logoColor=6BA539" height="18"/>
 │       ├── drawio(fluxo).png <img src="https://img.shields.io/badge/-PNG-111827?style=flat-square&logo=diagramsdotnet&logoColor=F08705" height="18"/>
 │       └── drawio_atualizado.png <img src="https://img.shields.io/badge/-PNG-111827?style=flat-square&logo=diagramsdotnet&logoColor=F08705" height="18"/>
 │
 ├── pdf <img src="https://img.shields.io/badge/-PDF-111827?style=flat-square&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>/
-│   └── Arquitetura_RotaVital_Entrega_RSD.pdf <img src="https://img.shields.io/badge/-PDF_entregue_(RSD)-111827?style=flat&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>
+│   └── Arquitetura-RotaVital-Victor-Paes.pdf <img src="https://img.shields.io/badge/-PDF_entregue_(RSD)-111827?style=flat&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>
 │
 ├── supabase <img src="https://img.shields.io/badge/-Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/> <img src="https://img.shields.io/badge/-PostgreSQL-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>/
 │   ├── img <img src="https://img.shields.io/badge/-Prints_do_Supabase-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="18"/>/
@@ -698,15 +734,24 @@ Rotavital🩸/
 </pre>
 
 > [!NOTE]
-> **Backend:** Spring Boot 3.3 (Java 21) com 4 controllers — `AcessoController`, `EstoqueController`,
-> `RotaController` e `BenchmarkController`. Os controllers de domínio leem do **banco (Supabase)** via JPA:
-> estoque pelo `EstoqueService` e rede/rotas pelo `RedeDistribuicaoService`; não há mais dados fixos em memória.
-> Requisições e Telemetria têm contrato em `openapi.yaml`, mas nenhum controller.
+> **Backend:** Spring Boot 3.3 (Java 21) com 5 controllers — `AcessoController`, `EstoqueController`,
+> `RotaController`, `BenchmarkController` e `DiagnosticoController` (`GET /api/v1/diagnostico`, usado pela tela
+> de admin). Os controllers de domínio leem do **banco (Supabase)** via JPA: estoque pelo `EstoqueService` e
+> rede/rotas pelo `RedeDistribuicaoService`; não há mais dados fixos em memória. O CORS fica em
+> `config/CorsConfig` e o `HttpLoggingFilter` registra cada requisição HTTP. Requisições e Telemetria têm
+> contrato em `openapi.yaml`, mas nenhum controller. O domínio também tem `FilaRequisicoesHospitalares` (FIFO)
+> e `PilhaOperacoes` (LIFO), as versões Java das estruturas do módulo em C.
 >
-> **Frontend:** as 10 histórias da Entrega 01 (**HU‑01** a **HU‑10**) têm tela em React, todas sobre dados
-> **mockados** (`src/data/*Mock.ts` + `ContextoDados`). A única chamada externa é a roteirização da HU‑07, que
-> consulta o OSRM público e cai nos valores mockados se ele não responder. A integração com a API
-> `/api/v1` ainda está pendente (Issue #4).
+> **Frontend:** as 10 histórias da Entrega 01 (**HU‑01** a **HU‑10**) têm tela em React. O **Estoque (HU‑03)** e a
+> tela de **Admin** já consomem a API `/api/v1` por `src/services/api.ts` (cliente em `clienteHttp.ts`, erros
+> exibidos pelo `ContextoNotificacao`); as demais telas e o login continuam sobre dados **mockados**
+> (`src/data/*Mock.ts` + `ContextoDados`). A roteirização da HU‑07 consulta o OSRM público e cai nos valores
+> mockados se ele não responder. O restante da integração segue na Issue #4.
+>
+> **Estruturas de dados em C (AV1):** `c/` reimplementa em C99 a lista encadeada do estoque, a fila FIFO de
+> requisições e a pilha LIFO do histórico de operações, com alocação manual (`malloc`/`free`) e testes com
+> `assert()` em `main.c` (`make run`). A tradução comentada C ↔ Java está em
+> [`docs/TRADUCAO_C_JAVA_AV1.md`](./docs/TRADUCAO_C_JAVA_AV1.md).
 >
 > **Banco:** Supabase (PostgreSQL), conectado pelo Session Pooler (`application.properties`, senha em
 > `backend/.env`). As 5 migrations em `supabase/migrations/` criam **14 tabelas e 2 views**, com PKs, FKs,
@@ -1281,4 +1326,5 @@ export default function PaginaPortalDoador()
 | 🧩 [`INVENTARIO_COMPONENTES.md`](./docs/INVENTARIO_COMPONENTES.md) | Componentes ativos × planejados |
 | ⚙️ [`RELATORIO_ATIVIDADE_PARALELISMO.md`](./docs/RELATORIO_ATIVIDADE_PARALELISMO.md) | Auditoria sequencial × paralela (Atividade - Infraestrutura de Software (SO)) |
 | 🧾 [`evidencias/`](./docs/evidencias/) | Chamadas reais aos endpoints |
-| 📕 [`Arquitetura_RotaVital_Entrega_RSD.pdf`](./pdf/Arquitetura_RotaVital_Entrega_RSD.pdf) | PDF final entregu - Atividade de Infraestrutura de Redes (RSD) |
+| 📕 [`Arquitetura-RotaVital-Victor-Paes.pdf`](./pdf/Arquitetura-RotaVital-Victor-Paes.pdf) | PDF final entregue - Atividade de Infraestrutura de Redes (RSD) |
+| 🗺️ [`Arquitetura-RotaVital-Victor-Paes.drawio`](./docs/Arquitetura-RotaVital-Victor-Paes.drawio) | Arquivo-fonte do diagrama entregue junto com o PDF (RSD) |
