@@ -1,0 +1,150 @@
+<mxfile host="app.diagrams.net" agent="RotaVital" version="24.7.17" type="device">
+  <diagram id="rotavital-arquitetura" name="Arquitetura RotaVital">
+    <mxGraphModel dx="1630" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1630" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="redes" value="Redes" parent="0" />
+        <mxCell id="comp" value="Componentes e ligações" parent="0" />
+        <mxCell id="legenda" value="Legenda" parent="0" />
+        <mxCell id="titulo" value="&lt;b style='font-size:17px'&gt;RotaVital — Diagrama de Arquitetura da Aplicação&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:11px;color:#444'&gt;Ambiente de produção projetado · fluxo da esquerda (usuário) para a direita (banco) · todo rótulo de seta segue o formato &lt;b&gt;[nº] PROTOCOLO / porta&lt;/b&gt;&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;" parent="redes" vertex="1">
+          <mxGeometry x="20" y="14" width="1200" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="internet" value="&lt;b&gt;INTERNET&lt;/b&gt; (fora da VPC)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fontColor=#1a1a1a;fillColor=#f5f5f5;strokeColor=#666666;" parent="redes" vertex="1">
+          <mxGeometry x="20" y="80" width="300" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="vpc" value="&lt;b style='font-size:13px'&gt;VPC RotaVital — 10.0.0.0/16&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fontColor=#1a1a1a;fillColor=none;strokeColor=#1a1a2e;strokeWidth=4;" parent="redes" vertex="1">
+          <mxGeometry x="350" y="80" width="1260" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_publica" value="&lt;b&gt;SUB-REDE PÚBLICA&lt;/b&gt;&lt;br&gt;sub-publica · 10.0.1.0/24&lt;br&gt;entrada: 0.0.0.0/0 → TCP 443&lt;br&gt;saída: 10.0.10.0/24 → TCP 8080" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fontColor=#1a1a1a;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="redes" vertex="1">
+          <mxGeometry x="380" y="125" width="330" height="590" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_app" value="&lt;b&gt;SUB-REDE PRIVADA DE APLICAÇÃO&lt;/b&gt;&lt;br&gt;sub-app · 10.0.10.0/24&lt;br&gt;entrada: somente 10.0.1.0/24 → TCP 8080&lt;br&gt;saída: somente 10.0.20.0/24 → TCP 5432" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fontColor=#1a1a1a;fillColor=#d5e8d4;strokeColor=#82b366;" parent="redes" vertex="1">
+          <mxGeometry x="780" y="125" width="420" height="590" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_dados" value="&lt;b&gt;SUB-REDE PRIVADA DE DADOS&lt;/b&gt;&lt;br&gt;sub-dados · 10.0.20.0/24&lt;br&gt;entrada: somente 10.0.10.0/24 → TCP 5432&lt;br&gt;saída: nenhuma (sem internet)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fontColor=#1a1a1a;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="redes" vertex="1">
+          <mxGeometry x="1270" y="125" width="315" height="590" as="geometry" />
+        </mxCell>
+        <mxCell id="osrm" value="&lt;b&gt;OSRM&lt;/b&gt; (terceiro)&lt;br&gt;router.project-osrm.org&lt;br&gt;&lt;i&gt;cálculo de rota&lt;/i&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=11;fontColor=#1a1a1a;" parent="comp" vertex="1">
+          <mxGeometry x="80" y="120" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="navegador" value="&lt;b&gt;Navegador&lt;/b&gt;&lt;br&gt;(usuário)&lt;br&gt;executa a SPA React" style="shape=umlActor;verticalLabelPosition=middle;labelPosition=left;align=right;verticalAlign=middle;spacingRight=8;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#1a1a1a;strokeWidth=1.5;fontSize=11;fontColor=#1a1a1a;" parent="comp" vertex="1">
+          <mxGeometry x="170" y="390" width="40" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="osm" value="&lt;b&gt;OpenStreetMap&lt;/b&gt; (terceiro)&lt;br&gt;tile.openstreetmap.org&lt;br&gt;&lt;i&gt;tiles do mapa&lt;/i&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=11;fontColor=#1a1a1a;" parent="comp" vertex="1">
+          <mxGeometry x="80" y="610" width="220" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="nginx" value="&lt;b&gt;Nginx&lt;/b&gt; — container &lt;i&gt;frontend&lt;/i&gt;&lt;br&gt;gateway / proxy reverso&lt;br&gt;termina o TLS na porta 443&lt;br&gt;&lt;br&gt;serve a &lt;b&gt;SPA React&lt;/b&gt; (build estático)&lt;br&gt;Vite + TypeScript + React Router&lt;br&gt;&lt;br&gt;proxy &lt;b&gt;/api/*&lt;/b&gt; → backend:8080&lt;br&gt;&lt;span style='color:#555'&gt;(frontend/nginx.conf)&lt;/span&gt;" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeWidth=1.5;fontSize=11;fontColor=#1a1a1a;verticalAlign=middle;strokeColor=#6c8ebf;" parent="comp" vertex="1">
+          <mxGeometry x="405" y="320" width="280" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="backend" value="&lt;b&gt;Backend API&lt;/b&gt; — Spring Boot 3.3 · Java 21 (monólito)&lt;br&gt;container &lt;i&gt;backend&lt;/i&gt; · porta 8080 · base &lt;b&gt;/api/v1&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;div style='text-align:left'&gt;EstoqueController → /bancos/{id}/estoque&lt;br&gt;RotaController → /pontos, /conexoes, /rotas&lt;br&gt;AcessoController → /acessos&lt;br&gt;DiagnosticoController → /diagnostico&lt;br&gt;BenchmarkController → /benchmarks/auditoria-telemetria&lt;br&gt;&lt;br&gt;Spring Data JPA → lê do PostgreSQL&lt;br&gt;HttpLoggingFilter → últimos 60 logs HTTP&lt;br&gt;&amp;nbsp;&amp;nbsp;(em memória, expostos em /diagnostico)&lt;br&gt;&lt;br&gt;&lt;span style='color:#c25e00'&gt;&lt;b&gt;Planejado (só contrato OpenAPI):&lt;/b&gt;&lt;br&gt;/hemocomponentes, /requisicoes,&lt;br&gt;/requisicoes/{id}/alocacoes, /entregas/{id}/leituras&lt;/span&gt;&lt;/div&gt;" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeWidth=1.5;fontSize=11;fontColor=#1a1a1a;verticalAlign=middle;strokeColor=#82b366;spacingLeft=14;spacingRight=10;" parent="comp" vertex="1">
+          <mxGeometry x="800" y="290" width="380" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="postgres" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;(Supabase gerenciado,&lt;br&gt;via pooler · TLS)&lt;br&gt;&lt;br&gt;&lt;span style='font-size:10px'&gt;tabelas lidas via JPA:&lt;br&gt;ponto_rede · conexao ·&lt;br&gt;bolsa_hemocomponente&lt;br&gt;&lt;br&gt;schema: supabase/migrations&lt;br&gt;(ddl-auto = validate)&lt;/span&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=14;fillColor=#ffffff;strokeColor=#9673a6;strokeWidth=1.5;fontSize=11;fontColor=#1a1a1a;" parent="comp" vertex="1">
+          <mxGeometry x="1300" y="320" width="255" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="&lt;b&gt;[1] HTTPS / 443&lt;/b&gt;&lt;br&gt;(TLS 1.3)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#1a1a1a;fontSize=11;fontColor=#1a1a1a;labelBackgroundColor=#ffffff;align=center;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="comp" source="navegador" target="nginx" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="&lt;b&gt;[2] HTTPS / 443&lt;/b&gt;&lt;br&gt;roteirização&lt;br&gt;(timeout 8 s + fallback)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#1a1a1a;fontSize=11;fontColor=#1a1a1a;labelBackgroundColor=#ffffff;align=center;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" parent="comp" source="navegador" target="osrm" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="&lt;b&gt;[3] HTTPS / 443&lt;/b&gt;&lt;br&gt;tiles do mapa" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#1a1a1a;fontSize=11;fontColor=#1a1a1a;labelBackgroundColor=#ffffff;align=center;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" parent="comp" source="navegador" target="osm" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="&lt;b&gt;[4] HTTP/1.1 / 8080&lt;/b&gt;&lt;br&gt;proxy /api/*" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#1a1a1a;fontSize=11;fontColor=#1a1a1a;labelBackgroundColor=#ffffff;align=center;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="comp" source="nginx" target="backend" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="&lt;b&gt;[5] TCP (PostgreSQL) / 5432&lt;/b&gt;&lt;br&gt;JDBC com TLS" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#1a1a1a;fontSize=11;fontColor=#1a1a1a;labelBackgroundColor=#ffffff;align=center;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="comp" source="backend" target="postgres" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_caixa" value="&lt;b style='font-size:13px'&gt;LEGENDA&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fontColor=#1a1a1a;fillColor=#ffffff;strokeColor=#666666;rounded=1;arcSize=2;" parent="legenda" vertex="1">
+          <mxGeometry x="20" y="770" width="1590" height="215" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cores_t" value="&lt;b&gt;Cores (onde cada um mora)&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;" parent="legenda" vertex="1">
+          <mxGeometry x="35" y="802" width="300" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cor0" value="" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="legenda" vertex="1">
+          <mxGeometry x="35" y="828" width="34" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cor0_t" value="Sub-rede pública (entrada da internet)" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="80" y="828" width="330" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cor1" value="" style="rounded=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="legenda" vertex="1">
+          <mxGeometry x="35" y="857" width="34" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cor1_t" value="Sub-rede privada de aplicação" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="80" y="857" width="330" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cor2" value="" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="legenda" vertex="1">
+          <mxGeometry x="35" y="886" width="34" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cor2_t" value="Sub-rede privada de dados (sem internet)" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="80" y="886" width="330" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cor3" value="" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666666;" parent="legenda" vertex="1">
+          <mxGeometry x="35" y="915" width="34" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cor3_t" value="Internet / serviços de terceiros (fora da VPC)" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="80" y="915" width="330" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cor4" value="" style="rounded=0;html=1;fillColor=#ffffff;strokeColor=#1a1a2e;strokeWidth=4;" parent="legenda" vertex="1">
+          <mxGeometry x="35" y="944" width="34" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_cor4_t" value="Limite da VPC (rede principal)" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="80" y="944" width="330" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_linhas_t" value="&lt;b&gt;Linhas (como cada um fala)&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;" parent="legenda" vertex="1">
+          <mxGeometry x="490" y="802" width="300" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_l1a" value="" style="text;html=1;" parent="legenda" vertex="1">
+          <mxGeometry x="490" y="837" width="1" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_l1b" value="" style="text;html=1;" parent="legenda" vertex="1">
+          <mxGeometry x="580" y="837" width="1" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_l1" value="" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#1a1a1a;fontSize=11;fontColor=#1a1a1a;labelBackgroundColor=#ffffff;align=center;" parent="legenda" source="leg_l1a" target="leg_l1b" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_l1_t" value="Contínua: chamada síncrona (requisição / resposta)" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="595" y="828" width="360" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_linhas_obs" value="&lt;b&gt;[nº] PROTOCOLO / porta&lt;/b&gt; — rótulo de toda seta; o nº é a linha da tabela de ligações (seção 5).&lt;br&gt;Não há linha tracejada: o sistema não tem fila nem evento assíncrono.&lt;br&gt;Não há linha pontilhada: não há coleta externa de métricas/logs.&lt;br&gt;&lt;span style='color:#c25e00'&gt;&lt;b&gt;Texto laranja&lt;/b&gt;&lt;/span&gt;: endpoint planejado (só contrato OpenAPI, sem tráfego)." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;" parent="legenda" vertex="1">
+          <mxGeometry x="490" y="862" width="560" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_formas_t" value="&lt;b&gt;Formas (quem é quem)&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;" parent="legenda" vertex="1">
+          <mxGeometry x="1110" y="802" width="300" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_forma0" value="" style="shape=umlActor;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#1a1a1a;" parent="legenda" vertex="1">
+          <mxGeometry x="1124.0" y="827.0" width="14" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_forma0_t" value="Usuário (navegador)" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="1162" y="830" width="420" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_forma1" value="" style="rounded=1;arcSize=10;html=1;fillColor=#ffffff;strokeColor=#1a1a1a;" parent="legenda" vertex="1">
+          <mxGeometry x="1114.0" y="859.0" width="34" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_forma1_t" value="Container / serviço que executa código" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="1162" y="860" width="420" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_forma2" value="" style="shape=cylinder3;html=1;boundedLbl=1;size=5;fillColor=#ffffff;strokeColor=#1a1a1a;" parent="legenda" vertex="1">
+          <mxGeometry x="1118.0" y="886.0" width="26" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_forma2_t" value="Banco de dados" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="1162" y="890" width="420" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_forma3" value="" style="ellipse;shape=cloud;html=1;fillColor=#ffffff;strokeColor=#666666;" parent="legenda" vertex="1">
+          <mxGeometry x="1112.0" y="918.0" width="38" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_forma3_t" value="Serviço de terceiro na internet" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="1162" y="920" width="420" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_forma4" value="" style="rounded=0;html=1;fillColor=none;strokeColor=#1a1a1a;" parent="legenda" vertex="1">
+          <mxGeometry x="1112.0" y="948.0" width="38" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_forma4_t" value="Retângulo grande = rede/sub-rede (quem está dentro pertence a ela)" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;spacing=0;fontColor=#1a1a1a;fontSize=11;verticalAlign=middle;" parent="legenda" vertex="1">
+          <mxGeometry x="1162" y="950" width="420" height="18" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -2,65 +2,96 @@
 
 ## Objetivo
 
-Este documento descreve o desenho da arquitetura do RotaVital em formato `.drawio`, com separação por redes e sub-redes, protocolo/porta em todas as setas, e legenda obrigatória.
+Este documento descreve o diagrama de arquitetura do RotaVital entregue na atividade de RSD: redes e
+sub-redes, protocolo e porta em todas as setas e legenda obrigatória. O diagrama responde às três perguntas
+do enunciado: **quem fala com quem**, **como cada um fala** (protocolo/porta) e **onde cada um mora**
+(VPC, sub-redes, público × privado).
 
-## Arquivo principal
+## Arquivos
 
-- [DIAGRAMA_ROTAVITAL.drawio](./DIAGRAMA_ROTAVITAL.drawio)
+- [`Arquitetura-RotaVital-Victor-Paes.drawio`](./Arquitetura-RotaVital-Victor-Paes.drawio): arquivo-fonte editável,
+  aberto no [app.diagrams.net](https://app.diagrams.net) (`File → Open from → Device`) ou na extensão draw.io
+  do VS Code.
+- [`Arquitetura-RotaVital-Victor-Paes.png`](./Arquitetura-RotaVital-Victor-Paes.png): exportação PNG a 300% (4890 × 3000
+  px), usada na seção 3 do PDF.
+- [`../pdf/Arquitetura-RotaVital-Victor-Paes.pdf`](../pdf/Arquitetura-RotaVital-Victor-Paes.pdf): documento entregue, com o diagrama e
+  as tabelas que ele referencia.
+
+## Camadas do `.drawio`
+
+O arquivo separa o desenho em três camadas (painel **Layers**, `Ctrl+Shift+L`):
+
+| Camada | Conteúdo |
+|---|---|
+| Redes | Área *Internet* (fora da VPC), VPC `10.0.0.0/16` e as três sub-redes |
+| Componentes e ligações | Os 6 componentes e as 5 setas rotuladas |
+| Legenda | Caixa com cores, formas e tipos de linha |
 
 ## Estrutura do desenho
 
-- Rede pública: 10.0.1.0/24
-- Sub-rede privada de aplicação: 10.0.10.0/24
-- Sub-rede privada de dados: 10.0.20.0/24
-- Rede principal: 10.0.0.0/16
-- Usuário/Internet e Supabase gerenciado atual são externos à VPC; não são workloads alocados nas sub-redes do projeto.
+Fluxo da esquerda (usuário) para a direita (banco):
 
-## Componentes representados
+| Área | CIDR | Tipo | Componentes |
+|---|---|---|---|
+| Internet (fora da VPC) | — | Externa | Navegador (executa a SPA React), OSRM, OpenStreetMap |
+| VPC RotaVital | `10.0.0.0/16` | Rede principal | As três sub-redes abaixo |
+| `sub-publica` | `10.0.1.0/24` | Pública | Nginx (container `frontend`) |
+| `sub-app` | `10.0.10.0/24` | Privada de aplicação | Backend API (container `backend`) |
+| `sub-dados` | `10.0.20.0/24` | Privada de dados, sem internet | PostgreSQL (Supabase) |
 
-- Usuário / Internet
-- Load Balancer / Gateway
-- NAT Gateway para saída controlada
-- DNS Resolver/Forwarder privado na sub-rede de aplicação
-- Frontend
-- Backend API
-- RabbitMQ e Worker assíncrono (arquitetura proposta; não configurados no Compose atual)
-- PostgreSQL autogerenciado na sub-rede privada de dados (arquitetura-alvo)
+Cada caixa de sub-rede traz no cabeçalho o CIDR e as regras de entrada e saída. A caixa do **Backend API**
+lista os cinco controllers (`EstoqueController`, `RotaController`, `AcessoController`,
+`DiagnosticoController` e `BenchmarkController`) e, em laranja, os recursos que existem só no contrato
+OpenAPI (`/hemocomponentes`, `/requisicoes`, `/requisicoes/{id}/alocacoes`, `/entregas/{id}/leituras`).
 
-## Linhas e rótulos
+## Setas
 
-- Síncrono: linha contínua com rótulo `PROTOCOLO/porta`
-- Assíncrono: linha tracejada com rótulo `AMQP 0-9-1/5672`; Backend publica eventos no RabbitMQ e o Worker os consome
-- Observabilidade: linha pontilhada fina; a legenda mostra a convenção, mas não há coletor de métricas/logs configurado no projeto atual
+Todas as setas são linhas contínuas (chamadas síncronas) e seguem o rótulo `[nº] PROTOCOLO / porta`. O
+número é a linha correspondente da tabela de ligações em [`LIGACOES_E_REDES.md`](./LIGACOES_E_REDES.md).
 
-## Fluxos principais
+| Seta | Origem → destino | Rótulo |
+|---|---|---|
+| [1] | Navegador → Nginx | `HTTPS / 443` (TLS 1.3) |
+| [2] | Navegador → OSRM | `HTTPS / 443` (roteirização, timeout 8 s + fallback) |
+| [3] | Navegador → OpenStreetMap | `HTTPS / 443` (tiles do mapa) |
+| [4] | Nginx → Backend API | `HTTP/1.1 / 8080` (proxy `/api/*`) |
+| [5] | Backend API → PostgreSQL | `TCP (PostgreSQL) / 5432` (JDBC com TLS) |
 
-- Usuário → Load Balancer: HTTPS/443
-- Load Balancer → Frontend (Nginx): HTTP/1.1/80 (rede privada)
-- Frontend → Backend: HTTP/1.1/8080
-- Backend → PostgreSQL: TCP (PostgreSQL)/5432
-- Backend → DNS Resolver/Forwarder privado na sub-rede de aplicação: DNS/UDP/53
-- Backend → RabbitMQ: AMQP 0-9-1/5672 (publicação assíncrona de mensagens/eventos)
-- RabbitMQ → Worker assíncrono: AMQP 0-9-1/5672 (consumo assíncrono de mensagens/eventos)
+Não há linha tracejada (o projeto não tem fila nem eventos) nem linha pontilhada (não há coletor externo de
+métricas ou logs). A legenda explica as duas convenções e registra que elas não são usadas.
 
-> O fluxo para PostgreSQL no desenho representa o banco autogerenciado da arquitetura-alvo. O projeto atual usa Supabase gerenciado externo, acessado pelo Backend por TCP/5432 com TLS.
-> RabbitMQ e Worker representam a ligação assíncrona da arquitetura proposta para a atividade; não estão implementados nem configurados no código ou no Docker Compose atual.
+## Legenda
+
+| Elemento | Significado |
+|---|---|
+| Azul | Sub-rede pública (entrada da internet) |
+| Verde | Sub-rede privada de aplicação |
+| Roxo | Sub-rede privada de dados (sem internet) |
+| Cinza | Internet / serviços de terceiros (fora da VPC) |
+| Borda grossa escura | Limite da VPC (rede principal) |
+| Texto laranja | Endpoint planejado (só contrato OpenAPI, sem tráfego) |
+| Boneco | Usuário (navegador) |
+| Retângulo arredondado | Container / serviço que executa código |
+| Cilindro | Banco de dados |
+| Nuvem | Serviço de terceiro na internet |
+| Retângulo grande | Rede ou sub-rede; o que está dentro pertence a ela |
 
 ## Regras atendidas
 
-- banco de dados isolado fora da rede pública;
-- todas as setas rotuladas com protocolo e porta, incluindo os fluxos assíncronos AMQP;
-- legenda com cores, formas e amostras dos três tipos de linha;
-- desenho organizado por redes e sub-redes;
-- Internet identificada como externa à VPC;
-- todos os componentes implantáveis do inventário alocados em uma subnet: Load Balancer/NAT na pública; Frontend, Backend, RabbitMQ, Worker e DNS Resolver/Forwarder na privada de aplicação; PostgreSQL na privada de dados;
-- pares externos (Internet e Supabase gerenciado atual) identificados como externos à VPC, sem alocação artificial em subnet.
+- todo componente do inventário está no diagrama, e nenhum foi inventado;
+- todas as setas rotuladas com protocolo e porta, com HTTPS na borda da internet;
+- banco na sub-rede privada de dados, acessível só pelo Backend na porta 5432;
+- componentes da VPC dentro de uma sub-rede; Navegador, OSRM e OpenStreetMap, de propósito, fora da VPC;
+- legenda com cores, formas e tipos de linha.
 
-> O Load Balancer com TLS, o NAT Gateway, o DNS privado e as sub-redes são parte da arquitetura-alvo; o Docker Compose atual não os configura. O Compose publica o Frontend em HTTP/80 e a API em 8080 na máquina hospedeira. O Supabase atual é gerenciado externamente, não está alocado na sub-rede privada de dados do projeto.
+> As redes, as sub-redes e o HTTPS na borda representam o ambiente de produção projetado, como pede a
+> atividade. O Docker Compose atual não declara `networks` e publica o Nginx em HTTP/80 e a API em 8080 no
+> host; a correspondência está na seção 4 de [`LIGACOES_E_REDES.md`](./LIGACOES_E_REDES.md).
 
-## Arquivos e exportação
+## Como reexportar
 
-- Arquivo editável `.drawio`: salvo em `docs/DIAGRAMA_ROTAVITAL.drawio`.
-- Exportações PNG a 300% e PDF Fit Page: ainda pendentes; não há esses arquivos exportados no projeto.
+Depois de editar o `.drawio` no draw.io:
 
-Para gerar as exportações, abrir o `.drawio` no draw.io e usar `File → Export as → PDF` com `Fit Page` e `File → Export as → PNG` com zoom `300%` e fundo transparente desmarcado. Salvar os dois arquivos nesta pasta `docs/`.
+- `File → Export as → PNG`, zoom `300%`, fundo transparente desmarcado, salvando por cima de
+  `Arquitetura-RotaVital-Victor-Paes.png`;
+- `File → Save As → Device`, mantendo o nome `Arquitetura-RotaVital-Victor-Paes.drawio`.

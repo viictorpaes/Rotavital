@@ -113,7 +113,7 @@ flowchart LR
 
 Antes da tabela de endpoints, o grupo decidiu **ajustar código e contrato** (em vez de documentar como
 estava e assumir o desconto). Controllers, `openapi.yaml`, `nginx.conf` e o
-[diagrama de contêineres](diagrama-arquitetura.drawio) foram alterados juntos, então a tabela abaixo bate com o
+[diagrama de arquitetura](Arquitetura-RotaVital-Victor-Paes.drawio) foram alterados juntos, então a tabela abaixo bate com o
 código em execução.
 
 | Divergência encontrada | Antes | Depois | Regra aplicada |
@@ -185,9 +185,9 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 
 **Evidência de execução:** [`evidencias/PI3-14_endpoints_rest.md`](evidencias/PI3-14_endpoints_rest.md) reúne as 14 chamadas reais (status esperado × obtido, com `curl` e corpo da resposta) e o resultado do lint Spectral.
 
-**Rastreabilidade com o diagrama:** cada grupo da tabela aparece na caixa *Container: backend* do
-[`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio). Os grupos ✅ estão listados pelo controller, e os 🕓 estão
-na linha *PLANEJADO (só contrato)*.
+**Rastreabilidade com o diagrama:** cada grupo da tabela aparece na caixa *Backend API* do
+[`Arquitetura-RotaVital-Victor-Paes.drawio`](Arquitetura-RotaVital-Victor-Paes.drawio). Os grupos ✅ estão listados pelo controller, e os 🕓 estão
+em laranja na linha *Planejado (só contrato OpenAPI)*.
 
 <h3 align="left" id="2-4-principais">🔎 2.4 Os 6 endpoints principais, em detalhe</h3>
 
