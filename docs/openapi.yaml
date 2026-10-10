@@ -22,8 +22,9 @@ info:
     **Autenticação:** nenhuma no MVP. `POST /acessos` só seleciona o perfil
     (médico/doador), por isso nenhum endpoint devolve `401`/`403` hoje.
 
-    **Implementados hoje:** `acessos`, `bancos/{bancoId}/estoque`, `pontos`,
-    `conexoes`, `rotas` e `benchmarks`. Os demais (`hemocomponentes`,
+    **Implementados hoje:** `acessos`, `bancos/{bancoId}/estoque`,
+    `bancos/{bancoId}/estoque/resumo`, `pontos`, `conexoes`, `rotas` e
+    `benchmarks`. Os demais (`hemocomponentes`,
     `requisicoes`, `entregas`) existem só no contrato e respondem `404` até
     ganharem controller.
 
@@ -153,6 +154,49 @@ paths:
                     volumeMl: 450.0
                     status: DISPONIVEL
                     bancoOrigemId: BS-01
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /bancos/{bancoId}/estoque/resumo:
+    get:
+      tags: [Estoque]
+      summary: Totais do estoque por tipo sanguíneo e componente (tela inicial)
+      description: >
+        Conta as bolsas DISPONIVEL e dentro da validade de um banco de sangue,
+        lendo as views do painel no Supabase (vw_estoque_por_tipo e
+        vw_estoque_agrupado). Os 8 tipos sanguíneos e os 4 componentes sempre
+        aparecem, inclusive zerados, na ordem dos enums. abaixoNivelSeguranca
+        vem da view (menos de 10 unidades do tipo).
+      operationId: resumirEstoque
+      parameters:
+        - $ref: '#/components/parameters/BancoIdPath'
+      responses:
+        '200':
+          description: Totais do estoque do banco informado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoEstoque'
+              example:
+                bancoDeSangueId: BS-01
+                totalUnidades: 2
+                tiposSanguineos:
+                  # Os outros 7 tipos vêm na resposta zerados; ficaram de fora só para encurtar o exemplo.
+                  - tipoSanguineo: O_NEGATIVO
+                    unidades: 2
+                    abaixoNivelSeguranca: true
+                    componentes:
+                      - { tipoComponente: HEMACIAS, unidades: 1 }
+                      - { tipoComponente: PLASMA, unidades: 0 }
+                      - { tipoComponente: PLAQUETAS, unidades: 0 }
+                      - { tipoComponente: CRIOPRECIPITADO, unidades: 1 }
+                componentes:
+                  - { tipoComponente: HEMACIAS, unidades: 1 }
+                  - { tipoComponente: PLASMA, unidades: 0 }
+                  - { tipoComponente: PLAQUETAS, unidades: 0 }
+                  - { tipoComponente: CRIOPRECIPITADO, unidades: 1 }
         '404':
           $ref: '#/components/responses/NotFound'
         default:
@@ -793,6 +837,39 @@ components:
           type: array
           items: { $ref: '#/components/schemas/BolsaHemocomponente' }
       required: [bancoDeSangueId, totalBolsas, bolsas]
+
+    ResumoEstoque:
+      type: object
+      properties:
+        bancoDeSangueId: { type: string }
+        totalUnidades: { type: integer }
+        tiposSanguineos:
+          type: array
+          description: Os 8 tipos sanguíneos, cada um dividido por componente.
+          items: { $ref: '#/components/schemas/TotalPorTipoSanguineo' }
+        componentes:
+          type: array
+          description: Total de cada componente somando todos os tipos.
+          items: { $ref: '#/components/schemas/TotalPorComponente' }
+      required: [bancoDeSangueId, totalUnidades, tiposSanguineos, componentes]
+
+    TotalPorTipoSanguineo:
+      type: object
+      properties:
+        tipoSanguineo: { $ref: '#/components/schemas/TipoSanguineo' }
+        unidades: { type: integer }
+        abaixoNivelSeguranca: { type: boolean }
+        componentes:
+          type: array
+          items: { $ref: '#/components/schemas/TotalPorComponente' }
+      required: [tipoSanguineo, unidades, abaixoNivelSeguranca, componentes]
+
+    TotalPorComponente:
+      type: object
+      properties:
+        tipoComponente: { $ref: '#/components/schemas/TipoComponente' }
+        unidades: { type: integer }
+      required: [tipoComponente, unidades]
 
     # ---- Requisições ----
     RequisicaoHospitalar:
