@@ -54,6 +54,7 @@ flowchart TD
     DOM -. "persistido como" .-> DER
     IDX --> PAR["RELATORIO_ATIVIDADE_PARALELISMO.md<br/>auditoria sequencial × paralela"]
     IDX --> EVD["evidencias/<br/>chamadas reais aos endpoints"]
+    IDX --> PER["PERFIS_DE_ACESSO.md<br/>quem entra e o que cada perfil vê"]
     DRAW --> ENT["pdf/Arquitetura-RotaVital-Victor-Paes.pdf<br/>PDF entregue"]
 ```
 
@@ -73,6 +74,8 @@ flowchart TD
 | [`DER.md`](DER.md) | Markdown + Mermaid | DER das 14 tabelas e 2 views, dicionário de dados, gatilhos, plano das 5 migrations e catálogo de constraints | se for criar tabela, entidade JPA ou consulta |
 | [`RELATORIO_ATIVIDADE_PARALELISMO.md`](RELATORIO_ATIVIDADE_PARALELISMO.md) | Markdown + LaTeX | Justificativa, complexidade e resultados da auditoria de telemetria sequencial × paralela (`BenchmarkController`) | se for mexer em `com.rotavital.benchmark` ou avaliar o ganho com threads |
 | [`evidencias/PI3-14_endpoints_rest.md`](evidencias/PI3-14_endpoints_rest.md) | Markdown | Chamadas reais (Postman/Insomnia) contra o backend, com status esperado × obtido | quiser conferir que os endpoints implementados respondem |
+| [`PERFIS_DE_ACESSO.md`](PERFIS_DE_ACESSO.md) | Markdown + Mermaid | Perfis (médico, doador, admin), telas e ações de cada um e decisões do login (PI3-182) | se for mexer no login, nas rotas do frontend ou em permissões |
+| [`evidencias/PI3-182_perfis_de_acesso.md`](evidencias/PI3-182_perfis_de_acesso.md) | Markdown + prints | Navegação real como médico, doador e admin, com rota esperada × obtida e um print de cada cenário | quiser conferir que cada perfil vê só as suas telas |
 | [`TRADUCAO_C_JAVA_AV1.md`](TRADUCAO_C_JAVA_AV1.md) | Markdown | Tradução comentada C ↔ Java (AV1 PI): equivalência de Lista, Fila e Pilha | para a entrega do Projeto Integrador — Unidade 1 |
 | [`../pdf/Arquitetura-RotaVital-Victor-Paes.pdf`](../pdf/Arquitetura-RotaVital-Victor-Paes.pdf) | PDF | Documento de arquitetura entregue (RSD) (capa, descrição, diagrama, endpoints, ligações, redes e legenda) | quiser a versão final entregue |
 

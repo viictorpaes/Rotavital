@@ -15,19 +15,36 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rotavital.api.dto.comum.ErroDTO;
 import com.rotavital.api.dto.estoque.BolsaHemocomponenteDTO;
 import com.rotavital.api.dto.estoque.EstoqueDTO;
+import com.rotavital.api.dto.estoque.ResumoEstoqueDTO;
 import com.rotavital.dominio.BolsaHemocomponente;
 import com.rotavital.dominio.TipoSanguineo;
 import com.rotavital.servico.EstoqueService;
+import com.rotavital.servico.ResumoEstoqueService;
 
 @RestController
 @RequestMapping("/api/v1")
 public class EstoqueController
 {
     private final EstoqueService estoqueService;
+    private final ResumoEstoqueService resumoEstoqueService;
 
-    public EstoqueController(EstoqueService estoqueService)
+    public EstoqueController(EstoqueService estoqueService, ResumoEstoqueService resumoEstoqueService)
     {
         this.estoqueService = estoqueService;
+        this.resumoEstoqueService = resumoEstoqueService;
+    }
+
+    @GetMapping("/bancos/{bancoId}/estoque/resumo")
+    public ResponseEntity<?> resumirEstoque(@PathVariable("bancoId") String bancoId)
+    {
+        Optional<ResumoEstoqueDTO> resumo = resumoEstoqueService.resumir(bancoId);
+
+        if (resumo.isEmpty())
+        {
+            return bancoNaoEncontrado(bancoId, "/api/v1/bancos/" + bancoId + "/estoque/resumo");
+        }
+
+        return ResponseEntity.ok(resumo.get());
     }
 
     @GetMapping("/bancos/{bancoId}/estoque")
@@ -38,9 +55,7 @@ public class EstoqueController
 
         if (resultado.isEmpty())
         {
-            ErroDTO erro = new ErroDTO(null, "Recurso não encontrado", 404,
-                    "Nenhum banco de sangue encontrado com id " + bancoId, "/api/v1/bancos/" + bancoId + "/estoque");
-            return ResponseEntity.status(404).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
+            return bancoNaoEncontrado(bancoId, "/api/v1/bancos/" + bancoId + "/estoque");
         }
 
         List<BolsaHemocomponente> bolsas = resultado.get();
@@ -67,5 +82,12 @@ public class EstoqueController
 
         EstoqueDTO estoque = new EstoqueDTO(bancoId, bolsasDTO.size(), bolsasDTO);
         return ResponseEntity.ok(estoque);
+    }
+
+    private ResponseEntity<ErroDTO> bancoNaoEncontrado(String bancoId, String caminho)
+    {
+        ErroDTO erro = new ErroDTO(null, "Recurso não encontrado", 404,
+                "Nenhum banco de sangue encontrado com id " + bancoId, caminho);
+        return ResponseEntity.status(404).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
     }
 }

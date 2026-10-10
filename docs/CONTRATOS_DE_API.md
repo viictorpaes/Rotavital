@@ -61,7 +61,7 @@ flowchart LR
 | Módulo | Subtask | Recursos | Espelha no domínio | Implementado? |
 |---|---|---|---|:---:|
 | 🔑 Acesso | HU-01 | `/acessos` | *(nenhuma — seleção de perfil, não é entidade de domínio)* | ✅ |
-| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque`) |
+| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque` e `GET /bancos/{bancoId}/estoque/resumo`) |
 | 🏥 Requisições e Alocação | PI3-47 | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ❌ sem controller |
 | 🚚 Roteirização e Logística | PI3-48 | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ |
 | 🌡️ Telemetria e Cadeia Fria | PI3-49 | `/entregas/{id}/leituras` | *(gap — sem classe de domínio)* | ❌ sem controller |
@@ -153,6 +153,7 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | `POST` | `/api/v1/acessos` | ✅ Identifica o perfil (MÉDICO/DOADOR) e devolve tela inicial + menu. Não persiste nada, por isso 200 | Pública | `Acesso` | `200` · `400` |
 | **🏦 Bancos → Estoque** | *`EstoqueController`* | | | | |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` | ✅ Estoque consolidado de um banco de sangue | Nenhuma no MVP (alvo: médico) | `Estoque` | `200` · `404` |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | ✅ Totais de bolsas disponíveis e válidas por tipo sanguíneo e componente (tela inicial) | Nenhuma no MVP (alvo: médico) | `ResumoEstoque` | `200` · `404` |
 | **📦 Hemocomponentes** | *`HemocomponenteController` (planejado)* | | | | |
 | `GET` | `/api/v1/hemocomponentes?bancoId=&tipoComponente=&tipoSanguineo=&status=&page=0&size=20` | 🕓 Lista bolsas com filtros e paginação | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente[]` | `200` |
 | `POST` | `/api/v1/hemocomponentes` | 🕓 Cadastra uma bolsa (status inicial `DISPONIVEL`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `201` · `400` · `422` |
@@ -290,6 +291,7 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 | Método | Endpoint | Descrição | Equivalente no domínio |
 |---|---|---|---|
 | `GET` | `/api/v1/bancos/{bancoId}/estoque` | Estoque consolidado de um banco de sangue (filtro: `tipoSanguineo`) | `BancoDeSangue.getEstoque()` |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | Totais por tipo sanguíneo e componente, só bolsas `DISPONIVEL` e dentro da validade | views `vw_estoque_por_tipo` e `vw_estoque_agrupado` |
 | `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `Estoque.getBolsas()` / `buscarDisponiveis(...)` |
 | `POST` | `/api/v1/hemocomponentes` | Cadastra uma nova bolsa (status inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | Detalhe de uma bolsa | — |
@@ -312,7 +314,12 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 > ✅ **Implementado em parte.** Só `GET /api/v1/bancos/{bancoId}/estoque` roda hoje: o `EstoqueController`
 > usa o `EstoqueService`, que lê o banco de sangue e as suas bolsas das tabelas `ponto_rede` e
 > `bolsa_hemocomponente` do banco (Supabase), ordenadas por `dataValidade`. Banco de sangue inexistente →
-> `404`. Os endpoints de `/hemocomponentes` continuam só no contrato.
+> `404`.
+>
+> `GET /api/v1/bancos/{bancoId}/estoque/resumo` também roda: o `ResumoEstoqueService` lê os totais já
+> contados pelas views do painel (`vw_estoque_por_tipo` e `vw_estoque_agrupado`) e devolve os 8 tipos
+> sanguíneos, cada um dividido nos 4 componentes, mais o total de cada componente. Tipos e componentes
+> sem bolsa vêm com `0`. Banco de sangue inexistente → `404`. Os endpoints de `/hemocomponentes` continuam só no contrato.
 
 **DTOs Java equivalentes** (`backend/src/main/java/com/rotavital/api/dto/estoque/`):
 [`BolsaHemocomponenteDTO`](../backend/src/main/java/com/rotavital/api/dto/estoque/BolsaHemocomponenteDTO.java) ·
