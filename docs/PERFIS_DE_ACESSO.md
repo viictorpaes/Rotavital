@@ -5,26 +5,27 @@
 <p align="center">
     <img src="https://img.shields.io/badge/Jira-PI3--182-0052CC?style=for-the-badge&logo=jira&logoColor=white" alt="Jira"/>
     <img src="https://img.shields.io/badge/Sprint-W10--11-6f42c1?style=for-the-badge" alt="Sprint"/>
-    <img src="https://img.shields.io/badge/Status-Proposta_para_o_time-F59E0B?style=for-the-badge" alt="Status"/>
+    <img src="https://img.shields.io/badge/Status-Decidido-22C55E?style=for-the-badge" alt="Status"/>
 </p>
 
-> Proposta da **PI3-182** (subtask da PI3-171 · Sistema de login) para fechar com o time quais perfis existem,
-> como cada um entra e o que cada um vê e pode fazer. A situação atual foi levantada no código e no Supabase
-> em **10/10/2026**. As decisões abertas estão na [seção 6](#6-decisoes): depois da conversa com o time,
-> preencha a coluna **Decisão do time** e troque o status deste documento para "Decidido".
+> Decisão da **PI3-182** (subtask da PI3-171 · Sistema de login): quais perfis existem, como cada um entra e
+> o que cada um vê e pode fazer. A situação atual foi levantada no código e no Supabase em **10/10/2026**. As
+> decisões e o motivo de cada uma estão na [seção 6](#6-decisoes); o que muda em cada task está na
+> [seção 7](#7-impacto). A prova de que as telas por perfil funcionam como descrito está em
+> [`evidencias/PI3-182_perfis_de_acesso.md`](evidencias/PI3-182_perfis_de_acesso.md).
 
 <h2 align="left">🧭 Sumário: </h2>
 
-1. [Resumo da proposta](#1-resumo)
+1. [Resumo das decisões](#1-resumo)
 2. [Como está hoje](#2-hoje)
 3. [Perfis: quem entra](#3-perfis)
 4. [O que cada perfil vê (telas)](#4-telas)
 5. [O que cada perfil pode fazer (ações)](#5-acoes)
-6. [Decisões para fechar com o time](#6-decisoes)
+6. [Decisões](#6-decisoes)
 7. [Impacto nas outras tasks](#7-impacto)
 8. [Fora do escopo desta sprint](#8-fora)
 
-<h2 align="left" id="1-resumo">📌 1. Resumo da proposta</h2>
+<h2 align="left" id="1-resumo">📌 1. Resumo das decisões</h2>
 
 - **Três perfis:** `MEDICO` e `DOADOR` (os usuários do dia a dia) e `ADMIN` (equipe técnica).
 - **Todos entram com login e senha.** O perfil vem do cadastro do usuário, e não de um card que a própria
@@ -73,7 +74,7 @@ flowchart LR
 
 <h2 align="left" id="4-telas">🖥️ 4. O que cada perfil vê (telas)</h2>
 
-A tabela abaixo é **o que o código já faz hoje**. A proposta é oficializá-la.
+A tabela abaixo é **o que o código já faz hoje** e passa a ser a regra oficial.
 
 | Tela | Rota | HU | 🩺 Médico | ❤️ Doador | 🛠️ Admin |
 | :--- | :--- | :---: | :---: | :---: | :---: |
@@ -103,25 +104,25 @@ quem pode fazer o quê (FKs compostas `(id, papel)` → `usuario`, ver [`DER.md`
 | Publicar campanha de doação | HU-06 | ✅ | ❌ | ❌ | **Sim:** `publicada_por_papel = 'MEDICO'` |
 | Concluir procedimento (baixa por FEFO) | HU-08 | ✅ | ❌ | ❌ | **Sim:** `responsavel_papel = 'MEDICO'` |
 | Ver pessoas que precisam de doação | HU-09, 10 | ✅ | ✅ | ✅ | — (só leitura) |
-| Agendar doação | HU-09, 10 | ⚠️ ver [decisão 5](#6-decisoes) | ✅ | ❌ | **Sim:** `doador_papel = 'DOADOR'` |
+| Agendar doação | HU-09, 10 | ❌ ([decisão 5](#6-decisoes)) | ✅ | ❌ | **Sim:** `doador_papel = 'DOADOR'` |
 | Ver diagnóstico do backend, Supabase e logs | — | ❌ | ❌ | ✅ | — (só tela) |
 
-<h2 align="left" id="6-decisoes">🗳️ 6. Decisões para fechar com o time</h2>
+<h2 align="left" id="6-decisoes">🗳️ 6. Decisões</h2>
 
-| # | Pergunta | Recomendação | Por quê | Decisão do time |
-| :---: | :--- | :--- | :--- | :---: |
-| 1 | Quais perfis existem? | `MEDICO`, `DOADOR` e `ADMIN`, sem perfil hospital | Ver [seção 3](#3-perfis) | ⏳ |
-| 2 | O admin pode fazer ações que gravam dados (requisição, campanha, procedimento)? | **Não.** Vê todas as telas e o diagnóstico, mas não grava ações clínicas | O banco já exige `MEDICO` em campanha e procedimento; um admin gravando quebraria essas regras | ⏳ |
-| 3 | Onde o admin fica cadastrado? | Na tabela `usuario`, com `papel = 'ADMIN'` | Todo mundo entra do mesmo jeito; só precisa incluir `ADMIN` no `CHECK` de `papel` | ⏳ |
-| 4 | Como cada um entra? | Login e senha para os três perfis, usando o **Supabase Auth** | O schema já prevê isso: `usuario.auth_user_id` → `auth.users` (HU-F01). A alternativa é uma coluna própria de senha (guardada como hash) | ⏳ |
-| 5 | O médico pode agendar doação? A HU-09 diz que sim. | **Não.** O médico vê a lista e publica campanhas; quem agenda é o doador | O banco só aceita agendamento com `doador_papel = 'DOADOR'`. Se o time mantiver a HU-09, o médico teria que agendar em nome de um doador cadastrado | ⏳ |
-| 6 | A API vai bloquear por perfil (`403`) já nesta sprint? | **Não**, fica para a próxima | Nesta sprint: login validado na API (PI3-183) e telas protegidas no frontend (PI3-184). Esconder telas no frontend não é segurança de verdade: a API continua aberta para quem souber a URL | ⏳ |
+| # | Pergunta | Decisão | Por quê |
+| :---: | :--- | :--- | :--- |
+| 1 | Quais perfis existem? | `MEDICO`, `DOADOR` e `ADMIN`, sem perfil hospital | Ver [seção 3](#3-perfis) |
+| 2 | O admin pode fazer ações que gravam dados (requisição, campanha, procedimento)? | **Não.** Vê todas as telas e o diagnóstico, mas não grava ações clínicas | O banco já exige `MEDICO` em campanha e procedimento; um admin gravando quebraria essas regras |
+| 3 | Onde o admin fica cadastrado? | Na tabela `usuario`, com `papel = 'ADMIN'` | Todo mundo entra do mesmo jeito; só precisa incluir `ADMIN` no `CHECK` de `papel` |
+| 4 | Como cada um entra? | Login e senha para os três perfis, usando o **Supabase Auth** | O schema já prevê isso: `usuario.auth_user_id` → `auth.users` (HU-F01). A alternativa seria uma coluna própria de senha (guardada como hash) |
+| 5 | O médico pode agendar doação? A HU-09 diz que sim. | **Não.** O médico vê a lista e publica campanhas; quem agenda é o doador | O banco só aceita agendamento com `doador_papel = 'DOADOR'`. O texto da HU-09 no README ("médico ou doador ... agendar") fica desatualizado e precisa ser ajustado |
+| 6 | A API vai bloquear por perfil (`403`) já nesta sprint? | **Não**, fica para a próxima sprint | Nesta sprint: login validado na API (PI3-183) e telas protegidas no frontend (PI3-184). Esconder telas no frontend não é segurança de verdade: a API continua aberta para quem souber a URL |
 
 <h2 align="left" id="7-impacto">🔗 7. Impacto nas outras tasks</h2>
 
-| Task | O que muda com esta proposta |
+| Task | O que muda com estas decisões |
 | :--- | :--- |
-| **PI3-183** · Validação de usuário e senha na API | Autenticar contra a tabela `usuario` (com Supabase Auth, se a decisão 4 for aprovada) e devolver o `papel` e a tela inicial. Incluir `ADMIN` no `TipoAcesso` e, por migration, no `CHECK` de `usuario.papel`. Cadastrar usuários de teste dos três perfis, porque a tabela está vazia. |
+| **PI3-183** · Validação de usuário e senha na API | Autenticar contra a tabela `usuario` com o Supabase Auth (decisão 4) e devolver o `papel` e a tela inicial. Incluir `ADMIN` no `TipoAcesso` e, por migration, no `CHECK` de `usuario.papel`. Cadastrar usuários de teste dos três perfis, porque a tabela está vazia. |
 | **PI3-184** · Levar cada perfil para a sua tela | Usar o `papel` devolvido pela API. Tirar da tela de login os cards de escolha de perfil e o atalho de digitar "admin". Corrigir o redirecionamento de `/portal-doador` (nota da [seção 4](#4-telas)). |
 | **PI3-196** · Avisos de senha errada e usuário inexistente | Respostas de erro no formato `ErroDTO` (RFC 7807), como os outros endpoints. Recomendação: a mesma mensagem para senha errada e usuário inexistente, para não revelar quais logins existem. O título da task fala em dois avisos, então vale combinar isso com quem pegou a 196. |
 | Contrato da API | Atualizar o login (`POST /acessos` ou um endpoint novo) em [`openapi.yaml`](openapi.yaml) e [`CONTRATOS_DE_API.md`](CONTRATOS_DE_API.md). |
