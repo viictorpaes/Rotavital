@@ -410,7 +410,7 @@ no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada
 > e localização de cada lote, para saber quais estão em risco de vencer ou fora da faixa ideal.
 >
 > ✅ Backend — `GET /api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` via [`EstoqueController.java`](./backend/src/main/java/com/rotavital/api/EstoqueController.java) (PR #2, mesclado)
-> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02 com dados mockados (ver [Figma × Mockado](#figma-vs-mockado))
+> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02 com dados mockados (ver [Figma × Sistema Real](#figma-vs-real))
 
 > 🟨 **HU‑09** — Como **médico ou doador**, preciso visualizar as pessoas que precisam de doação — filtráveis
 > por tipo sanguíneo — e agendar uma doação, para direcionar doadores compatíveis a quem precisa com urgência.
@@ -1045,24 +1045,30 @@ docker compose down            # derruba os containers
 > `/api/` para o container do backend (`frontend/nginx.conf`), então no Docker a API também responde em
 > `http://localhost/api/v1`.
 
-<h2 align="center" id="figma-vs-mockado">🖼️ Figma × Mockado <br>
-<img src="https://img.shields.io/badge/Protótipo-111827?style=flat&logo=figma&logoColor=orange" height="22"/> vs <img src="https://img.shields.io/badge/Mockado-111827?style=flat&logo=react&logoColor=646CFF" height="22"/>
+<h2 align="center" id="figma-vs-real">🖼️ Figma × Sistema Real <br>
+<img src="https://img.shields.io/badge/Protótipo-111827?style=flat&logo=figma&logoColor=orange" height="22"/> vs <img src="https://img.shields.io/badge/Sistema_real-111827?style=flat&logo=react&logoColor=61DAFB" height="22"/>
 </h2>
 
 <p align="center">
-Comparação lado a lado entre o protótipo do Figma e a tela equivalente rodando de fato em
-<b>React + TypeScript</b> (dados mockados), cobrindo as histórias já implementadas em código real:
-HU‑01, HU‑02, HU‑03, HU‑04/05/06, HU‑07, HU‑08, HU‑09 e HU‑10.
-Screenshots tiradas do app rodando em <code>localhost:5173</code>, mesma resolução do export do Figma
-(1470×956 @2x).
+Comparação lado a lado entre o protótipo do Figma e a mesma tela no sistema rodando de verdade
+(frontend React em <code>localhost:5173</code> + backend Spring Boot ligado ao Supabase), cobrindo
+HU‑01, HU‑02, HU‑03, HU‑04/05/06, HU‑07, HU‑08, HU‑09, HU‑10 e a tela de Admin.
+Prints tirados com Playwright (Chromium headless, janela 1440×900): Painel, Estoque, Portal do Doador e
+Admin vêm das <a href="./docs/evidencias/PI3-182_perfis_de_acesso.md">evidências do PI3-182</a>
+(10/10/2026), e as demais telas foram capturadas do mesmo jeito em 11/10/2026.
+</p>
+
+<p align="center">
+<sub>O Estoque e os números de estoque do Painel já vêm do Supabase; as demais telas ainda usam os dados de
+exemplo do frontend (ver a nota da <a href="#arquitetura">Arquitetura</a>).</sub>
 </p>
 
 <h4 align="left">🔐 HU‑01 — Login (seleção Médico / Doador)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Login_Medico.png" width="420"/> | <img src="./img/mockado-login_medico.png" width="420"/> |
-| <img src="./img/FIGMA_Login_Doador.png" width="420"/> | <img src="./img/mockado-login_doador.png" width="420"/> |
+| <img src="./img/FIGMA_Login_Medico.png" width="420"/> | <img src="./img/real-login_medico.png" width="420"/> |
+| <img src="./img/FIGMA_Login_Doador.png" width="420"/> | <img src="./img/real-login_doador.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Login/PaginaLogin.tsx"><code>frontend/src/pages/Login/PaginaLogin.tsx</code></a></summary>
@@ -1094,9 +1100,9 @@ export default function PaginaLogin()
 
 <h4 align="left">📊 HU‑02 — Painel Operacional (início)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_PainelOperacional.png" width="420"/> | <img src="./img/mockado-painel_operacional.png" width="420"/> |
+| <img src="./img/FIGMA_PainelOperacional.png" width="420"/> | <img src="./docs/evidencias/PI3-182/02_medico_entra.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/PainelOperacional/PaginaPainel.tsx"><code>frontend/src/pages/PainelOperacional/PaginaPainel.tsx</code></a></summary>
@@ -1122,47 +1128,68 @@ export default function PaginaPainel()
 
 <h4 align="left">📦 HU‑03 — Estoque (por tipo sanguíneo)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Estoque.png" width="420"/> | <img src="./img/mockado-estoque.png" width="420"/> |
+| <img src="./img/FIGMA_Estoque.png" width="420"/> | <img src="./docs/evidencias/PI3-182/09_admin_abre_estoque.png" width="420"/> |
+
+<sub>Print aberto pelo perfil admin, por isso o item "Diagnóstico & Logs" aparece no menu. As 8 bolsas são as do banco <code>BS-01</code> no Supabase.</sub>
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Estoque/PaginaEstoque.tsx"><code>frontend/src/pages/Estoque/PaginaEstoque.tsx</code></a></summary>
 
 ```tsx
-/**
- * HU-03 — Estoque agrupado por tipo sanguíneo, com detalhe de lote (validade,
- * temperatura e localização) para identificar risco de vencimento/temperatura.
- * Dados mockados nesta primeira versão (ver `data/estoqueMock.ts`).
- */
-const grupos = useMemo<GrupoEstoque[]>(() =>
+export default function PaginaEstoque()
 {
-  const tipos = filtroTipo === "todos" ? TIPOS_SANGUINEOS : [filtroTipo];
+  const { lotes: lotesMock } = useDados();
+  const [lotes, setLotes] = useState<LoteHemocomponente[]>([]);
+  const [fonte, setFonte] = useState<"banco" | "mock">("banco");
+  // ...
 
-  return tipos
-    .map((tipo) =>
+  async function carregarEstoqueDoBanco()
+  {
+    try
     {
-      const lotes = lotesEstoque.filter((lote) => lote.tipoSanguineo === tipo);
-      return { 
-        tipo, lotes, unidades: lotes.reduce((total, lote) => total + lote.unidades, 0) 
-      };
-    })
-    .filter((grupo) => grupo.lotes.length > 0);
-}, [lotesEstoque, filtroTipo]);
+      setCarregando(true);
+      const res = await buscarEstoque("BS-01");
+      if (res && res.bolsas && res.bolsas.length > 0)
+      {
+        const convertidos = res.bolsas.map(converterBolsaParaLote);
+        setLotes(convertidos);
+        setFonte("banco");
+        setErro(null);
+      }
+      // ...
+    }
+    catch (err: any)
+    {
+      console.warn("Falha ao carregar estoque do Supabase, usando mocks locais:", err);
+      setLotes(lotesMock);
+      setFonte("mock");
+      // ...
+    }
+  }
+  // ...
+}
 ```
 </details>
 
 <h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (solicitar)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Requisicao_Solicitar.png" width="420"/> | <img src="./img/mockado-requisicao_solicitar.png" width="420"/> |
+| <img src="./img/FIGMA_Requisicao_Solicitar.png" width="420"/> | <img src="./img/real-requisicao_solicitar.png" width="420"/> |
 
 <h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (recebidas)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Requisicao_Recebidas.png" width="420"/> | <img src="./img/mockado-requisicao_recebidas.png" width="420"/> |
+| <img src="./img/FIGMA_Requisicao_Recebidas.png" width="420"/> | <img src="./img/real-requisicao_recebidas.png" width="420"/> |
+
+<h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (campanha)</h4>
+
+| Figma | Sistema real |
+| :---: | :---: |
+| <img src="./img/FIGMA_Requisicao_Campanha.png" width="420"/> | <img src="./img/real-requisicao_campanha.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Requisicao/PaginaRequisicao.tsx"><code>frontend/src/pages/Requisicao/PaginaRequisicao.tsx</code></a></summary>
@@ -1190,9 +1217,9 @@ export default function PaginaRequisicao()
 
 <h4 align="left">🗺️ HU‑07 — Rede hospitalar (mapa e rota de transporte)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_RedeHospitalar.png" width="420"/> | <img src="./img/mockado-rede_hospitalar.png" width="420"/> |
+| <img src="./img/FIGMA_RedeHospitalar.png" width="420"/> | <img src="./img/real-rede_hospitalar.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/RedeHospitalar/PaginaRede.tsx"><code>frontend/src/pages/RedeHospitalar/PaginaRede.tsx</code></a></summary>
@@ -1216,15 +1243,15 @@ export default function PaginaRede()
 
 <h4 align="left">🏥 HU‑08 — Pacientes (fila clínica)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Pacientes.png" width="420"/> | <img src="./img/mockado-pacientes.png" width="420"/> |
+| <img src="./img/FIGMA_Pacientes.png" width="420"/> | <img src="./img/real-pacientes.png" width="420"/> |
 
 <h4 align="left">🏥 HU‑08 — Pacientes (concluir procedimento)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Pacientes_ConcluirProcedimento.png" width="420"/> | <img src="./img/mockado-pacientes_concluirprocedimento.png" width="420"/> |
+| <img src="./img/FIGMA_Pacientes_ConcluirProcedimento.png" width="420"/> | <img src="./img/real-pacientes_concluirprocedimento.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Pacientes/PaginaPacientes.tsx"><code>frontend/src/pages/Pacientes/PaginaPacientes.tsx</code></a></summary>
@@ -1249,9 +1276,9 @@ function handleConfirmar(origem: OrigemAtendimento)
 
 <h4 align="left">❤️ HU‑09 — Doações (lista de pessoas que precisam)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Doacoes.png" width="420"/> | <img src="./img/mockado-doacoes.png" width="420"/> |
+| <img src="./img/FIGMA_Doacoes.png" width="420"/> | <img src="./img/real-doacoes.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Doacoes/PaginaDoacoes.tsx"><code>frontend/src/pages/Doacoes/PaginaDoacoes.tsx</code></a></summary>
@@ -1279,9 +1306,9 @@ const pessoasFiltradas = useMemo(() =>
 
 <h4 align="left">❤️ HU‑09 — Agende sua doação (modal)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Doacoes_AgendeSuaDoacao.png" width="420"/> | <img src="./img/mockado-doacoes_agendesuadoacao.png" width="420"/> |
+| <img src="./img/FIGMA_Doacoes_AgendeSuaDoacao.png" width="420"/> | <img src="./img/real-doacoes_agendesuadoacao.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/components/donations/ModalAgendarDoacao.tsx"><code>frontend/src/components/donations/ModalAgendarDoacao.tsx</code></a></summary>
@@ -1305,9 +1332,9 @@ export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
 
 <h4 align="left">👤 HU‑10 — Portal do Doador</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_PortalDoDoador.png" width="420"/> | <img src="./img/mockado-portal_do_doador.png" width="420"/> |
+| <img src="./img/FIGMA_PortalDoDoador.png" width="420"/> | <img src="./docs/evidencias/PI3-182/05_doador_entra.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx"><code>frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx</code></a></summary>
@@ -1325,6 +1352,14 @@ export default function PaginaPortalDoador()
 }
 ```
 </details>
+
+<h4 align="left">🛠️ Admin — Diagnóstico & Logs</h4>
+
+| Figma | Sistema real |
+| :---: | :---: |
+| *(tela criada depois do protótipo)* | <img src="./docs/evidencias/PI3-182/08_admin_entra.png" width="420"/> |
+
+<sub>Mostra a conexão frontend ↔ backend ↔ Supabase e as últimas requisições HTTP. Só o perfil admin abre esta tela (<a href="./docs/PERFIS_DE_ACESSO.md">PI3-182</a>).</sub>
 
 
 <h2 align="center" id="documentacao">📚 Documentação <br>
