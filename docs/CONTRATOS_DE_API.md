@@ -61,7 +61,7 @@ flowchart LR
 | Módulo | Subtask | Recursos | Espelha no domínio | Implementado? |
 |---|---|---|---|:---:|
 | 🔑 Acesso | HU-01 | `/acessos` | *(nenhuma — seleção de perfil, não é entidade de domínio)* | ✅ |
-| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque` e `GET /bancos/{bancoId}/estoque/resumo`) |
+| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque`, `GET /bancos/{bancoId}/estoque/resumo` e `GET /hemocomponentes/{id}`) |
 | 🏥 Requisições e Alocação | PI3-47 | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ❌ sem controller |
 | 🚚 Roteirização e Logística | PI3-48 | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ |
 | 🌡️ Telemetria e Cadeia Fria | PI3-49 | `/entregas/{id}/leituras` | *(gap — sem classe de domínio)* | ❌ sem controller |
@@ -109,6 +109,12 @@ flowchart LR
 
 **DTO Java equivalente**: [`ErroDTO`](../backend/src/main/java/com/rotavital/api/dto/comum/ErroDTO.java).
 
+**Onde o erro é montado** (PI3-181): o [`TratadorDeErros`](../backend/src/main/java/com/rotavital/api/TratadorDeErros.java)
+converte em `ErroDTO` as exceções dos serviços (`DadosInvalidosException` → 400, `RecursoNaoEncontradoException` → 404,
+`RegraDeNegocioException` → 422) e os valores que o Spring não consegue converter: enum fora da lista, data fora do
+formato `AAAA-MM-DD`, texto no lugar de número e JSON quebrado. Nesses casos o `detail` diz o campo, o valor recusado
+e o que mandar no lugar, ex.: `"O parâmetro 'tipoSanguineo' não aceita o valor 'O-'. Valores aceitos: A_POSITIVO, …"`.
+
 <h3 align="left" id="2-1-divergencias">🔧 2.1 Divergências REST resolvidas (Etapa 2)</h3>
 
 Antes da tabela de endpoints, o grupo decidiu **ajustar código e contrato** (em vez de documentar como
@@ -152,12 +158,12 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | **🔑 Acessos** | *`AcessoController`* | | | | |
 | `POST` | `/api/v1/acessos` | ✅ Identifica o perfil (MÉDICO/DOADOR) e devolve tela inicial + menu. Não persiste nada, por isso 200 | Pública | `Acesso` | `200` · `400` |
 | **🏦 Bancos → Estoque** | *`EstoqueController`* | | | | |
-| `GET` | `/api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` | ✅ Estoque consolidado de um banco de sangue | Nenhuma no MVP (alvo: médico) | `Estoque` | `200` · `404` |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` | ✅ Estoque consolidado de um banco de sangue | Nenhuma no MVP (alvo: médico) | `Estoque` | `200` · `400` · `404` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | ✅ Totais de bolsas disponíveis e válidas por tipo sanguíneo e componente (tela inicial) | Nenhuma no MVP (alvo: médico) | `ResumoEstoque` | `200` · `404` |
 | **📦 Hemocomponentes** | *`HemocomponenteController` (planejado)* | | | | |
 | `GET` | `/api/v1/hemocomponentes?bancoId=&tipoComponente=&tipoSanguineo=&status=&page=0&size=20` | 🕓 Lista bolsas com filtros e paginação | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente[]` | `200` |
 | `POST` | `/api/v1/hemocomponentes` | 🕓 Cadastra uma bolsa (status inicial `DISPONIVEL`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `201` · `400` · `422` |
-| `GET` | `/api/v1/hemocomponentes/{id}` | 🕓 Detalhe de uma bolsa | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` |
+| `GET` | `/api/v1/hemocomponentes/{id}` | ✅ Detalhe de uma bolsa (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` |
 | `PATCH` | `/api/v1/hemocomponentes/{id}` | 🕓 Transição de status (reservar, descartar…) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` · `422` |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | 🕓 Remove um cadastro feito por engano | Nenhuma no MVP (alvo: médico) | *(sem corpo)* | `204` · `404` |
 | **🏥 Requisições** | *`RequisicaoController` (planejado)* | | | | |
@@ -319,7 +325,17 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 > `GET /api/v1/bancos/{bancoId}/estoque/resumo` também roda: o `ResumoEstoqueService` lê os totais já
 > contados pelas views do painel (`vw_estoque_por_tipo` e `vw_estoque_agrupado`) e devolve os 8 tipos
 > sanguíneos, cada um dividido nos 4 componentes, mais o total de cada componente. Tipos e componentes
-> sem bolsa vêm com `0`. Banco de sangue inexistente → `404`. Os endpoints de `/hemocomponentes` continuam só no contrato.
+> sem bolsa vêm com `0`. Banco de sangue inexistente → `404`.
+>
+> `GET /api/v1/hemocomponentes/{id}` também roda (PI3-181): o `EstoqueService.buscarBolsa` lê a bolsa da tabela
+> `bolsa_hemocomponente`; bolsa inexistente → `404` com `"Nenhuma bolsa encontrada com id BOLSA-999."`. A edição e o
+> descarte (PI3-190) devem usar o mesmo método, para responder a mesma mensagem. `tipoSanguineo` fora da lista no
+> `GET /bancos/{bancoId}/estoque` → `400` com os valores aceitos.
+>
+> A validação do cadastro (PI3-179) já existe em `EstoqueService.validarNovaBolsa`. Campo obrigatório ausente ou
+> `volumeMl` ≤ 0 → `400`. Coleta depois de hoje, validade antes da coleta, bolsa já vencida ou banco de origem
+> inexistente → `422`. A mensagem junta todos os problemas encontrados. Os demais endpoints de `/hemocomponentes`
+> continuam só no contrato.
 
 **DTOs Java equivalentes** (`backend/src/main/java/com/rotavital/api/dto/estoque/`):
 [`BolsaHemocomponenteDTO`](../backend/src/main/java/com/rotavital/api/dto/estoque/BolsaHemocomponenteDTO.java) ·

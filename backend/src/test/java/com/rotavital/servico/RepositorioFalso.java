@@ -8,13 +8,13 @@ import java.util.function.Function;
  * Responde só ao método informado; qualquer outro lança erro, o que deixa claro no teste
  * qual consulta o serviço faz.
  */
-final class RepositorioFalso
+public final class RepositorioFalso
 {
     private RepositorioFalso()
     {
     }
 
-    static <T> T respondendo(Class<T> tipoDoRepositorio, String metodo, Function<Object[], Object> resposta)
+    public static <T> T respondendo(Class<T> tipoDoRepositorio, String metodo, Function<Object[], Object> resposta)
     {
         Object repositorio = Proxy.newProxyInstance(
                 tipoDoRepositorio.getClassLoader(),

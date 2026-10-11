@@ -23,8 +23,8 @@ info:
     (médico/doador), por isso nenhum endpoint devolve `401`/`403` hoje.
 
     **Implementados hoje:** `acessos`, `bancos/{bancoId}/estoque`,
-    `bancos/{bancoId}/estoque/resumo`, `pontos`, `conexoes`, `rotas` e
-    `benchmarks`. Os demais (`hemocomponentes`,
+    `bancos/{bancoId}/estoque/resumo`, `GET hemocomponentes/{id}`, `pontos`,
+    `conexoes`, `rotas` e `benchmarks`. Os demais (o resto de `hemocomponentes`,
     `requisicoes`, `entregas`) existem só no contrato e respondem `404` até
     ganharem controller.
 
@@ -154,6 +154,17 @@ paths:
                     volumeMl: 450.0
                     status: DISPONIVEL
                     bancoOrigemId: BS-01
+        '400':
+          description: tipoSanguineo fora da lista do enum.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Requisição inválida
+                status: 400
+                detail: "O parâmetro 'tipoSanguineo' não aceita o valor 'O-'. Valores aceitos: A_POSITIVO, A_NEGATIVO, B_POSITIVO, B_NEGATIVO, AB_POSITIVO, AB_NEGATIVO, O_POSITIVO, O_NEGATIVO."
+                instance: /api/v1/bancos/BS-01/estoque
         '404':
           $ref: '#/components/responses/NotFound'
         default:

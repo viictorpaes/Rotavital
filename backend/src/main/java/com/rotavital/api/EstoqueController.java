@@ -64,24 +64,36 @@ public class EstoqueController
 
         for (BolsaHemocomponente bolsa : bolsas)
         {
-            bolsasDTO.add(new BolsaHemocomponenteDTO(
-                    bolsa.getId(),
-                    bolsa.getTipoComponente(),
-                    bolsa.getTipoSanguineo(),
-                    bolsa.getDataColeta(),
-                    bolsa.getDataValidade(),
-                    bolsa.getLoteSintetico(),
-                    bolsa.getVolumeMl(),
-                    bolsa.getTemperaturaCelsius(),
-                    bolsa.getLocalizacao(),
-                    bolsa.estaForaDaFaixa(),
-                    bolsa.getStatus(),
-                    bolsa.getBancoOrigem().getId()
-            ));
+            bolsasDTO.add(paraBolsaDTO(bolsa));
         }
 
         EstoqueDTO estoque = new EstoqueDTO(bancoId, bolsasDTO.size(), bolsasDTO);
         return ResponseEntity.ok(estoque);
+    }
+
+    // Bolsa inexistente: o EstoqueService lança RecursoNaoEncontradoException e o TratadorDeErros responde 404.
+    @GetMapping("/hemocomponentes/{id}")
+    public ResponseEntity<BolsaHemocomponenteDTO> consultarBolsa(@PathVariable("id") String id)
+    {
+        return ResponseEntity.ok(paraBolsaDTO(estoqueService.buscarBolsa(id)));
+    }
+
+    private BolsaHemocomponenteDTO paraBolsaDTO(BolsaHemocomponente bolsa)
+    {
+        return new BolsaHemocomponenteDTO(
+                bolsa.getId(),
+                bolsa.getTipoComponente(),
+                bolsa.getTipoSanguineo(),
+                bolsa.getDataColeta(),
+                bolsa.getDataValidade(),
+                bolsa.getLoteSintetico(),
+                bolsa.getVolumeMl(),
+                bolsa.getTemperaturaCelsius(),
+                bolsa.getLocalizacao(),
+                bolsa.estaForaDaFaixa(),
+                bolsa.getStatus(),
+                bolsa.getBancoOrigem().getId()
+        );
     }
 
     private ResponseEntity<ErroDTO> bancoNaoEncontrado(String bancoId, String caminho)

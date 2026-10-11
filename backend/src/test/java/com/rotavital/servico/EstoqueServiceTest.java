@@ -14,8 +14,10 @@ import com.rotavital.dominio.Endereco;
 import com.rotavital.dominio.TipoComponente;
 import com.rotavital.dominio.TipoSanguineo;
 import com.rotavital.repositorio.BancoDeSangueRepository;
+import com.rotavital.repositorio.BolsaHemocomponenteRepository;
 
-// Leitura do estoque de um banco de sangue a partir do repositório (no app, a tabela ponto_rede).
+// Leitura do estoque de um banco de sangue e de uma bolsa a partir dos repositórios
+// (no app, as tabelas ponto_rede e bolsa_hemocomponente).
 public class EstoqueServiceTest
 {
     private final LocalDate hoje = LocalDate.of(2026, 10, 1);
@@ -38,7 +40,12 @@ public class EstoqueServiceTest
         // Só o BS-01 existe; outro id devolve vazio, como o findById do Spring Data.
         BancoDeSangueRepository bancosFalsos = RepositorioFalso.respondendo(BancoDeSangueRepository.class,
                 "findById", argumentos -> Optional.ofNullable("BS-01".equals(argumentos[0]) ? banco : null));
-        servico = new EstoqueService(bancosFalsos);
+        // Só as duas bolsas acima existem.
+        BolsaHemocomponenteRepository bolsasFalsas = RepositorioFalso.respondendo(BolsaHemocomponenteRepository.class,
+                "findById", argumentos -> banco.getEstoque().getBolsas().stream()
+                        .filter(bolsa -> bolsa.getId().equals(argumentos[0]))
+                        .findFirst());
+        servico = new EstoqueService(bancosFalsos, bolsasFalsas);
     }
 
     @Test
@@ -61,5 +68,20 @@ public class EstoqueServiceTest
         Optional<List<BolsaHemocomponente>> bolsas = servico.buscarBolsas("BS-01", TipoSanguineo.AB_NEGATIVO);
 
         Assertions.assertEquals(Optional.of(List.of(abNegativo)), bolsas);
+    }
+
+    @Test
+    public void buscaUmaBolsaPeloId()
+    {
+        Assertions.assertSame(abNegativo, servico.buscarBolsa("CR-4002"));
+    }
+
+    @Test
+    public void bolsaInexistenteDaErroComOIdNaMensagem()
+    {
+        RecursoNaoEncontradoException erro = Assertions.assertThrows(RecursoNaoEncontradoException.class,
+                () -> servico.buscarBolsa("BOLSA-999"));
+
+        Assertions.assertEquals("Nenhuma bolsa encontrada com id BOLSA-999.", erro.getMessage());
     }
 }
