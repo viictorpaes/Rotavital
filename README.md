@@ -44,6 +44,7 @@ roteirização de entregas e telemetria da cadeia fria.
 <p align="center">
   <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg" width="32" height="32" alt="VS Code"/> <br>
   <img src="https://img.shields.io/badge/-Java_21-111827?style=flat-square&logo=openjdk&logoColor=orange"/>
+  <img src="https://img.shields.io/badge/-C99-111827?style=flat-square&logo=c&logoColor=A8B9CC"/>
   <img src="https://img.shields.io/badge/-Spring Boot-111827?style=flat-square&logo=springboot&logoColor=green"/>
   <img src="https://img.shields.io/badge/-Maven-111827?style=flat-square&logo=apachemaven&logoColor=C71A36"/>
   <img src="https://img.shields.io/badge/-JUnit_5-111827?style=flat-square&logo=junit5&logoColor=25A162"/>
@@ -409,7 +410,7 @@ no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada
 > e localização de cada lote, para saber quais estão em risco de vencer ou fora da faixa ideal.
 >
 > ✅ Backend — `GET /api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` via [`EstoqueController.java`](./backend/src/main/java/com/rotavital/api/EstoqueController.java) (PR #2, mesclado)
-> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02 com dados mockados (ver [Figma × Mockado](#figma-vs-mockado))
+> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02 com dados mockados (ver [Figma × Sistema Real](#figma-vs-real))
 
 > 🟨 **HU‑09** — Como **médico ou doador**, preciso visualizar as pessoas que precisam de doação — filtráveis
 > por tipo sanguíneo — e agendar uma doação, para direcionar doadores compatíveis a quem precisa com urgência.
@@ -487,8 +488,9 @@ Rotavital🩸/
 │       │       ├── RotaVitalApplication.java <img src="https://img.shields.io/badge/-Entry_Point_·_carrega_.env-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       ├── api <img src="https://img.shields.io/badge/-REST_Controllers-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
 │       │       │   ├── AcessoController.java <img src="https://img.shields.io/badge/-POST_%2Facessos-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑01-111827?style=flat-square&logoColor=white" height="18"/>
-│       │       │   ├── EstoqueController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Festoque-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>
+│       │       │   ├── EstoqueController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Festoque_·_%2Fresumo-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/-GET_%2Fhemocomponentes%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── RotaController.java <img src="https://img.shields.io/badge/-GET_%2Fpontos_·_%2Fconexoes_·_%2Frotas-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑07-111827?style=flat-square&logoColor=white" height="18"/>
+│       │       │   ├── TratadorDeErros.java <img src="https://img.shields.io/badge/-Erros_RFC_7807_·_400_·_404_·_422-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       │   └── dto <img src="https://img.shields.io/badge/-DTO-111827?style=flat-square&logo=openapiinitiative&logoColor=6BA539" height="18"/>/
 │       │       │       ├── acesso <img src="https://img.shields.io/badge/-Acesso-111827?style=flat-square&logo=keycloak&logoColor=4D4D4D" height="18"/>/
 │       │       │       │   ├── AcessoDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
@@ -500,7 +502,10 @@ Rotavital🩸/
 │       │       │       │   ├── AtualizarStatusBolsaRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── BolsaHemocomponenteDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── EstoqueDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
-│       │       │       │   └── NovaBolsaHemocomponenteRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│       │       │       │   ├── NovaBolsaHemocomponenteRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│       │       │       │   ├── ResumoEstoqueDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│       │       │       │   ├── TotalPorComponenteDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│       │       │       │   └── TotalPorTipoSanguineoDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       ├── requisicao <img src="https://img.shields.io/badge/-Requisicao-111827?style=flat-square&logo=hospitalfederation&logoColor=E0234E" height="18"/>/
 │       │       │       │   ├── AlocacaoDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── AtualizarStatusRequisicaoRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
@@ -556,12 +561,20 @@ Rotavital🩸/
 │       │       │   └── StatusRequisicao.java <img src="https://img.shields.io/badge/Enum-111827?style=flat&logo=openjdk&logoColor=FFD700" height="18"/>
 │       │       ├── repositorio <img src="https://img.shields.io/badge/-Repositório_(Spring_Data)-111827?style=flat-square&logo=spring&logoColor=6DB33F" height="18"/>/
 │       │       │   ├── BancoDeSangueRepository.java <img src="https://img.shields.io/badge/-JpaRepository-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │       │   ├── BolsaHemocomponenteRepository.java <img src="https://img.shields.io/badge/-JpaRepository-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       │   ├── ConexaoRepository.java <img src="https://img.shields.io/badge/-JpaRepository-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
-│       │       │   └── PontoDeRedeRepository.java <img src="https://img.shields.io/badge/-JpaRepository-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │       │   ├── PontoDeRedeRepository.java <img src="https://img.shields.io/badge/-JpaRepository-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │       │   └── ResumoEstoqueRepository.java <img src="https://img.shields.io/badge/-Consultas_às_views_do_painel-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 │       │       └── servico <img src="https://img.shields.io/badge/-Service-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
-│       │           ├── EstoqueService.java <img src="https://img.shields.io/badge/-%40Transactional_·_estoque_do_banco-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
-│       │           └── RedeDistribuicaoService.java <img src="https://img.shields.io/badge/-%40Transactional_·_rede_do_banco-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │           ├── DadosInvalidosException.java <img src="https://img.shields.io/badge/-Exceção_·_400-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/>
+│       │           ├── EstoqueService.java <img src="https://img.shields.io/badge/-%40Transactional_·_estoque_·_bolsa_·_validação-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │           ├── RecursoNaoEncontradoException.java <img src="https://img.shields.io/badge/-Exceção_·_404-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/>
+│       │           ├── RedeDistribuicaoService.java <img src="https://img.shields.io/badge/-%40Transactional_·_rede_do_banco-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │           ├── RegraDeNegocioException.java <img src="https://img.shields.io/badge/-Exceção_·_422-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/>
+│       │           └── ResumoEstoqueService.java <img src="https://img.shields.io/badge/-%40Transactional_·_totais_do_estoque-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       └── test/java/com/rotavital <img src="https://img.shields.io/badge/-JUnit_5-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
+│           ├── api <img src="https://img.shields.io/badge/-API_(MockMvc)-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
+│           │   └── ErrosDoEstoqueTest.java <img src="https://img.shields.io/badge/-%40Test_·_respostas_de_erro_400_·_404_·_422-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           ├── benchmark <img src="https://img.shields.io/badge/-Benchmark-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
 │           │   └── AuditoriaTelemetriaTest.java <img src="https://img.shields.io/badge/-%40Test_·_concorrência-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           ├── dominio <img src="https://img.shields.io/badge/-Domínio-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
@@ -573,13 +586,15 @@ Rotavital🩸/
 │           │   ├── RedeDistribuicaoTest.java <img src="https://img.shields.io/badge/-%40Test_·_grafo_·_Dijkstra-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           │   └── TesteFluxoTest.java <img src="https://img.shields.io/badge/-%40Test_·_fluxo_FEFO_+_ABO%2FRh-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           └── servico <img src="https://img.shields.io/badge/-Service-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
-│               ├── EstoqueServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_leitura_do_estoque-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│               ├── EstoqueServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_estoque_e_busca_de_bolsa-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │               ├── RedeDistribuicaoServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_montagem_da_rede-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
-│               └── RepositorioFalso.java <img src="https://img.shields.io/badge/-Repositório_falso_(sem_banco)-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│               ├── RepositorioFalso.java <img src="https://img.shields.io/badge/-Repositório_falso_(sem_banco)-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│               ├── ResumoEstoqueServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_totais_do_resumo-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│               └── ValidacaoNovaBolsaTest.java <img src="https://img.shields.io/badge/-%40Test_·_validação_da_bolsa_nova-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │
 ├── c <img src="https://img.shields.io/badge/-C99-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/> <img src="https://img.shields.io/badge/-Estruturas_de_Dados_(AV1)-111827?style=flat-square&logo=c&logoColor=A8B9CC" height="18"/>/
 │   ├── Makefile <img src="https://img.shields.io/badge/-make_·_make_run_·_make_clean-111827?style=flat&logo=gnu&logoColor=A8B9CC" height="18"/>
-│   ├── README.md <img src="https://img.shields.io/badge/-Como_compilar-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
+│   ├── README.md <img src="https://img.shields.io/badge/-Estruturas_·_testes_·_como_compilar-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   ├── rotavital_tipos.h <img src="https://img.shields.io/badge/-Enums_·_structs_do_domínio-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
 │   ├── rotavital_tipos.c <img src="https://img.shields.io/badge/-Conversão_de_enums-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
 │   ├── lista_estoque.h <img src="https://img.shields.io/badge/-Lista_encadeada_·_estoque-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>
@@ -696,6 +711,7 @@ Rotavital🩸/
 │   ├── openapi.yaml <img src="https://img.shields.io/badge/OpenAPI_3.0.3-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │   ├── MODULOS.md <img src="https://img.shields.io/badge/Módulos-111827?style=flat&logo=markdown&logoColor=6BA539" height="18"/>
 │   ├── DER.md <img src="https://img.shields.io/badge/DER_·_Constraints-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│   ├── PERFIS_DE_ACESSO.md <img src="https://img.shields.io/badge/Perfis_de_Acesso_(PI3--182)-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   ├── SUPABASE.md <img src="https://img.shields.io/badge/Detalhamento_do_Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/>
 │   ├── LIGACOES_E_REDES.md <img src="https://img.shields.io/badge/Ligações_e_Redes-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   ├── INVENTARIO_COMPONENTES.md <img src="https://img.shields.io/badge/Inventário_de_Componentes-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
@@ -708,11 +724,14 @@ Rotavital🩸/
 │   ├── TRADUCAO_C_JAVA_AV1.md <img src="https://img.shields.io/badge/Tradução_C_↔_Java_(AV1)-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   └── evidencias <img src="https://img.shields.io/badge/-Evidências-111827?style=flat-square&logo=markdown&logoColor=white" height="18"/>/
 │       ├── PI3-14_endpoints_rest.md <img src="https://img.shields.io/badge/-Endpoints_REST-111827?style=flat&logo=markdown&logoColor=6BA539" height="18"/>
+│       ├── PI3-182_perfis_de_acesso.md <img src="https://img.shields.io/badge/-Perfis_de_acesso_·_navegação_real-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
+│       ├── PI3-182 <img src="https://img.shields.io/badge/-9_prints_(Playwright)-111827?style=flat-square&logo=playwright&logoColor=2EAD33" height="18"/>/
 │       ├── drawio(fluxo).png <img src="https://img.shields.io/badge/-PNG-111827?style=flat-square&logo=diagramsdotnet&logoColor=F08705" height="18"/>
 │       └── drawio_atualizado.png <img src="https://img.shields.io/badge/-PNG-111827?style=flat-square&logo=diagramsdotnet&logoColor=F08705" height="18"/>
 │
 ├── pdf <img src="https://img.shields.io/badge/-PDF-111827?style=flat-square&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>/
-│   └── Arquitetura-RotaVital-Victor-Paes.pdf <img src="https://img.shields.io/badge/-PDF_entregue_(RSD)-111827?style=flat&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>
+│   ├── Arquitetura-RotaVital-Victor-Paes.pdf <img src="https://img.shields.io/badge/-PDF_entregue_(RSD)-111827?style=flat&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>
+│   └── Entrega-Projetos-3-ADS-RSD.pdf <img src="https://img.shields.io/badge/-Explicação_da_entrega_(RSD)-111827?style=flat&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>
 │
 ├── supabase <img src="https://img.shields.io/badge/-Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/> <img src="https://img.shields.io/badge/-PostgreSQL-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>/
 │   ├── img <img src="https://img.shields.io/badge/-Prints_do_Supabase-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="18"/>/
@@ -736,8 +755,10 @@ Rotavital🩸/
 > [!NOTE]
 > **Backend:** Spring Boot 3.3 (Java 21) com 5 controllers — `AcessoController`, `EstoqueController`,
 > `RotaController`, `BenchmarkController` e `DiagnosticoController` (`GET /api/v1/diagnostico`, usado pela tela
-> de admin). Os controllers de domínio leem do **banco (Supabase)** via JPA: estoque pelo `EstoqueService` e
-> rede/rotas pelo `RedeDistribuicaoService`; não há mais dados fixos em memória. O CORS fica em
+> de admin). Os controllers de domínio leem do **banco (Supabase)** via JPA: bolsas pelo `EstoqueService`,
+> totais do estoque pelo `ResumoEstoqueService` (views do painel) e rede/rotas pelo `RedeDistribuicaoService`;
+> não há mais dados fixos em memória. Os erros saem no formato RFC 7807 pelo `TratadorDeErros`, com a
+> explicação no `detail` (dado inválido → 400, recurso inexistente → 404, regra de negócio → 422). O CORS fica em
 > `config/CorsConfig` e o `HttpLoggingFilter` registra cada requisição HTTP. Requisições e Telemetria têm
 > contrato em `openapi.yaml`, mas nenhum controller. O domínio também tem `FilaRequisicoesHospitalares` (FIFO)
 > e `PilhaOperacoes` (LIFO), as versões Java das estruturas do módulo em C.
@@ -750,7 +771,8 @@ Rotavital🩸/
 >
 > **Estruturas de dados em C (AV1):** `c/` reimplementa em C99 a lista encadeada do estoque, a fila FIFO de
 > requisições e a pilha LIFO do histórico de operações, com alocação manual (`malloc`/`free`) e testes com
-> `assert()` em `main.c` (`make run`). A tradução comentada C ↔ Java está em
+> `assert()` em `main.c` (`make run`), sem vazamento de memória. Estruturas, testes e como compilar em
+> [`c/README.md`](./c/README.md); a tradução comentada C ↔ Java está em
 > [`docs/TRADUCAO_C_JAVA_AV1.md`](./docs/TRADUCAO_C_JAVA_AV1.md).
 >
 > **Banco:** Supabase (PostgreSQL), conectado pelo Session Pooler (`application.properties`, senha em
@@ -1023,24 +1045,30 @@ docker compose down            # derruba os containers
 > `/api/` para o container do backend (`frontend/nginx.conf`), então no Docker a API também responde em
 > `http://localhost/api/v1`.
 
-<h2 align="center" id="figma-vs-mockado">🖼️ Figma × Mockado <br>
-<img src="https://img.shields.io/badge/Protótipo-111827?style=flat&logo=figma&logoColor=orange" height="22"/> vs <img src="https://img.shields.io/badge/Mockado-111827?style=flat&logo=react&logoColor=646CFF" height="22"/>
+<h2 align="center" id="figma-vs-real">🖼️ Figma × Sistema Real <br>
+<img src="https://img.shields.io/badge/Protótipo-111827?style=flat&logo=figma&logoColor=orange" height="22"/> vs <img src="https://img.shields.io/badge/Sistema_real-111827?style=flat&logo=react&logoColor=61DAFB" height="22"/>
 </h2>
 
 <p align="center">
-Comparação lado a lado entre o protótipo do Figma e a tela equivalente rodando de fato em
-<b>React + TypeScript</b> (dados mockados), cobrindo as histórias já implementadas em código real:
-HU‑01, HU‑02, HU‑03, HU‑04/05/06, HU‑07, HU‑08, HU‑09 e HU‑10.
-Screenshots tiradas do app rodando em <code>localhost:5173</code>, mesma resolução do export do Figma
-(1470×956 @2x).
+Comparação lado a lado entre o protótipo do Figma e a mesma tela no sistema rodando de verdade
+(frontend React em <code>localhost:5173</code> + backend Spring Boot ligado ao Supabase), cobrindo
+HU‑01, HU‑02, HU‑03, HU‑04/05/06, HU‑07, HU‑08, HU‑09, HU‑10 e a tela de Admin.
+Prints tirados com Playwright (Chromium headless, janela 1440×900): Painel, Estoque, Portal do Doador e
+Admin vêm das <a href="./docs/evidencias/PI3-182_perfis_de_acesso.md">evidências do PI3-182</a>
+(10/10/2026), e as demais telas foram capturadas do mesmo jeito em 11/10/2026.
+</p>
+
+<p align="center">
+<sub>O Estoque e os números de estoque do Painel já vêm do Supabase; as demais telas ainda usam os dados de
+exemplo do frontend (ver a nota da <a href="#arquitetura">Arquitetura</a>).</sub>
 </p>
 
 <h4 align="left">🔐 HU‑01 — Login (seleção Médico / Doador)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Login_Medico.png" width="420"/> | <img src="./img/mockado-login_medico.png" width="420"/> |
-| <img src="./img/FIGMA_Login_Doador.png" width="420"/> | <img src="./img/mockado-login_doador.png" width="420"/> |
+| <img src="./img/FIGMA_Login_Medico.png" width="420"/> | <img src="./img/real-login_medico.png" width="420"/> |
+| <img src="./img/FIGMA_Login_Doador.png" width="420"/> | <img src="./img/real-login_doador.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Login/PaginaLogin.tsx"><code>frontend/src/pages/Login/PaginaLogin.tsx</code></a></summary>
@@ -1072,9 +1100,9 @@ export default function PaginaLogin()
 
 <h4 align="left">📊 HU‑02 — Painel Operacional (início)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_PainelOperacional.png" width="420"/> | <img src="./img/mockado-painel_operacional.png" width="420"/> |
+| <img src="./img/FIGMA_PainelOperacional.png" width="420"/> | <img src="./docs/evidencias/PI3-182/02_medico_entra.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/PainelOperacional/PaginaPainel.tsx"><code>frontend/src/pages/PainelOperacional/PaginaPainel.tsx</code></a></summary>
@@ -1100,47 +1128,68 @@ export default function PaginaPainel()
 
 <h4 align="left">📦 HU‑03 — Estoque (por tipo sanguíneo)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Estoque.png" width="420"/> | <img src="./img/mockado-estoque.png" width="420"/> |
+| <img src="./img/FIGMA_Estoque.png" width="420"/> | <img src="./docs/evidencias/PI3-182/09_admin_abre_estoque.png" width="420"/> |
+
+<sub>Print aberto pelo perfil admin, por isso o item "Diagnóstico & Logs" aparece no menu. As 8 bolsas são as do banco <code>BS-01</code> no Supabase.</sub>
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Estoque/PaginaEstoque.tsx"><code>frontend/src/pages/Estoque/PaginaEstoque.tsx</code></a></summary>
 
 ```tsx
-/**
- * HU-03 — Estoque agrupado por tipo sanguíneo, com detalhe de lote (validade,
- * temperatura e localização) para identificar risco de vencimento/temperatura.
- * Dados mockados nesta primeira versão (ver `data/estoqueMock.ts`).
- */
-const grupos = useMemo<GrupoEstoque[]>(() =>
+export default function PaginaEstoque()
 {
-  const tipos = filtroTipo === "todos" ? TIPOS_SANGUINEOS : [filtroTipo];
+  const { lotes: lotesMock } = useDados();
+  const [lotes, setLotes] = useState<LoteHemocomponente[]>([]);
+  const [fonte, setFonte] = useState<"banco" | "mock">("banco");
+  // ...
 
-  return tipos
-    .map((tipo) =>
+  async function carregarEstoqueDoBanco()
+  {
+    try
     {
-      const lotes = lotesEstoque.filter((lote) => lote.tipoSanguineo === tipo);
-      return { 
-        tipo, lotes, unidades: lotes.reduce((total, lote) => total + lote.unidades, 0) 
-      };
-    })
-    .filter((grupo) => grupo.lotes.length > 0);
-}, [lotesEstoque, filtroTipo]);
+      setCarregando(true);
+      const res = await buscarEstoque("BS-01");
+      if (res && res.bolsas && res.bolsas.length > 0)
+      {
+        const convertidos = res.bolsas.map(converterBolsaParaLote);
+        setLotes(convertidos);
+        setFonte("banco");
+        setErro(null);
+      }
+      // ...
+    }
+    catch (err: any)
+    {
+      console.warn("Falha ao carregar estoque do Supabase, usando mocks locais:", err);
+      setLotes(lotesMock);
+      setFonte("mock");
+      // ...
+    }
+  }
+  // ...
+}
 ```
 </details>
 
 <h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (solicitar)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Requisicao_Solicitar.png" width="420"/> | <img src="./img/mockado-requisicao_solicitar.png" width="420"/> |
+| <img src="./img/FIGMA_Requisicao_Solicitar.png" width="420"/> | <img src="./img/real-requisicao_solicitar.png" width="420"/> |
 
 <h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (recebidas)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Requisicao_Recebidas.png" width="420"/> | <img src="./img/mockado-requisicao_recebidas.png" width="420"/> |
+| <img src="./img/FIGMA_Requisicao_Recebidas.png" width="420"/> | <img src="./img/real-requisicao_recebidas.png" width="420"/> |
+
+<h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (campanha)</h4>
+
+| Figma | Sistema real |
+| :---: | :---: |
+| <img src="./img/FIGMA_Requisicao_Campanha.png" width="420"/> | <img src="./img/real-requisicao_campanha.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Requisicao/PaginaRequisicao.tsx"><code>frontend/src/pages/Requisicao/PaginaRequisicao.tsx</code></a></summary>
@@ -1168,9 +1217,9 @@ export default function PaginaRequisicao()
 
 <h4 align="left">🗺️ HU‑07 — Rede hospitalar (mapa e rota de transporte)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_RedeHospitalar.png" width="420"/> | <img src="./img/mockado-rede_hospitalar.png" width="420"/> |
+| <img src="./img/FIGMA_RedeHospitalar.png" width="420"/> | <img src="./img/real-rede_hospitalar.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/RedeHospitalar/PaginaRede.tsx"><code>frontend/src/pages/RedeHospitalar/PaginaRede.tsx</code></a></summary>
@@ -1194,15 +1243,15 @@ export default function PaginaRede()
 
 <h4 align="left">🏥 HU‑08 — Pacientes (fila clínica)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Pacientes.png" width="420"/> | <img src="./img/mockado-pacientes.png" width="420"/> |
+| <img src="./img/FIGMA_Pacientes.png" width="420"/> | <img src="./img/real-pacientes.png" width="420"/> |
 
 <h4 align="left">🏥 HU‑08 — Pacientes (concluir procedimento)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Pacientes_ConcluirProcedimento.png" width="420"/> | <img src="./img/mockado-pacientes_concluirprocedimento.png" width="420"/> |
+| <img src="./img/FIGMA_Pacientes_ConcluirProcedimento.png" width="420"/> | <img src="./img/real-pacientes_concluirprocedimento.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Pacientes/PaginaPacientes.tsx"><code>frontend/src/pages/Pacientes/PaginaPacientes.tsx</code></a></summary>
@@ -1227,9 +1276,9 @@ function handleConfirmar(origem: OrigemAtendimento)
 
 <h4 align="left">❤️ HU‑09 — Doações (lista de pessoas que precisam)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Doacoes.png" width="420"/> | <img src="./img/mockado-doacoes.png" width="420"/> |
+| <img src="./img/FIGMA_Doacoes.png" width="420"/> | <img src="./img/real-doacoes.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Doacoes/PaginaDoacoes.tsx"><code>frontend/src/pages/Doacoes/PaginaDoacoes.tsx</code></a></summary>
@@ -1257,9 +1306,9 @@ const pessoasFiltradas = useMemo(() =>
 
 <h4 align="left">❤️ HU‑09 — Agende sua doação (modal)</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Doacoes_AgendeSuaDoacao.png" width="420"/> | <img src="./img/mockado-doacoes_agendesuadoacao.png" width="420"/> |
+| <img src="./img/FIGMA_Doacoes_AgendeSuaDoacao.png" width="420"/> | <img src="./img/real-doacoes_agendesuadoacao.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/components/donations/ModalAgendarDoacao.tsx"><code>frontend/src/components/donations/ModalAgendarDoacao.tsx</code></a></summary>
@@ -1283,9 +1332,9 @@ export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
 
 <h4 align="left">👤 HU‑10 — Portal do Doador</h4>
 
-| Figma | Mockado (React) |
+| Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_PortalDoDoador.png" width="420"/> | <img src="./img/mockado-portal_do_doador.png" width="420"/> |
+| <img src="./img/FIGMA_PortalDoDoador.png" width="420"/> | <img src="./docs/evidencias/PI3-182/05_doador_entra.png" width="420"/> |
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx"><code>frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx</code></a></summary>
@@ -1303,6 +1352,14 @@ export default function PaginaPortalDoador()
 }
 ```
 </details>
+
+<h4 align="left">🛠️ Admin — Diagnóstico & Logs</h4>
+
+| Figma | Sistema real |
+| :---: | :---: |
+| *(tela criada depois do protótipo)* | <img src="./docs/evidencias/PI3-182/08_admin_entra.png" width="420"/> |
+
+<sub>Mostra a conexão frontend ↔ backend ↔ Supabase e as últimas requisições HTTP. Só o perfil admin abre esta tela (<a href="./docs/PERFIS_DE_ACESSO.md">PI3-182</a>).</sub>
 
 
 <h2 align="center" id="documentacao">📚 Documentação <br>
