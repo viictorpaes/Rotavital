@@ -1,8 +1,8 @@
 # Tabela de ligações e protocolos e definição de redes/sub-redes
 
 > Versão em texto das seções 5 e 6 do documento entregue na atividade de RSD
-> ([`pdf/Arquitetura-RotaVital-Victor-Paes.pdf`](../pdf/Arquitetura-RotaVital-Victor-Paes.pdf)). O desenho correspondente está em
-> [`Arquitetura-RotaVital-Victor-Paes.drawio`](Arquitetura-RotaVital-Victor-Paes.drawio), e cada seta `[1]`–`[5]` do
+> ([`pdf/arquitetura-rotavital-paes-silva.pdf`](../pdf/arquitetura-rotavital-paes-silva.pdf)). O desenho correspondente está em
+> [`arquitetura-rotavital-paes-silva.drawio`](arquitetura-rotavital-paes-silva.drawio), e cada seta `[1]`–`[5]` do
 > diagrama é uma linha da tabela da seção 2.
 
 ## 1. Componentes considerados

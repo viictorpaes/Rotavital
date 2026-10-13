@@ -129,7 +129,7 @@ em laranja, sem seta própria — não há tráfego real para desenhar.
 
 <h2 align="left" id="5-proximo">➡️ 5. Próximo passo</h2>
 
-✅ **Etapa 2 concluída:** [`Arquitetura-RotaVital-Victor-Paes.drawio`](Arquitetura-RotaVital-Victor-Paes.drawio) — diagrama de
+✅ **Etapa 2 concluída:** [`arquitetura-rotavital-paes-silva.drawio`](arquitetura-rotavital-paes-silva.drawio) — diagrama de
 arquitetura com os componentes desta lista (Navegador e SPA React num único ícone, já que a SPA roda no
 navegador), distribuídos na VPC e nas sub-redes pública, de aplicação e de dados. Abra no
 [app.diagrams.net](https://app.diagrams.net) ou na extensão draw.io do VS Code.

@@ -9,12 +9,12 @@ do enunciado: **quem fala com quem**, **como cada um fala** (protocolo/porta) e 
 
 ## Arquivos
 
-- [`Arquitetura-RotaVital-Victor-Paes.drawio`](./Arquitetura-RotaVital-Victor-Paes.drawio): arquivo-fonte editável,
+- [`arquitetura-rotavital-paes-silva.drawio`](./arquitetura-rotavital-paes-silva.drawio): arquivo-fonte editável,
   aberto no [app.diagrams.net](https://app.diagrams.net) (`File → Open from → Device`) ou na extensão draw.io
   do VS Code.
-- [`Arquitetura-RotaVital-Victor-Paes.png`](./Arquitetura-RotaVital-Victor-Paes.png): exportação PNG a 300% (4890 × 3000
+- [`arquitetura-rotavital-paes-silva.png`](./arquitetura-rotavital-paes-silva.png): exportação PNG a 300% (4890 × 3000
   px), usada na seção 3 do PDF.
-- [`../pdf/Arquitetura-RotaVital-Victor-Paes.pdf`](../pdf/Arquitetura-RotaVital-Victor-Paes.pdf): documento entregue, com o diagrama e
+- [`../pdf/arquitetura-rotavital-paes-silva.pdf`](../pdf/arquitetura-rotavital-paes-silva.pdf): documento entregue, com o diagrama e
   as tabelas que ele referencia.
 
 ## Camadas do `.drawio`
@@ -41,8 +41,9 @@ Fluxo da esquerda (usuário) para a direita (banco):
 
 Cada caixa de sub-rede traz no cabeçalho o CIDR e as regras de entrada e saída. A caixa do **Backend API**
 lista os cinco controllers (`EstoqueController`, `RotaController`, `AcessoController`,
-`DiagnosticoController` e `BenchmarkController`) e, em laranja, os recursos que existem só no contrato
-OpenAPI (`/hemocomponentes`, `/requisicoes`, `/requisicoes/{id}/alocacoes`, `/entregas/{id}/leituras`).
+`DiagnosticoController` e `BenchmarkController`) com as rotas de cada um e, em laranja, os recursos que
+existem só no contrato OpenAPI (`/hemocomponentes` exceto `GET /{id}`, `/requisicoes`,
+`/requisicoes/{id}/alocacoes`, `/entregas/{id}/leituras`).
 
 ## Setas
 
@@ -93,5 +94,5 @@ métricas ou logs). A legenda explica as duas convenções e registra que elas n
 Depois de editar o `.drawio` no draw.io:
 
 - `File → Export as → PNG`, zoom `300%`, fundo transparente desmarcado, salvando por cima de
-  `Arquitetura-RotaVital-Victor-Paes.png`;
-- `File → Save As → Device`, mantendo o nome `Arquitetura-RotaVital-Victor-Paes.drawio`.
+  `arquitetura-rotavital-paes-silva.png`;
+- `File → Save As → Device`, mantendo o nome `arquitetura-rotavital-paes-silva.drawio`.

@@ -716,8 +716,8 @@ Rotavital🩸/
 │   ├── LIGACOES_E_REDES.md <img src="https://img.shields.io/badge/Ligações_e_Redes-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   ├── INVENTARIO_COMPONENTES.md <img src="https://img.shields.io/badge/Inventário_de_Componentes-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   ├── DIAGRAMA_ROTAVITAL.md <img src="https://img.shields.io/badge/Diagrama_(texto)-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
-│   ├── Arquitetura-RotaVital-Victor-Paes.drawio <img src="https://img.shields.io/badge/Diagrama_de_Arquitetura_(entrega_RSD)-111827?style=flat&logo=diagramsdotnet&logoColor=F08705" height="18"/>
-│   ├── Arquitetura-RotaVital-Victor-Paes.png <img src="https://img.shields.io/badge/-PNG_300%25-111827?style=flat-square&logo=diagramsdotnet&logoColor=F08705" height="18"/>
+│   ├── arquitetura-rotavital-paes-silva.drawio <img src="https://img.shields.io/badge/Diagrama_de_Arquitetura_(entrega_RSD)-111827?style=flat&logo=diagramsdotnet&logoColor=F08705" height="18"/>
+│   ├── arquitetura-rotavital-paes-silva.png <img src="https://img.shields.io/badge/-PNG_300%25-111827?style=flat-square&logo=diagramsdotnet&logoColor=F08705" height="18"/>
 │   ├── REDES_SUBREDES_ROTAVITAL.svg <img src="https://img.shields.io/badge/Redes_e_Sub--redes-111827?style=flat&logo=svg&logoColor=FFB13B" height="18"/>
 │   ├── MONTAGEM_PDF_FINAL.md <img src="https://img.shields.io/badge/Roteiro_do_PDF-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
 │   ├── RELATORIO_ATIVIDADE_PARALELISMO.md <img src="https://img.shields.io/badge/Relatório_de_Paralelismo-111827?style=flat&logo=markdown&logoColor=white" height="18"/>
@@ -730,7 +730,7 @@ Rotavital🩸/
 │       └── drawio_atualizado.png <img src="https://img.shields.io/badge/-PNG-111827?style=flat-square&logo=diagramsdotnet&logoColor=F08705" height="18"/>
 │
 ├── pdf <img src="https://img.shields.io/badge/-PDF-111827?style=flat-square&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>/
-│   ├── Arquitetura-RotaVital-Victor-Paes.pdf <img src="https://img.shields.io/badge/-PDF_entregue_(RSD)-111827?style=flat&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>
+│   ├── arquitetura-rotavital-paes-silva.pdf <img src="https://img.shields.io/badge/-PDF_entregue_(RSD)-111827?style=flat&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>
 │   └── Entrega-Projetos-3-ADS-RSD.pdf <img src="https://img.shields.io/badge/-Explicação_da_entrega_(RSD)-111827?style=flat&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>
 │
 ├── supabase <img src="https://img.shields.io/badge/-Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/> <img src="https://img.shields.io/badge/-PostgreSQL-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>/
@@ -1383,5 +1383,5 @@ export default function PaginaPortalDoador()
 | 🧩 [`INVENTARIO_COMPONENTES.md`](./docs/INVENTARIO_COMPONENTES.md) | Componentes ativos × planejados |
 | ⚙️ [`RELATORIO_ATIVIDADE_PARALELISMO.md`](./docs/RELATORIO_ATIVIDADE_PARALELISMO.md) | Auditoria sequencial × paralela (Atividade - Infraestrutura de Software (SO)) |
 | 🧾 [`evidencias/`](./docs/evidencias/) | Chamadas reais aos endpoints |
-| 📕 [`Arquitetura-RotaVital-Victor-Paes.pdf`](./pdf/Arquitetura-RotaVital-Victor-Paes.pdf) | PDF final entregue - Atividade de Infraestrutura de Redes (RSD) |
-| 🗺️ [`Arquitetura-RotaVital-Victor-Paes.drawio`](./docs/Arquitetura-RotaVital-Victor-Paes.drawio) | Arquivo-fonte do diagrama entregue junto com o PDF (RSD) |
+| 📕 [`arquitetura-rotavital-paes-silva.pdf`](./pdf/arquitetura-rotavital-paes-silva.pdf) | PDF final entregue - Atividade de Infraestrutura de Redes (RSD) |
+| 🗺️ [`arquitetura-rotavital-paes-silva.drawio`](./docs/arquitetura-rotavital-paes-silva.drawio) | Arquivo-fonte do diagrama entregue junto com o PDF (RSD) |
