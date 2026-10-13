@@ -1,8 +1,8 @@
 # RotaVital — Documento Final de Arquitetura
 
 > Versão em texto do documento entregue na atividade de RSD. Os arquivos entregues são
-> [`pdf/Arquitetura-RotaVital-Victor-Paes.pdf`](../pdf/Arquitetura-RotaVital-Victor-Paes.pdf) e
-> [`docs/Arquitetura-RotaVital-Victor-Paes.drawio`](./Arquitetura-RotaVital-Victor-Paes.drawio). As seções seguem a ordem
+> [`pdf/arquitetura-rotavital-paes-silva.pdf`](../pdf/arquitetura-rotavital-paes-silva.pdf) e
+> [`docs/arquitetura-rotavital-paes-silva.drawio`](./arquitetura-rotavital-paes-silva.drawio). As seções seguem a ordem
 > exigida pelo enunciado (capa, descrição, diagrama, endpoints, ligações, redes e legenda).
 
 ## 1. Capa
@@ -14,9 +14,9 @@ Documento de Arquitetura da Aplicação · Projetos 3 — RSD · Atividade avali
 |---|---|
 | Instituição | CESAR School — Análise e Desenvolvimento de Sistemas |
 | Turma | ADS 2026.2 — 3º período |
-| Data | 09/10/2026 |
+| Data | 13/10/2026 |
 | Integrantes | Victor José Paes e Silva (líder); Eduardo de Souza Cavalcanti Junior; Felipe Franca Alves de Lima; Helamã Leone de Lima Procídio; João Pedro Arruda Guimarães; Júlia Oliveira Veríssimo; Lucas Paguetti Pereira; Tiago Luiz Moreira de Vasconcelos |
-| Arquivos da entrega | `Arquitetura-RotaVital-Victor-Paes.pdf` · `Arquitetura-RotaVital-Victor-Paes.drawio` |
+| Arquivos da entrega | `arquitetura-rotavital-paes-silva.pdf` · `arquitetura-rotavital-paes-silva.drawio` |
 
 ---
 
@@ -35,7 +35,7 @@ certo, no tempo certo, com rastreabilidade e controle de validade.
 | Profissional de hemocentro | Cadastra bolsas, acompanha estoque e validade, atende requisições alocando bolsas compatíveis. |
 | Médico | Abre requisições de hemocomponentes para pacientes e acompanha o andamento. |
 | Gestor hospitalar | Acompanha o estoque consolidado, a priorização das requisições e as entregas em trânsito. |
-| Doador (portal de doações) | Consulta informações do portal de doações. |
+| Doador (portal de doações) | Entra pelo `POST /api/v1/acessos` com o perfil DOADOR e vê o Portal do Doador. **Perfil parcial:** a consulta e o agendamento de doações ainda são simulados no frontend; um recurso de doações na API está planejado e ainda não existe no código nem no contrato OpenAPI. |
 | Administrador | Acompanha o painel de diagnóstico: saúde do backend, latência do banco e últimas requisições HTTP. |
 
 ### Principais funcionalidades
@@ -64,10 +64,10 @@ atividade.
 
 ## 3. Diagrama de arquitetura
 
-![Diagrama de arquitetura do RotaVital](./Arquitetura-RotaVital-Victor-Paes.png)
+![Diagrama de arquitetura do RotaVital](./arquitetura-rotavital-paes-silva.png)
 
 *Figura 1 — Diagrama de arquitetura exportado do draw.io (PNG, zoom 300%). Arquivo-fonte:
-[`Arquitetura-RotaVital-Victor-Paes.drawio`](./Arquitetura-RotaVital-Victor-Paes.drawio), organizado em três camadas
+[`arquitetura-rotavital-paes-silva.drawio`](./arquitetura-rotavital-paes-silva.drawio), organizado em três camadas
 (Redes · Componentes e ligações · Legenda). Setas [1]–[5] = linhas da tabela da seção 5. Detalhes do desenho
 em [`DIAGRAMA_ROTAVITAL.md`](./DIAGRAMA_ROTAVITAL.md).*
 
@@ -81,7 +81,7 @@ no diagrama, e nada aparece no diagrama sem estar aqui.
 | **Navegador** (SPA React) | Inicia todas as requisições; executa a SPA (Vite + TypeScript + React Router). | Internet | Ativo |
 | **Nginx** (container *frontend*) | Serve o build estático da SPA e faz proxy reverso de `/api/*` para o backend. É o único ponto de entrada (gateway) e termina o TLS. | sub-publica | Ativo |
 | **Backend API** (container *backend*) | Monólito Spring Boot 3.3 (Java 21), porta 8080, base `/api/v1`. Controllers: Estoque, Rota, Acesso, Diagnóstico e Benchmark. Lê o banco com Spring Data JPA. | sub-app | Ativo |
-| **PostgreSQL** (Supabase) | Banco relacional gerenciado, acessado via pooler com TLS. Schema versionado em `supabase/migrations` e carga inicial em `supabase/seed.sql`; o backend mapeia `ponto_rede`, `conexao` e `bolsa_hemocomponente` (`ddl-auto=validate`). | sub-dados | Ativo (somente leitura) |
+| **PostgreSQL** (Supabase) | Banco relacional gerenciado. No ambiente projetado, alcançado só pela sub-app por conexão privada; no MVP de desenvolvimento, via pooler do Supabase com TLS. Schema versionado em `supabase/migrations` e carga inicial em `supabase/seed.sql`; o backend mapeia `ponto_rede`, `conexao` e `bolsa_hemocomponente` (`ddl-auto=validate`) e lê as views `vw_estoque_por_tipo` e `vw_estoque_agrupado`. | sub-dados | Ativo (somente leitura) |
 | **OSRM** (terceiro) | API pública de roteirização (`router.project-osrm.org`), chamada pelo navegador com timeout de 8 s e fallback. | Internet | Ativo |
 | **OpenStreetMap** (terceiro) | Servidor de tiles do mapa (`tile.openstreetmap.org`), chamado pelo navegador. | Internet | Ativo |
 
@@ -106,15 +106,19 @@ detalhadas (4.2).
 
 | Recurso | Caminho base | Métodos | Controller | Situação |
 |---|---|---|---|---|
-| Estoque de um banco | `/api/v1/bancos/{id}/estoque` | GET | EstoqueController | Implementado (lê do banco) |
+| Estoque de um banco | `/api/v1/bancos/{id}/estoque`, `/api/v1/bancos/{id}/estoque/resumo` | GET | EstoqueController | Implementado (lê do banco) |
 | Rede de distribuição | `/api/v1/pontos`, `/api/v1/conexoes` | GET | RotaController | Implementado (lê do banco) |
 | Rotas | `/api/v1/rotas` | GET | RotaController | Implementado (calcula sobre o grafo do banco) |
 | Acessos | `/api/v1/acessos` | POST | AcessoController | Implementado (sem persistência) |
 | Diagnóstico | `/api/v1/diagnostico` | GET | DiagnosticoController | Implementado |
 | Benchmarks | `/api/v1/benchmarks/auditoria-telemetria` | GET, POST | BenchmarkController | Implementado (dados gerados em memória) |
-| Hemocomponentes (bolsas) | `/api/v1/hemocomponentes` | GET, POST, PATCH, DELETE | — | Planejado (contrato OpenAPI) |
+| Hemocomponentes (bolsas) | `/api/v1/hemocomponentes/{id}` | GET | EstoqueController | Implementado (lê do banco) |
+| Hemocomponentes (bolsas) | `/api/v1/hemocomponentes` | GET (lista), POST, PATCH, DELETE | — | Planejado (contrato OpenAPI) |
 | Requisições e alocações | `/api/v1/requisicoes`, `/api/v1/requisicoes/{id}/alocacoes` | GET, POST, PATCH | — | Planejado (contrato OpenAPI) |
 | Leituras de temperatura | `/api/v1/entregas/{id}/leituras` | GET, POST | — | Planejado (contrato OpenAPI) |
+
+**Doações:** não há recurso de doações na API nem no contrato OpenAPI. O perfil DOADOR (seção 2) usa só
+`POST /api/v1/acessos`; o conteúdo do Portal do Doador ainda é simulado no frontend.
 
 ### 4.2 Endpoints detalhados
 
@@ -127,12 +131,15 @@ perfil exigido. Erros seguem o formato `application/problem+json` (`ErroDTO`).
 | Método | Caminho | Descrição | Autenticação | Resposta | Status |
 |---|---|---|---|---|---|
 | GET | `/api/v1/bancos/{id}/estoque?tipoSanguineo=O_NEGATIVO` | Bolsas em estoque do banco de sangue, com filtro opcional por tipo ABO/Rh | Não (MVP) | `EstoqueDTO` | 200, 400, 404 |
+| GET | `/api/v1/bancos/{id}/estoque/resumo` | Totais de bolsas disponíveis e válidas por tipo ABO/Rh e componente | Não (MVP) | `ResumoEstoqueDTO` | 200, 404 |
+| GET | `/api/v1/hemocomponentes/{id}` | Detalha uma bolsa | Não (MVP) | `BolsaHemocomponenteDTO` | 200, 404 |
 | GET | `/api/v1/pontos` | Lista os pontos (bancos de sangue e hospitais) da rede de distribuição | Não (MVP) | `List<PontoRedeDTO>` | 200 |
 | GET | `/api/v1/conexoes` | Lista as conexões (trechos) entre os pontos | Não (MVP) | `List<ConexaoDTO>` | 200 |
 | GET | `/api/v1/rotas?origemId=BS-01&destinoId=HOSP-01&janelaEntregaLimite=…` | Calcula a rota mínima entre origem e destino e indica se chega dentro da janela. Nada é persistido. | Não (MVP) | `RotaCalculadaDTO` | 200, 400, 404, 422 |
-| POST | `/api/v1/acessos` | Identifica o usuário e devolve o perfil e os módulos liberados. Funciona como login: não cria recurso persistido, por isso responde 200. | Não | `AcessoDTO` | 200, 400 |
+| POST | `/api/v1/acessos` | Identifica o usuário e devolve o perfil e os módulos liberados. É um login: nada é persistido, por isso 200. | Não | `AcessoDTO` | 200, 400 |
 | GET | `/api/v1/diagnostico` | Saúde do backend, latência do banco e últimos 60 logs HTTP (o estado do banco vai no corpo) | Não no MVP (a SPA restringe ao admin); previsto JWT (ADMIN) | `DiagnosticoResponse` | 200 |
-| GET, POST | `/api/v1/benchmarks/auditoria-telemetria?tamanho=100000&modo=TODOS` | Executa o benchmark de auditoria de telemetria (sequencial × paralelo) sobre dados gerados em memória | Não (MVP) | `BenchmarkResponse` | 200 |
+| GET | `/api/v1/benchmarks/auditoria-telemetria?tamanho=100000&modo=TODOS` | Benchmark de auditoria de telemetria (sequencial × paralelo) com dados gerados em memória; parâmetros na query string. 400 se `tamanho` não for número. | Não (MVP) | `BenchmarkResponse` | 200, 400 |
+| POST | `/api/v1/benchmarks/auditoria-telemetria` (corpo: `{"quantidadeRegistros": 100000, "modo": "TODOS"}`) | Mesmo cálculo, com parâmetros no corpo JSON. Não cria recurso: 200, não 201. 400 se o JSON for inválido. | Não (MVP) | `BenchmarkResponse` | 200, 400 |
 
 **Planejados (contrato OpenAPI)**
 
@@ -140,7 +147,6 @@ perfil exigido. Erros seguem o formato `application/problem+json` (`ErroDTO`).
 |---|---|---|---|---|---|
 | GET | `/api/v1/hemocomponentes?bancoId=BS-01&tipoSanguineo=O_NEGATIVO&status=DISPONIVEL&page=0&size=20` | Lista bolsas com filtros e paginação | JWT (HEMOCENTRO, GESTOR) | `Page<BolsaHemocomponenteDTO>` | 200, 401, 403 |
 | POST | `/api/v1/hemocomponentes` | Registra uma nova bolsa | JWT (HEMOCENTRO) | `BolsaHemocomponenteDTO` | 201, 400, 401, 403 |
-| GET | `/api/v1/hemocomponentes/{id}` | Detalha uma bolsa | JWT (HEMOCENTRO, GESTOR) | `BolsaHemocomponenteDTO` | 200, 401, 403, 404 |
 | PATCH | `/api/v1/hemocomponentes/{id}` | Atualiza o status da bolsa (ex.: DISPONIVEL → DESCARTADA) | JWT (HEMOCENTRO) | `BolsaHemocomponenteDTO` | 200, 400, 401, 403, 404, 409 |
 | DELETE | `/api/v1/hemocomponentes/{id}` | Remove um cadastro (409 se a bolsa já estiver alocada) | JWT (HEMOCENTRO) | — | 204, 401, 403, 404, 409 |
 | POST | `/api/v1/requisicoes` | Cria uma requisição hospitalar | JWT (MEDICO) | `RequisicaoHospitalarDTO` | 201, 400, 401, 403 |
@@ -151,7 +157,8 @@ perfil exigido. Erros seguem o formato `application/problem+json` (`ErroDTO`).
 | POST | `/api/v1/entregas/{id}/leituras` | Registra uma leitura de temperatura da entrega | JWT (HEMOCENTRO) | `LeituraTelemetriaDTO` | 201, 400, 401, 403, 404 |
 | GET | `/api/v1/entregas/{id}/leituras` | Histórico de temperatura da entrega | JWT (HEMOCENTRO, GESTOR) | `List<LeituraTelemetriaDTO>` | 200, 401, 403, 404 |
 
-**Padrões REST aplicados:** substantivos no plural e nenhum verbo na URL; versão no caminho (`/api/v1`);
+**Padrões REST aplicados:** coleções no plural (`/diagnostico`, `/estoque` e `/resumo` são recursos únicos) e
+nenhum verbo na URL; versão no caminho (`/api/v1`);
 sub-recursos por hierarquia (`/bancos/{id}/estoque`, `/requisicoes/{id}/alocacoes`,
 `/entregas/{id}/leituras`); filtros e paginação por query string; 201 para criação, 204 para exclusão, 404
 para recurso inexistente, 409 para conflito de estado e 422 para regra de negócio violada.
@@ -176,6 +183,9 @@ Cada linha corresponde a uma seta do diagrama, com o mesmo número [1]–[5].
 - **Sem comunicação assíncrona:** não há fila nem eventos no projeto, por isso não há linha tracejada.
 - **Terceiros chamados pelo navegador:** OSRM e tiles são acessados direto do navegador do usuário, não pelo
   servidor. Assim nenhum componente da VPC precisa sair para a internet, e não é necessário NAT Gateway.
+- **Resolução de nomes (DNS):** não aparece como seta porque nenhum servidor de DNS é componente do projeto.
+  O navegador usa o resolvedor do próprio usuário e, na VPC, os nomes são resolvidos pelo resolvedor interno
+  do provedor de nuvem.
 - **Ambiente local × produção:** no `docker-compose` de desenvolvimento o Nginx atende em HTTP na porta 80 do
   `localhost` (`listen 80` em `frontend/nginx.conf`). No ambiente projetado ele escuta apenas na 443, com o
   certificado TLS do domínio; essa configuração de produção ainda não está no repositório.
@@ -189,7 +199,7 @@ Cada linha corresponde a uma seta do diagrama, com o mesmo número [1]–[5].
 | VPC RotaVital | `10.0.0.0/16` | Rede principal | Todas as sub-redes abaixo | — | — |
 | sub-publica | `10.0.1.0/24` | Pública | Nginx (container frontend) | `0.0.0.0/0` → TCP 443 | `10.0.10.0/24` → TCP 8080 |
 | sub-app | `10.0.10.0/24` | Privada de aplicação | Backend API | `10.0.1.0/24` → TCP 8080 | `10.0.20.0/24` → TCP 5432 |
-| sub-dados | `10.0.20.0/24` | Privada de dados | PostgreSQL (Supabase) | `10.0.10.0/24` → TCP 5432 | Nenhuma (sem internet) |
+| sub-dados | `10.0.20.0/24` | Privada de dados | PostgreSQL (Supabase, via conexão privada) | `10.0.10.0/24` → TCP 5432 | Nenhuma (sem internet) |
 
 ### 6.1 Regras de acesso (firewall / security groups)
 
@@ -200,7 +210,7 @@ Cada linha corresponde a uma seta do diagrama, com o mesmo número [1]–[5].
 | R3 | sub-app | sub-dados (PostgreSQL) | TCP 5432 | Permitir | Backend acessa o banco |
 | R4 | Internet | sub-app e sub-dados | Qualquer | Negar | Nada da internet chega direto à aplicação ou ao banco |
 | R5 | sub-publica | sub-dados | Qualquer | Negar | O gateway não fala com o banco |
-| R6 | sub-dados | Internet | Qualquer | Negar | Banco sem saída para a internet |
+| R6 | sub-dados | Internet | Qualquer | Negar | Banco sem saída para a internet (Supabase alcançado só por conexão privada) |
 
 Padrão: tudo que não está listado é negado. As regras são *stateful* (a resposta de uma conexão permitida volta
 automaticamente).
@@ -208,10 +218,11 @@ automaticamente).
 **Regra de ouro atendida:** o banco está na sub-rede privada de dados, só é acessível a partir da sub-rede de
 aplicação na porta 5432 e não tem entrada nem saída para a internet.
 
-**Sobre o Supabase:** é um PostgreSQL gerenciado. No ambiente projetado ele é tratado como a sub-rede de
-dados, sem endereço público e acessível apenas pela sub-rede de aplicação por conexão privada. No
-desenvolvimento atual o backend conecta ao pooler do Supabase pela internet com TLS, o que é aceitável só
-para o MVP.
+**Supabase e a regra R6:** o Supabase é um PostgreSQL gerenciado. No ambiente projetado ele é tratado como a
+sub-rede de dados, ligado à sub-app por conexão privada, sem endereço público e sem saída para a internet; é
+isso que as regras R3 a R6 descrevem. No desenvolvimento atual o backend conecta ao pooler do Supabase pela
+internet com TLS, o que vale só para o MVP. A mesma ressalva está escrita dentro da caixa do PostgreSQL no
+diagrama.
 
 ### 6.2 Correspondência com o Docker Compose atual
 
@@ -283,7 +294,7 @@ As mesmas convenções estão desenhadas na caixa de legenda do próprio diagram
 | Seta sem rótulo | As 5 setas têm `[nº] PROTOCOLO / porta` |
 | HTTP/80 na borda da internet | A borda é HTTPS/443; HTTP/1.1 aparece só entre Nginx e Backend, na rede privada |
 | Banco em sub-rede pública | PostgreSQL na `sub-dados`, acessível só pelo Backend em 5432 |
-| Verbo na URL | Nenhum: só substantivos no plural e sub-recursos |
+| Verbo na URL | Nenhum: coleções no plural, recursos únicos no singular e sub-recursos por hierarquia |
 | Imagem ilegível | PNG exportado do draw.io a 300% (4890 × 3000 px) |
 | Trocar por outro tipo de diagrama | É diagrama de arquitetura (componentes, redes e ligações), não de classes, DER ou caso de uso |
 | Ícone sem legenda | Caixa de legenda no diagrama e na seção 7 |
