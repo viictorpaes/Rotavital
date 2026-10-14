@@ -62,6 +62,7 @@ roteirização de entregas e telemetria da cadeia fria.
   <img src="https://img.shields.io/badge/-Cucumber_(Gherkin)-111827?style=flat-square&logo=cucumber&logoColor=23D96C"/>
   <img src="https://img.shields.io/badge/-GitHub_Actions-111827?style=flat-square&logo=githubactions&logoColor=2088FF"/>
   <img src="https://img.shields.io/badge/-Render-111827?style=flat-square&logo=render&logoColor=46E3B7"/>
+  <img src="https://img.shields.io/badge/-Vercel-111827?style=flat-square&logo=vercel&logoColor=white"/>
     <img src="https://img.shields.io/badge/-Postman-111827?style=flat-square&logo=postman&logoColor=FF6C37"/>
   <img src="https://img.shields.io/badge/-Insomnia-111827?style=flat-square&logo=insomnia&logoColor=4000BF"/>
   <img src="https://img.shields.io/badge/-Figma-111827?style=flat-square&logo=figma&logoColor=F24E1E"/>
@@ -643,6 +644,7 @@ Rotavital🩸/
 │   ├── .dockerignore <img src="https://img.shields.io/badge/-Docker_Ignore-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
 │   ├── .env.example <img src="https://img.shields.io/badge/-VITE__API__URL_·_timeout-111827?style=flat&logo=vite&logoColor=646CFF" height="18"/>
 │   ├── nginx/default.conf.template <img src="https://img.shields.io/badge/-Proxy_%2Fapi_→_backend_·_%24%7BPORT%7D_·_%24%7BAPI__UPSTREAM%7D-111827?style=flat&logo=nginx&logoColor=009639" height="18"/>
+│   ├── vercel.json <img src="https://img.shields.io/badge/-Site_na_Vercel_·_%2Fapi_→_Render_·_SPA-111827?style=flat&logo=vercel&logoColor=white" height="18"/>
 │   ├── .gitignore <img src="https://img.shields.io/badge/-GitIgnore-111827?style=flat&logo=git&logoColor=F05032" height="18"/>
 │   ├── index.html <img src="https://img.shields.io/badge/-HTML5-111827?style=flat&logo=html5&logoColor=E34F26" height="18"/>
 │   ├── package.json <img src="https://img.shields.io/badge/-npm-111827?style=flat&logo=npm&logoColor=CB3837" height="18"/>
@@ -782,12 +784,12 @@ Rotavital🩸/
 │
 ├── .github <img src="https://img.shields.io/badge/-GitHub_Actions-111827?style=flat-square&logo=githubactions&logoColor=2088FF" height="18"/>/
 │   ├── workflows/esteira.yml <img src="https://img.shields.io/badge/-testes_→_imagens_→_deploy_→_smoke_test-111827?style=flat&logo=githubactions&logoColor=2088FF" height="18"/>
-│   └── scripts <img src="https://img.shields.io/badge/-deploy__render.sh_·_resumo__testes.py-111827?style=flat&logo=gnubash&logoColor=white" height="18"/>
+│   └── scripts <img src="https://img.shields.io/badge/-deploy.sh_·_resumo__testes.py-111827?style=flat&logo=gnubash&logoColor=white" height="18"/>
 │
 ├── img <img src="https://img.shields.io/badge/Assets-green?style=flat&logo=image&logoColor=white" height="18"/>/
 ├── compose.yaml <img src="https://img.shields.io/badge/-db_·_backend_·_frontend_·_volume_·_healthcheck-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
 ├── .env.example <img src="https://img.shields.io/badge/-Variáveis_do_Compose_(sem_segredo)-111827?style=flat&logo=dotenv&logoColor=ECD53F" height="18"/>
-├── render.yaml <img src="https://img.shields.io/badge/-Blueprint_do_Render-111827?style=flat&logo=render&logoColor=46E3B7" height="18"/>
+├── render.yaml <img src="https://img.shields.io/badge/-Blueprint_do_Render_(API)-111827?style=flat&logo=render&logoColor=46E3B7" height="18"/>
 ├── package-lock.json <img src="https://img.shields.io/badge/-npm_lock-111827?style=flat&logo=npm&logoColor=CB3837" height="18"/>
 ├── .gitignore <img src="https://img.shields.io/badge/-GitIgnore-111827?style=flat&logo=git&logoColor=F05032" height="18"/>
 ├── LICENSE <img src="https://img.shields.io/badge/License-MIT-FF8C00?style=flat&logo=opensource&logoColor=white" height="18"/>
@@ -1442,6 +1444,7 @@ export default function PaginaPortalDoador()
 <img src="https://img.shields.io/badge/-Cucumber-111827?style=flat&logo=cucumber&logoColor=23D96C" height="22"/>
 <img src="https://img.shields.io/badge/-GitHub_Actions-111827?style=flat&logo=githubactions&logoColor=2088FF" height="22"/>
 <img src="https://img.shields.io/badge/-Render-111827?style=flat&logo=render&logoColor=46E3B7" height="22"/>
+<img src="https://img.shields.io/badge/-Vercel-111827?style=flat&logo=vercel&logoColor=white" height="22"/>
 <br>
 <img src="https://img.shields.io/badge/Unitários-157%2F157-22C55E?style=flat&logo=junit5&logoColor=white" height="22"/>
 <img src="https://img.shields.io/badge/Integração-7%2F7-22C55E?style=flat&logo=postgresql&logoColor=white" height="22"/>
@@ -1460,11 +1463,12 @@ Dockerfiles do E1 e só publica se os testes do E2 passarem.
 | :--- | :--- | :--- | :---: |
 | 🐳 **E1 · Container automatizado** | Dockerfile multi-stage que roda os testes no 1º estágio; `compose.yaml` com Postgres 17 + backend + frontend, volume, healthcheck e `depends_on`; `.env.example` sem segredos | [`compose.yaml`](./compose.yaml), [`backend/Dockerfile`](./backend/Dockerfile), [`db/`](./db/), [`frontend/Dockerfile`](./frontend/Dockerfile) | <img src="https://img.shields.io/badge/Feito-22C55E?style=flat-square" height="18"/> |
 | 🧪 **E2 · TDD** | Story map com a Release 1; 3 histórias quebradas em 13 tarefas; 9 pares de commits `test:` 🔴 → `feat:` 🟢; testes unitário, integração (Postgres real) e aceitação (Gherkin) na esteira | [`backend/src/test`](./backend/src/test/), [`features/`](./backend/src/test/resources/features/) | <img src="https://img.shields.io/badge/Feito-22C55E?style=flat-square" height="18"/> |
-| 🚀 **E3 · Deploy automatizado** | GitHub Actions: testes → imagens no GHCR → deploy no Render → smoke test, só na `main` e só com tudo verde; rollback por versão. A esteira [já roda verde no GitHub](https://github.com/viictorpaes/Rotavital/actions/runs/38563433392) | [`.github/workflows/esteira.yml`](./.github/workflows/esteira.yml), [`render.yaml`](./render.yaml) | <img src="https://img.shields.io/badge/Esteira_verde_·_falta_ligar_o_Render-F59E0B?style=flat-square" height="18"/> |
+| 🚀 **E3 · Deploy automatizado** | GitHub Actions: testes → imagem da API no GHCR → deploy da API no Render e do site na Vercel → smoke test, só na `main` e só com tudo verde; rollback por versão. A esteira [já roda verde no GitHub](https://github.com/viictorpaes/Rotavital/actions/runs/38563433392) | [`.github/workflows/esteira.yml`](./.github/workflows/esteira.yml), [`render.yaml`](./render.yaml), [`frontend/vercel.json`](./frontend/vercel.json) | <img src="https://img.shields.io/badge/Esteira_verde_·_falta_ligar_Render_e_Vercel-F59E0B?style=flat-square" height="18"/> |
 
 > [!IMPORTANT]
 > O que ainda depende do grupo (só quem tem acesso às contas consegue fazer): subir esta branch, proteger a
-> `main`, criar os serviços no Render, cadastrar os segredos e colher os prints das execuções vermelha e verde.
+> `main`, criar o serviço da API no Render e o projeto do site na Vercel, cadastrar os segredos e colher os prints das
+> execuções vermelha e verde.
 > O passo a passo, na ordem certa, está em [Configuração única](#cdt-configuracao), e a tabela de
 > [Evidências do E3](#cdt-evidencias-e3) fica pronta para receber os links.
 
@@ -1477,15 +1481,6 @@ Dockerfiles do E1 e só publica se os testes do E2 passarem.
 <a href="#cdt-decisoes">Decisões</a> ·
 <a href="#cdt-ia">Uso de IA</a> ·
 <a href="#cdt-jornada">Jornada TDD e lições</a>
-</p>
-
-<h3 align="center" id="cdt-integrantes">👥 Integrantes</h3>
-
-<p align="center">
-Os mesmos do Projeto Integrador (lista completa, com LinkedIn e GitHub, em <a href="#integrantes">Integrantes do Projeto</a>):
-Victor José Paes e Silva (líder) · Eduardo de Souza Cavalcanti Junior · Felipe Franca Alves de Lima ·
-Helamã Leone de Lima Procídio · João Pedro Arruda Guimarães · Júlia Oliveira Veríssimo ·
-Lucas Paguetti Pereira · Tiago Luiz Moreira de Vasconcelos.
 </p>
 
 <h3 align="center" id="cdt-como-rodar">▶️ Como rodar — E1 · Container automatizado <br>
@@ -1756,7 +1751,8 @@ Cada par é um commit <code>test:</code>, em que o teste novo falha porque o có
 
 <h3 align="center" id="cdt-pipeline">⚙️ Pipeline e deploy — E3 · Deploy automatizado <br>
 <img src="https://img.shields.io/badge/-GitHub_Flow_·_main_protegida-111827?style=flat&logo=git&logoColor=F05032" height="20"/>
-<img src="https://img.shields.io/badge/-GHCR_→_Render-111827?style=flat&logo=render&logoColor=46E3B7" height="20"/>
+<img src="https://img.shields.io/badge/-GHCR_→_Render_(API)-111827?style=flat&logo=render&logoColor=46E3B7" height="20"/>
+<img src="https://img.shields.io/badge/-Vercel_(site)-111827?style=flat&logo=vercel&logoColor=white" height="20"/>
 </h3>
 
 ```mermaid
@@ -1765,19 +1761,19 @@ flowchart LR
     PUSH --> FE["🖥️ Frontend · build<br/>npm ci · tsc · vite build"]
     BE --> IMG["🐳 Imagens Docker<br/>os 2 Dockerfiles do E1<br/>(o do backend roda os testes de novo)"]
     FE --> IMG
-    IMG -->|"só push na main<br/>(merge de PR)"| GHCR[("📦 GHCR<br/>:sha e :latest")]
-    GHCR --> DEP["🚀 Deploy · Render<br/>deploy hook + imgURL<br/>smoke test"]
-    DEP --> PROD(("🌐 Produção"))
-    RB["↩️ Run workflow<br/>sha anterior"] --> ROLL["Rollback · Render"] --> PROD
+    IMG -->|"só push na main<br/>(merge de PR)"| GHCR[("📦 GHCR<br/>imagem da API<br/>:sha e :latest")]
+    GHCR --> DEP["🚀 Deploy · Render + Vercel<br/>API: deploy hook + imgURL<br/>site: vercel build + deploy<br/>smoke test"]
+    DEP --> PROD(("🌐 Produção<br/>site na Vercel<br/>API no Render"))
+    RB["↩️ Run workflow<br/>sha anterior"] --> ROLL["Rollback · Render + Vercel"] --> PROD
 ```
 
 | Job | Roda quando | O que faz | Barra o quê |
 | :--- | :--- | :--- | :--- |
 | ☕ **Backend · testes** | todo push e PR | `mvn verify`: 157 unitários, 7 de integração e 13 cenários Gherkin contra um Postgres do Testcontainers; publica o resumo por nível e os relatórios como artefato | Qualquer teste vermelho para a esteira aqui |
 | 🖥️ **Frontend · build** | todo push e PR | `npm ci` + `npm run build` (checagem de tipos do TypeScript) | Erro de tipo ou de build |
-| 🐳 **Imagens Docker** | depois dos dois acima | Builda os dois Dockerfiles; **só na `main`** publica no GHCR com a tag do sha do commit | Dockerfile quebrado; sem os testes verdes, nem roda |
-| 🚀 **Deploy · Render** | só push na `main`, depois das imagens | Chama os deploy hooks do Render com a imagem do commit e faz o **smoke test**: espera `/actuator/info` com o sha novo, `/actuator/health` `UP` e o frontend chegando na API pelo proxy | Se a versão nova não responder em 15 min, o job fica vermelho |
-| ↩️ **Rollback · Render** | manual (*Run workflow*) | Reimplanta as imagens de um sha anterior, sem recompilar | — |
+| 🐳 **Imagens Docker** | depois dos dois acima | Builda os dois Dockerfiles; **só na `main`** publica a imagem da API no GHCR com a tag do sha do commit (a do frontend só prova o Dockerfile do Compose) | Dockerfile quebrado; sem os testes verdes, nem roda |
+| 🚀 **Deploy · Render + Vercel** | só push na `main`, depois das imagens | Chama o deploy hook do Render com a imagem da API do commit, builda e publica o site do commit na Vercel (`vercel build` + `vercel deploy --prebuilt --prod`) e faz o **smoke test**: espera `/actuator/info` com o sha novo, `/actuator/health` `UP`, o `/versao.json` do site com o sha novo e o site chegando na API pelo rewrite `/api/` | Se a versão nova não responder em 15 min, o job fica vermelho |
+| ↩️ **Rollback · Render + Vercel** | manual (*Run workflow*) | Reimplanta a imagem da API de um sha anterior (sem recompilar) e publica de novo na Vercel o site daquele sha | — |
 
 <h4 align="left">🌿 Fluxo de branch — GitHub Flow</h4>
 
@@ -1800,7 +1796,7 @@ flowchart LR
 | :--- | :--- | :--- |
 | Senha do Postgres local (`DB_PASSWORD`) | `.env` na máquina de cada um (no `.gitignore`; modelo em [`.env.example`](./.env.example)) | `docker compose` |
 | Senha do Supabase (`SUPABASE_DB_PASSWORD`) | Variáveis secretas do serviço `rotavital-api` no **Render** | Só a API em produção |
-| `RENDER_DEPLOY_HOOK_API`, `RENDER_DEPLOY_HOOK_WEB` | **GitHub → Settings → Environments → `producao` → Secrets** | Só os jobs de deploy e rollback |
+| `RENDER_DEPLOY_HOOK_API`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | **GitHub → Settings → Environments → `producao` → Secrets** | Só os jobs de deploy e rollback |
 | `API_URL`, `WEB_URL` (não são segredo) | GitHub → Environments → `producao` → Variables | Smoke test |
 | Login no GHCR | `GITHUB_TOKEN` automático do Actions | Job de imagens |
 
@@ -1821,18 +1817,33 @@ git push origin 67d4c55:refs/heads/demo/esteira-vermelha
 2. Proteja a `main` com as regras da [tabela acima](#cdt-pipeline). No PR de demonstração, o **Backend · testes** fica
    vermelho e o merge, bloqueado → 📸 **print 🔴**. Depois, feche esse PR sem mesclar e apague a branch `demo/esteira-vermelha`.
 3. Abra o PR de `feature/container-tdd-deploy` para a `main`: a esteira roda verde e o merge é liberado.
-4. Faça o merge com **"Create a merge commit"**. Na `main`, a esteira publica `ghcr.io/viictorpaes/rotavital-backend` e
-   `rotavital-frontend` no GHCR. O job de deploy falha avisando que faltam os segredos (esperado, só desta vez).
-5. **GHCR:** em *Packages*, deixe os dois pacotes como **Public** (ou cadastre uma *Registry Credential* no Render).
-6. **Render:** *New → Blueprint →* este repositório. O [`render.yaml`](./render.yaml) cria `rotavital-api` e `rotavital-web`
-   (plano gratuito, Ohio) e pede a `SUPABASE_DB_PASSWORD`. Se o Render der outro domínio à API, ajuste a variável
-   `API_UPSTREAM` do `rotavital-web`.
-7. **Deploy hooks:** em cada serviço, *Settings → Deploy Hook*. Cadastre os dois no environment `producao` do GitHub
-   (`RENDER_DEPLOY_HOOK_API`, `RENDER_DEPLOY_HOOK_WEB`), junto com as variáveis `API_URL` e `WEB_URL`.
-8. Em *Actions*, abra a execução do passo 4 e clique em *Re-run failed jobs*: o deploy publica, o smoke test passa →
+4. Faça o merge com **"Create a merge commit"**. Na `main`, a esteira publica `ghcr.io/viictorpaes/rotavital-backend` no
+   GHCR. O job de deploy falha avisando que faltam os segredos (esperado, só desta vez).
+5. **GHCR:** em *Packages*, deixe o pacote `rotavital-backend` como **Public** (ou cadastre uma *Registry Credential* no Render).
+6. **Render (API):** *New → Blueprint →* este repositório. O [`render.yaml`](./render.yaml) cria só o `rotavital-api`
+   (plano gratuito, Ohio) e pede a `SUPABASE_DB_PASSWORD`. Se um Blueprint antigo já tinha criado o `rotavital-web`,
+   apague esse serviço no Render: o site agora fica na Vercel. Se o Render der outro domínio à API, ajuste o destino do
+   rewrite `/api/` em [`frontend/vercel.json`](./frontend/vercel.json).
+7. **Vercel (site):** crie o projeto pela CLI, de dentro de `frontend/` (é de lá que a esteira roda a CLI; não configure
+   *Root Directory* no painel):
+
+   ```bash
+   cd frontend
+   npx vercel@64.0.2 login
+   npx vercel@64.0.2 link     # "Link to existing project?" N · nome: rotavital-web · diretório: ./
+   cat .vercel/project.json   # orgId e projectId (a pasta .vercel está no .gitignore)
+   ```
+
+   Se a CLI oferecer conectar o repositório do GitHub, pode recusar: o `"git": { "deploymentEnabled": false }` do
+   `vercel.json` já impede deploy fora da esteira. Crie um token em *Vercel → Account Settings → Tokens*.
+8. **Segredos e variáveis:** no `rotavital-api` do Render, *Settings → Deploy Hook*. Cadastre no environment `producao`
+   do GitHub os segredos `RENDER_DEPLOY_HOOK_API`, `VERCEL_TOKEN`, `VERCEL_ORG_ID` e `VERCEL_PROJECT_ID`, e as variáveis
+   `API_URL` (ex.: `https://rotavital-api.onrender.com`) e `WEB_URL` (o domínio de produção da Vercel, ex.:
+   `https://rotavital-web.vercel.app`).
+9. Em *Actions*, abra a execução do passo 4 e clique em *Re-run failed jobs*: o deploy publica, o smoke test passa →
    📸 **print 🟢** + **URL pública**.
-9. **Rollback:** depois do próximo merge (por exemplo, o PR que preenche a tabela abaixo), rode *Run workflow* com o sha do
-   merge anterior → 📸 **print ↩️**.
+10. **Rollback:** depois do próximo merge (por exemplo, o PR que preenche a tabela abaixo), rode *Run workflow* com o sha do
+    merge anterior → 📸 **print ↩️**.
 
 Salve os prints em `docs/evidencias/container-tdd-deploy/` e troque os ⏳ abaixo pelos links das execuções
 (*Actions → execução → copiar a URL*).
@@ -1843,16 +1854,16 @@ Salve os prints em `docs/evidencias/container-tdd-deploy/` e troque os ⏳ abaix
 | :--- | :--- |
 | 🟢 Esteira verde nesta branch (testes + imagens; deploy pulado por não ser a `main`) | ✅ [execução 38563433392](https://github.com/viictorpaes/Rotavital/actions/runs/38563433392) — commit `f2d1e0f`, 14/10/2026: Backend · testes 55 s, Frontend · build, Imagens Docker |
 | 🔴 Execução **vermelha** que barrou o merge (e, portanto, o deploy) — passo 2 | ⏳ *a preencher* |
-| 🟢 Execução **verde** que publicou na `main` — passo 8 | ⏳ *a preencher* |
-| 🌐 **URL pública** do sistema | ⏳ `https://rotavital-web.onrender.com` *(confirmar o domínio que o Render gerar)* |
-| ↩️ **Rollback** executado — passo 9 | ⏳ *a preencher* |
+| 🟢 Execução **verde** que publicou na `main` — passo 9 | ⏳ *a preencher* |
+| 🌐 **URL pública** do sistema | ⏳ `https://rotavital-web.vercel.app` *(confirmar o domínio que a Vercel gerar)* |
+| ↩️ **Rollback** executado — passo 10 | ⏳ *a preencher* |
 
 <h4 align="left">↩️ Como voltar à versão anterior (rollback)</h4>
 
 | Jeito | Como | Quando usar |
 | :--- | :--- | :--- |
-| ⭐ **Pela esteira** | *Actions → Esteira CI/CD → Run workflow*, informando o **sha completo** da versão boa (`git log --format=%H`). O job reimplanta as imagens `:sha` que já estão no GHCR e roda o smoke test | Padrão: em poucos minutos, sem recompilar, e fica registrado no GitHub |
-| 🖱️ Pelo Render | *Events* do serviço → deploy anterior → **Rollback** | Se o próprio GitHub estiver fora |
+| ⭐ **Pela esteira** | *Actions → Esteira CI/CD → Run workflow*, informando o **sha completo** da versão boa (`git log --format=%H`). O job reimplanta a imagem `:sha` da API que já está no GHCR, publica de novo na Vercel o site daquele sha e roda o smoke test | Padrão: em poucos minutos, sem recompilar, e fica registrado no GitHub |
+| 🖱️ Pelos painéis | Render: *Events* do `rotavital-api` → deploy anterior → **Rollback**. Vercel: *Deployments* → deploy anterior → **Instant Rollback** | Se o próprio GitHub estiver fora |
 | 🔁 Pelo Git | `git revert <sha-ruim>` numa branch → PR → merge: a esteira testa e publica a correção | Depois de qualquer rollback, para a `main` não continuar com o código ruim |
 
 <h3 align="center" id="cdt-decisoes">🧭 Decisões</h3>
@@ -1867,7 +1878,7 @@ Salve os prints em `docs/evidencias/container-tdd-deploy/` e troque os ⏳ abaix
 | 💾 Dados | Volume nomeado `dados-postgres` | Bind mount `./data`; sem volume | Os dados sobrevivem ao `docker compose down` (testado acima) e não sujam o repositório; `down -v` zera tudo. |
 | 🔌 Como os serviços se encontram | Rede padrão do Compose, pelo nome do serviço (`db`, `backend`) | IPs fixos; `network_mode: host` | O DNS interno do Compose resolve os nomes; o banco nem publica porta para fora. |
 | ⏱️ Ordem de subida | `healthcheck` + `depends_on: condition: service_healthy` | `depends_on` simples; `sleep` | O backend só sobe com o Postgres aceitando conexões, e o frontend só com o `/actuator/health` em `UP` (que já testa o banco). |
-| 🔑 Configuração | `.env` + `.env.example`; `SPRING_DATASOURCE_*` no Compose; `server.port=${PORT:8080}` | Senha no `application.properties` ou no Compose | Nenhum segredo no repositório; o Compose se recusa a subir sem `DB_PASSWORD`; a mesma imagem roda no Compose e no Render. |
+| 🔑 Configuração | `.env` + `.env.example`; `SPRING_DATASOURCE_*` no Compose; `server.port=${PORT:8080}` | Senha no `application.properties` ou no Compose | Nenhum segredo no repositório; o Compose se recusa a subir sem `DB_PASSWORD`; a mesma imagem da API roda no Compose e no Render. |
 | 🧪 Testes primeiro | ABO/Rh → bolsa apta/vencida → baixa → FEFO → alertas | Começar pelo mais fácil | Ordem de risco ao paciente ([tabela](#cdt-risco)). Ex.: "compatibilidade ABO/Rh primeiro: um erro ali põe um paciente em risco". |
 | 📶 Níveis na esteira | Unitários no `package` (Dockerfile); integração e aceitação no `verify` (esteira) | Tudo no `package` | Dentro do `docker build` não há Docker para o Testcontainers; na esteira há, e ela roda todos os níveis. |
 | 🗄️ Banco nos testes | Testcontainers: Postgres 17 + as mesmas migrations | H2 em memória; `services:` do Actions | Mesmo SQL de produção (CHECKs, gatilhos, views), e roda igual na máquina e na esteira. Os dados de teste respeitam até o prazo máximo por componente. |
@@ -1876,11 +1887,12 @@ Salve os prints em `docs/evidencias/container-tdd-deploy/` e troque os ⏳ abaix
 | ⚙️ CI/CD | GitHub Actions | GitLab CI, Jenkins | O código já está no GitHub; GHCR e environments com segredos sem serviço extra. |
 | 🌿 Fluxo de branch | GitHub Flow | Git Flow, GitLab Flow | Grupo pequeno, uma versão no ar e deploy a cada merge. Git Flow (develop/release) seria cerimônia sem release agendada; GitLab Flow (branches por ambiente) é para mais de um ambiente. |
 | 📦 Registro de imagens | GHCR, tag = sha do commit (+ `latest`) | Docker Hub | Autentica com o `GITHUB_TOKEN`; a tag por sha permite rollback exato para qualquer versão. |
-| ☁️ Provedor de deploy | Render: 2 web services por imagem, plano gratuito, região Ohio, [Blueprint](./render.yaml) | Railway, Fly.io | Deploy por imagem com deploy hook; o Blueprint deixa a infraestrutura como código; Ohio fica na mesma região do Supabase. |
+| ☁️ Provedor de deploy | API no Render (web service por imagem, plano gratuito, Ohio, [Blueprint](./render.yaml)); site na Vercel ([`vercel.json`](./frontend/vercel.json)) | Os dois no Render; Koyeb; Railway, Fly.io | API: deploy por imagem com deploy hook, o Blueprint deixa a infraestrutura como código e Ohio fica na mesma região do Supabase. Site: o deploy dele no Render não funcionou para o grupo; a Vercel serve o build estático pela CDN e não "dorme". A API não vai para a Vercel porque ela não roda containers nem Java, e o Koyeb exige cartão de crédito na conta. |
+| 🔀 Site → API em produção | Rewrite `/api/:caminho*` da Vercel para o Render | `VITE_API_URL` apontando para o Render + CORS | O navegador continua chamando `/api/v1` relativo, o mesmo código do Compose, e sem CORS. |
 | 🟢 Banco em produção | Supabase (já existente) | Postgres do Render | Já tem os dados, as migrations aplicadas e o RLS; o Postgres gratuito do Render expira. |
-| 🔐 Segredos | Deploy hooks no environment `producao` do GitHub; senha do Supabase só no Render; `.env` no `.gitignore` | Segredos no repositório ou em variáveis do workflow | Cada segredo fica só onde é usado, e o environment limita quem lê. |
-| ✅ Fim do deploy | Smoke test: sha em `/actuator/info` + health `UP` + frontend → API | Considerar pronto ao disparar o hook | O job só fica verde quando a versão nova responde de verdade. |
-| ↩️ Rollback | *Run workflow* com o sha anterior (reimplanta a imagem do GHCR) | Só `git revert` + rebuild; só o botão do Render | Volta em minutos sem recompilar e fica registrado; o `git revert` corrige a `main` depois. |
+| 🔐 Segredos | Deploy hook do Render e token da Vercel no environment `producao` do GitHub; senha do Supabase só no Render; `.env` no `.gitignore` | Segredos no repositório ou em variáveis do workflow | Cada segredo fica só onde é usado, e o environment limita quem lê. |
+| ✅ Fim do deploy | Smoke test: sha em `/actuator/info` + health `UP` + sha no `/versao.json` do site + site → API | Considerar pronto ao disparar o hook | O job só fica verde quando a versão nova responde de verdade. |
+| ↩️ Rollback | *Run workflow* com o sha anterior (reimplanta a imagem da API do GHCR e o site daquele sha) | Só `git revert` + rebuild; só os botões do Render e da Vercel | Volta em minutos (a API sem recompilar) e fica registrado; o `git revert` corrige a `main` depois. |
 
 <h3 align="center" id="cdt-ia">🤖 Uso de IA</h3>
 
@@ -1890,11 +1902,11 @@ Uso permitido pelo enunciado e declarado aqui: <b>a IA rascunha; o grupo valida 
 
 | Item | Detalhe |
 | :--- | :--- |
-| 🛠️ Ferramenta | **Claude Code** (modelo Claude Opus 5.5, da Anthropic), na extensão do VS Code, em 14/10/2026, numa sessão aberta por Lucas Paguetti Pereira |
-| ✍️ O que a IA rascunhou | Dockerfiles, `compose.yaml`, `db/`, `.env.example`; a esteira (`esteira.yml`, `deploy_render.sh`, `resumo_testes.py`) e o `render.yaml`; o story map e a quebra em tarefas; os testes e o código das HU‑04, HU‑02 e HU‑08 em pares `test:` → `feat:`; esta seção do README |
-| 🔎 Como foi verificado | Cada commit `test:` rodou e **falhou** antes do `feat:` (contagens na tabela red → green); `mvn verify` completo com o Postgres do Testcontainers; `docker compose down -v` + `up -d --build` do zero; persistência no volume; a esteira passou no `actionlint`; o script de deploy foi testado contra um servidor que simula o Render |
+| 🛠️ Ferramenta | **Claude Code** (modelo Claude Opus 5.5, da Anthropic), na extensão do VS Code |
+| ✍️ O que a IA rascunhou | Dockerfiles, `compose.yaml`, `db/`, `.env.example`; a esteira (`esteira.yml`, `deploy.sh`, `resumo_testes.py`), o `render.yaml` e o `frontend/vercel.json`; o story map e a quebra em tarefas; os testes e o código das HU‑04, HU‑02 e HU‑08 em pares `test:` → `feat:`; esta seção do README |
+| 🔎 Como foi verificado | Cada commit `test:` rodou e **falhou** antes do `feat:` (contagens na tabela red → green); `mvn verify` completo com o Postgres do Testcontainers; `docker compose down -v` + `up -d --build` do zero; persistência no volume; a esteira passou no `actionlint`; o script de deploy (deploy e rollback) foi testado contra um servidor que simula o Render e a Vercel; o `vercel build` rodou de verdade com o `vercel.json` |
 | ⚠️ O que a IA errou e foi corrigido | Script do banco executado direto de um bind mount (o Docker Desktop do macOS bloqueia → virou `db/Dockerfile`); `${var,,}` no script de deploy, que não existe no bash do macOS (→ `tr`); rollback aceitando sha curto, que não casa com a tag da imagem (→ sha completo obrigatório) |
-| 👥 O que fica com o grupo | Configurar Render, GHCR e a proteção da `main`; colher os prints da esteira; conferir as regras clínicas (principalmente a das plaquetas) e apresentar |
+| 👥 O que fica com o grupo | Configurar Render, Vercel, GHCR e a proteção da `main`; colher os prints da esteira; conferir as regras clínicas (principalmente a das plaquetas) e apresentar |
 
 <details>
 <summary>▶️ <b>Prompts principais</b></summary>
@@ -1931,4 +1943,4 @@ Roteiro para a apresentação: a ordem em que as coisas aconteceram e o que cada
 | 9 | A IA acelerou o rascunho, mas errou detalhes que só apareceram rodando (o script no bind mount, o `${var,,}` que o bash do macOS não tem). | A IA rascunha, o grupo roda, confere e assina. |
 
 > **Resumo para os slides:** 3 histórias → 13 tarefas → 9 pares 🔴 → 🟢 → 157 unitários + 7 de integração + 13 cenários
-> Gherkin, todos na esteira, que só publica no Render com tudo verde.
+> Gherkin, todos na esteira, que só publica (API no Render, site na Vercel) com tudo verde.

@@ -22,7 +22,7 @@ FROM nginxinc/nginx-unprivileged:1.30-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # A imagem oficial do Nginx troca ${PORT} e ${API_UPSTREAM} do template ao subir o container:
-# no Compose a API é http://backend:8080; no Render, a URL pública do serviço da API.
+# no Compose a API é http://backend:8080. Em produção o site fica na Vercel (frontend/vercel.json), sem esta imagem.
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 ENV PORT=8080 \
     API_UPSTREAM=http://backend:8080

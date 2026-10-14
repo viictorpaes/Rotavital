@@ -1,10 +1,10 @@
 # ===================================================================
 # Rota Vital — esteira de CI/CD
 #
-#   testes (backend + frontend) → imagens Docker → deploy no Render → smoke test
+#   testes (backend + frontend) → imagens Docker → deploy (API no Render, site na Vercel) → smoke test
 #
 # * Todo push e todo PR para a main rodam os testes e o build das imagens.
-# * Só um push na main (o merge de um PR) publica as imagens no GHCR e faz o deploy.
+# * Só um push na main (o merge de um PR) publica a imagem da API no GHCR e faz o deploy.
 # * Se qualquer job falhar, os seguintes não rodam: teste vermelho nunca chega à produção.
 # * Rollback: aba Actions → "Esteira CI/CD" → Run workflow → sha completo da versão anterior.
 # ===================================================================
@@ -116,7 +116,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Mesmo Dockerfile do docker compose: o 1º estágio roda os testes unitários de novo.
-      # Em PR e branch a imagem só é construída (prova que o Dockerfile funciona); na main é publicada.
+      # Em PR e branch a imagem só é construída (prova que o Dockerfile funciona); na main é publicada
+      # e o Render implanta essa imagem.
       - name: Backend
         uses: docker/build-push-action@v7
         with:
@@ -130,21 +131,20 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
+      # Imagem do Nginx usada pelo docker compose: só é construída, para provar o Dockerfile.
+      # Em produção o site vai para a Vercel, que builda a partir do código (job de deploy).
       - name: Frontend
         uses: docker/build-push-action@v7
         with:
           context: frontend
           build-args: APP_VERSAO=${{ github.sha }}
-          push: ${{ env.PUBLICAR == 'true' }}
-          tags: |
-            ${{ env.IMAGEM_WEB }}:${{ github.sha }}
-            ${{ env.IMAGEM_WEB }}:latest
-          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          push: false
+          tags: ${{ env.IMAGEM_WEB }}:${{ github.sha }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 
   deploy:
-    name: Deploy · Render
+    name: Deploy · Render + Vercel
     needs: imagens
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -155,19 +155,28 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Manda o Render trocar a imagem dos dois serviços pela deste commit e espera
-      # a API responder com essa versão e o banco UP (smoke test).
+      # Node para o build do site na Vercel (vercel build roda npm ci + npm run build aqui).
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Manda o Render trocar a imagem da API pela deste commit, publica o site deste commit
+      # na Vercel e espera os dois responderem com essa versão e o banco UP (smoke test).
       - name: Deploy da versão ${{ github.sha }}
         env:
           VERSAO: ${{ github.sha }}
           RENDER_DEPLOY_HOOK_API: ${{ secrets.RENDER_DEPLOY_HOOK_API }}
-          RENDER_DEPLOY_HOOK_WEB: ${{ secrets.RENDER_DEPLOY_HOOK_WEB }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           API_URL: ${{ vars.API_URL }}
           WEB_URL: ${{ vars.WEB_URL }}
-        run: .github/scripts/deploy_render.sh
+        run: .github/scripts/deploy.sh
 
   rollback:
-    name: Rollback · Render
+    name: Rollback · Render + Vercel
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment:
@@ -176,13 +185,22 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # A imagem de cada versão que já passou pela main continua no GHCR, marcada com o sha:
-      # voltar é só reimplantar essa tag, sem recompilar nada.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # A imagem da API de cada versão que já passou pela main continua no GHCR, marcada com o sha:
+      # o Render só reimplanta essa tag, sem recompilar. O site é reconstruído a partir do código
+      # desse sha (o script busca o commit) e publicado de novo na Vercel.
       - name: Rollback para ${{ inputs.versao }}
         env:
           VERSAO: ${{ inputs.versao }}
           RENDER_DEPLOY_HOOK_API: ${{ secrets.RENDER_DEPLOY_HOOK_API }}
-          RENDER_DEPLOY_HOOK_WEB: ${{ secrets.RENDER_DEPLOY_HOOK_WEB }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           API_URL: ${{ vars.API_URL }}
           WEB_URL: ${{ vars.WEB_URL }}
-        run: .github/scripts/deploy_render.sh
+        run: .github/scripts/deploy.sh

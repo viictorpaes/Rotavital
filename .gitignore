@@ -3,6 +3,11 @@
 .env.*.local
 .claude/
 
+# Link local da CLI da Vercel (vercel link / vercel pull): ids do projeto e variáveis baixadas.
+.vercel/
+# Versão gravada pelo script de deploy antes do build do site (.github/scripts/deploy.sh).
+frontend/public/versao.json
+
 # Estado local do Postman (workspace sincronizado com esta pasta) - não é fonte de
 # verdade, docs/openapi.yaml continua sendo. Gerado ao importar a spec no Postman.
 .postman/

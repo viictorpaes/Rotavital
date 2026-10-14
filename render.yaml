@@ -1,9 +1,11 @@
 # ===================================================================
 # Rota Vital — Blueprint do Render (infraestrutura como código).
 #
-# Render → New → Blueprint → este repositório: cria os dois serviços abaixo,
-# a partir das imagens que a esteira publica no GHCR. Os valores com
+# Render → New → Blueprint → este repositório: cria o serviço da API abaixo,
+# a partir da imagem que a esteira publica no GHCR. Os valores com
 # "sync: false" (segredos) são pedidos na tela e ficam só no Render.
+#
+# O site (frontend) não fica aqui: vai para a Vercel (frontend/vercel.json).
 #
 # O deploy de cada versão NÃO é automático pelo Render: quem dispara é a esteira
 # (.github/workflows/esteira.yml), pelo deploy hook, e só depois dos testes verdes.
@@ -26,16 +28,3 @@ services:
         value: "false"
       - key: TZ
         value: America/Recife
-
-  - type: web
-    name: rotavital-web
-    runtime: image
-    image:
-      url: ghcr.io/viictorpaes/rotavital-frontend:latest
-    plan: free
-    region: ohio
-    healthCheckPath: /
-    envVars:
-      # O Nginx do frontend repassa /api/ para a API pública (frontend/nginx/default.conf.template).
-      - key: API_UPSTREAM
-        value: https://rotavital-api.onrender.com
