@@ -97,10 +97,10 @@ public class BolsaHemocomponente
         return status == StatusBolsa.DISPONIVEL;
     }
 
+    // Pode ir para um paciente: está no estoque, ainda na validade e com a cadeia fria intacta.
     public boolean estaAptaParaUso(LocalDate hoje)
     {
-        // TDD: só a assinatura, para o teste compilar e falhar. A regra entra no próximo commit.
-        return true;
+        return estaDisponivel() && !estaVencida(hoje) && !estaForaDaFaixa();
     }
 
     public void reservar()
