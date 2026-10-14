@@ -97,6 +97,12 @@ public class BolsaHemocomponente
         return status == StatusBolsa.DISPONIVEL;
     }
 
+    public boolean estaAptaParaUso(LocalDate hoje)
+    {
+        // TDD: só a assinatura, para o teste compilar e falhar. A regra entra no próximo commit.
+        return true;
+    }
+
     public void reservar()
     {
         this.status = StatusBolsa.RESERVADA;

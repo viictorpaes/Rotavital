@@ -59,4 +59,39 @@ public class BolsaHemocomponenteTest
         Assertions.assertFalse(novaBolsa(4.0).estaForaDaFaixa());
         Assertions.assertTrue(novaBolsa(8.0).estaForaDaFaixa());
     }
+
+    // HU-04 · T4.3 — Só bolsa apta entra na sugestão de lote: disponível, na validade e na faixa.
+    @Test
+    public void bolsaDisponivelNaValidadeENaFaixaEstaApta()
+    {
+        Assertions.assertTrue(novaBolsa(4.0).estaAptaParaUso(hoje));
+    }
+
+    @Test
+    public void bolsaQueVenceHojeAindaEstaApta()
+    {
+        // A validade é o último dia de uso (a bolsa vence em hoje + 30).
+        Assertions.assertTrue(novaBolsa(4.0).estaAptaParaUso(hoje.plusDays(30)));
+    }
+
+    @Test
+    public void bolsaVencidaNaoEstaApta()
+    {
+        Assertions.assertFalse(novaBolsa(4.0).estaAptaParaUso(hoje.plusDays(31)));
+    }
+
+    @Test
+    public void bolsaForaDaFaixaDeTemperaturaNaoEstaApta()
+    {
+        Assertions.assertFalse(novaBolsa(8.0).estaAptaParaUso(hoje));
+    }
+
+    @Test
+    public void bolsaReservadaNaoEstaApta()
+    {
+        BolsaHemocomponente bolsa = novaBolsa(4.0);
+        bolsa.reservar();
+
+        Assertions.assertFalse(bolsa.estaAptaParaUso(hoje));
+    }
 }
