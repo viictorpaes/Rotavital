@@ -64,7 +64,7 @@ public class EstoqueController
 
         for (BolsaHemocomponente bolsa : bolsas)
         {
-            bolsasDTO.add(paraBolsaDTO(bolsa));
+            bolsasDTO.add(BolsaHemocomponenteDTO.de(bolsa));
         }
 
         EstoqueDTO estoque = new EstoqueDTO(bancoId, bolsasDTO.size(), bolsasDTO);
@@ -75,25 +75,7 @@ public class EstoqueController
     @GetMapping("/hemocomponentes/{id}")
     public ResponseEntity<BolsaHemocomponenteDTO> consultarBolsa(@PathVariable("id") String id)
     {
-        return ResponseEntity.ok(paraBolsaDTO(estoqueService.buscarBolsa(id)));
-    }
-
-    private BolsaHemocomponenteDTO paraBolsaDTO(BolsaHemocomponente bolsa)
-    {
-        return new BolsaHemocomponenteDTO(
-                bolsa.getId(),
-                bolsa.getTipoComponente(),
-                bolsa.getTipoSanguineo(),
-                bolsa.getDataColeta(),
-                bolsa.getDataValidade(),
-                bolsa.getLoteSintetico(),
-                bolsa.getVolumeMl(),
-                bolsa.getTemperaturaCelsius(),
-                bolsa.getLocalizacao(),
-                bolsa.estaForaDaFaixa(),
-                bolsa.getStatus(),
-                bolsa.getBancoOrigem().getId()
-        );
+        return ResponseEntity.ok(BolsaHemocomponenteDTO.de(estoqueService.buscarBolsa(id)));
     }
 
     private ResponseEntity<ErroDTO> bancoNaoEncontrado(String bancoId, String caminho)
