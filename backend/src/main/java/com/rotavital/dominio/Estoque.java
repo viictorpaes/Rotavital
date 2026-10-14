@@ -1,5 +1,6 @@
 package com.rotavital.dominio;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,8 +49,25 @@ public class Estoque
     public List<BolsaHemocomponente> sugerirLotes(TipoComponente tipoComponente, TipoSanguineo tipoSanguineoPaciente,
     int quantidade, LocalDate hoje)
     {
-        // TDD: só a assinatura, para o teste compilar e falhar. A regra entra no próximo commit.
-        return List.of();
+        if (quantidade < 1)
+        {
+            throw new IllegalArgumentException("A quantidade pedida deve ser de pelo menos 1 bolsa.");
+        }
+
+        // Mesmo tipo do paciente primeiro: poupa o O-, que é o único que serve a todos.
+        // Dentro de cada grupo, FEFO (vence primeiro, sai primeiro); o id desempata.
+        Comparator<BolsaHemocomponente> ordem = Comparator
+        .comparing((BolsaHemocomponente b) -> b.getTipoSanguineo() != tipoSanguineoPaciente)
+        .thenComparing(BolsaHemocomponente::getDataValidade)
+        .thenComparing(BolsaHemocomponente::getId);
+
+        return bolsas().stream()
+        .filter(b -> b.getTipoComponente() == tipoComponente)
+        .filter(b -> b.estaAptaParaUso(hoje))
+        .filter(b -> CompatibilidadeSanguinea.podeTransfundir(tipoComponente, b.getTipoSanguineo(), tipoSanguineoPaciente))
+        .sorted(ordem)
+        .limit(quantidade)
+        .collect(Collectors.toList());
     }
 
     public List<BolsaHemocomponente> listarVencidas(LocalDate dataReferencia)
