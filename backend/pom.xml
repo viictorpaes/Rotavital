@@ -19,6 +19,10 @@
     <properties>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- 1.21.x conversa com o Docker Engine 29+ dos runners do GitHub (a 1.19 do Spring Boot 3.3 não) -->
+        <testcontainers.version>1.21.4</testcontainers.version>
+        <!-- 7.18.x usa o JUnit 5.10, o mesmo que o Spring Boot 3.3 gerencia -->
+        <cucumber.version>7.18.1</cucumber.version>
     </properties>
 
     <dependencies>
@@ -59,6 +63,55 @@
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Integração (*IT): sobe a aplicação inteira contra um Postgres de verdade, criado pelo
+             Testcontainers com as mesmas migrations do Supabase. Precisa de Docker na máquina. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Cliente HTTP do TestRestTemplate com suporte a PATCH (o padrão do JDK não tem) -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Aceitação: cenários BDD em Gherkin (src/test/resources/features), rodando contra a API real -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-spring</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -66,6 +119,15 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- Pirâmide de testes em duas fases do Maven:
+                 * mvn package → surefire: unitários (*Test), rápidos, sem Docker. É o que o Dockerfile roda.
+                 * mvn verify  → + failsafe: integração e aceitação (*IT), com Postgres no Testcontainers.
+                   É o que a esteira roda em todo push e PR. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
