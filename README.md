@@ -58,6 +58,10 @@ roteirização de entregas e telemetria da cadeia fria.
   <img src="https://img.shields.io/badge/-ESLint-111827?style=flat-square&logo=eslint&logoColor=4B32C3"/> <br>
   <img src="https://img.shields.io/badge/-Docker-111827?style=flat-square&logo=docker&logoColor=2496ED"/>
   <img src="https://img.shields.io/badge/-Docker%20Compose-111827?style=flat-square&logo=docker&logoColor=2496ED"/>
+  <img src="https://img.shields.io/badge/-Testcontainers-111827?style=flat-square&logo=testcontainers&logoColor=9B489A"/>
+  <img src="https://img.shields.io/badge/-Cucumber_(Gherkin)-111827?style=flat-square&logo=cucumber&logoColor=23D96C"/>
+  <img src="https://img.shields.io/badge/-GitHub_Actions-111827?style=flat-square&logo=githubactions&logoColor=2088FF"/>
+  <img src="https://img.shields.io/badge/-Render-111827?style=flat-square&logo=render&logoColor=46E3B7"/>
     <img src="https://img.shields.io/badge/-Postman-111827?style=flat-square&logo=postman&logoColor=FF6C37"/>
   <img src="https://img.shields.io/badge/-Insomnia-111827?style=flat-square&logo=insomnia&logoColor=4000BF"/>
   <img src="https://img.shields.io/badge/-Figma-111827?style=flat-square&logo=figma&logoColor=F24E1E"/>
@@ -462,7 +466,7 @@ endpoints, classes de domínio e tabelas do banco, em <a href="./docs/MODULOS.md
 
 | Módulo | Endpoints implementados | Domínio | Status |
 | :--- | :--- | :--- | :---: |
-| 📦 Estoque e Hemocomponentes | `GET /api/v1/bancos/{bancoId}/estoque` | `Estoque`, `BolsaHemocomponente` | ⚠️ Parcial |
+| 📦 Estoque e Hemocomponentes | `GET /api/v1/bancos/{bancoId}/estoque` · `/resumo` · `/sugestao-lote` · `/alertas`, `GET`/`PATCH /api/v1/hemocomponentes/{id}` | `Estoque`, `BolsaHemocomponente`, `CompatibilidadeSanguinea`, `AlertaDeEstoque` | ⚠️ Parcial |
 | 🏥 Requisições e Alocação | — (só contrato) | `Hospital`, `RequisicaoHospitalar` | ⚠️ Sem controller |
 | 🚚 Roteirização e Logística | `GET /api/v1/pontos`, `/conexoes`, `/rotas` | `RedeDistribuicao` (grafo + Dijkstra), `Conexao`, `RotaCalculada` | ✅ Implementado |
 | 🌡️ Telemetria e Cadeia Fria | — (só contrato + tabelas) | *(nenhuma)* | ⚠️ Gap de domínio |
@@ -476,7 +480,7 @@ endpoints, classes de domínio e tabelas do banco, em <a href="./docs/MODULOS.md
 Rotavital🩸/
 ├── backend <img src="https://img.shields.io/badge/-Java_21-111827?style=flat&logo=openjdk&logoColor=orange" height="18"/> <img src="https://img.shields.io/badge/-Spring_Boot_3.3-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/-Maven-111827?style=flat&logo=apachemaven&logoColor=C71A36" height="18"/>/
 │   ├── pom.xml <img src="https://img.shields.io/badge/-Maven_POM-111827?style=flat&logo=apachemaven&logoColor=C71A36" height="18"/>
-│   ├── Dockerfile <img src="https://img.shields.io/badge/-Imagem_do_backend-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
+│   ├── Dockerfile <img src="https://img.shields.io/badge/-Multi--stage_·_roda_os_testes_no_1º_estágio-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
 │   ├── .dockerignore <img src="https://img.shields.io/badge/-Docker_Ignore-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
 │   ├── .env.example <img src="https://img.shields.io/badge/-Modelo_do_.env-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/>
 │   ├── .gitignore <img src="https://img.shields.io/badge/-GitIgnore-111827?style=flat&logo=git&logoColor=F05032" height="18"/>
@@ -487,9 +491,12 @@ Rotavital🩸/
 │       │   └── java/com/rotavital <img src="https://img.shields.io/badge/-Pacote_raiz-111827?style=flat-square&logo=openjdk&logoColor=orange" height="18"/>/
 │       │       ├── RotaVitalApplication.java <img src="https://img.shields.io/badge/-Entry_Point_·_carrega_.env-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       ├── api <img src="https://img.shields.io/badge/-REST_Controllers-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
+│       │       │   ├── AlertasDoEstoqueController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Falertas-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑02-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── AcessoController.java <img src="https://img.shields.io/badge/-POST_%2Facessos-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑01-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── EstoqueController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Festoque_·_%2Fresumo-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/-GET_%2Fhemocomponentes%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>
+│       │       │   ├── MovimentacaoDeBolsaController.java <img src="https://img.shields.io/badge/-PATCH_%2Fhemocomponentes%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑08-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── RotaController.java <img src="https://img.shields.io/badge/-GET_%2Fpontos_·_%2Fconexoes_·_%2Frotas-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑07-111827?style=flat-square&logoColor=white" height="18"/>
+│       │       │   ├── SugestaoDeLoteController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Fsugestao--lote-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑04-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── TratadorDeErros.java <img src="https://img.shields.io/badge/-Erros_RFC_7807_·_400_·_404_·_422-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       │   └── dto <img src="https://img.shields.io/badge/-DTO-111827?style=flat-square&logo=openapiinitiative&logoColor=6BA539" height="18"/>/
 │       │       │       ├── acesso <img src="https://img.shields.io/badge/-Acesso-111827?style=flat-square&logo=keycloak&logoColor=4D4D4D" height="18"/>/
@@ -499,11 +506,14 @@ Rotavital🩸/
 │       │       │       ├── comum <img src="https://img.shields.io/badge/-Comum-111827?style=flat-square&logo=openjdk&logoColor=orange" height="18"/>/
 │       │       │       │   └── ErroDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       ├── estoque <img src="https://img.shields.io/badge/-Estoque-111827?style=flat-square&logo=databricks&logoColor=FF3621" height="18"/>/
+│       │       │       │   ├── AlertaDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│       │       │       │   ├── AlertasDoEstoqueDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── AtualizarStatusBolsaRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── BolsaHemocomponenteDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── EstoqueDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── NovaBolsaHemocomponenteRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── ResumoEstoqueDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│       │       │       │   ├── SugestaoDeLoteDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── TotalPorComponenteDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   └── TotalPorTipoSanguineoDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       ├── requisicao <img src="https://img.shields.io/badge/-Requisicao-111827?style=flat-square&logo=hospitalfederation&logoColor=E0234E" height="18"/>/
@@ -535,6 +545,7 @@ Rotavital🩸/
 │       │       │       └── AuditoriaTelemetriaService.java <img src="https://img.shields.io/badge/-Sequencial_×_Paralelo-111827?style=flat&logo=openjdk&logoColor=F46800" height="18"/>
 │       │       ├── config <img src="https://img.shields.io/badge/-Configuração-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
 │       │       │   ├── CorsConfig.java <img src="https://img.shields.io/badge/-CORS_·_origens_dev_e_produção-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │       │   ├── RelogioConfig.java <img src="https://img.shields.io/badge/-Clock_no_fuso_de_Recife-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       │   └── HttpLoggingFilter.java <img src="https://img.shields.io/badge/-Log_das_requisições_HTTP-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       ├── diagnostico <img src="https://img.shields.io/badge/-Diagnóstico_(admin)-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
 │       │       │   ├── DiagnosticoController.java <img src="https://img.shields.io/badge/-GET_%2Fdiagnostico-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
@@ -544,6 +555,9 @@ Rotavital🩸/
 │       │       ├── dominio <img src="https://img.shields.io/badge/-Domínio_(POO)-111827?style=flat-square&logo=openjdk&logoColor=purple" height="18"/>/
 │       │       │   ├── PontoDeRede.java <img src="https://img.shields.io/badge/Interface-111827?style=flat&logo=openjdk&logoColor=22C55E" height="18"/>
 │       │       │   ├── PontoDeRedeBase.java <img src="https://img.shields.io/badge/Classe_abstrata_·_herança_JPA-111827?style=flat&logo=openjdk&logoColor=22C55E" height="18"/>
+│       │       │   ├── AlertaDeEstoque.java <img src="https://img.shields.io/badge/-Record_·_alertas_do_painel-111827?style=flat&logo=openjdk&logoColor=3B82F6" height="18"/> <img src="https://img.shields.io/badge/HU‑02-111827?style=flat-square&logoColor=white" height="18"/>
+│       │       │   ├── CompatibilidadeSanguinea.java <img src="https://img.shields.io/badge/-ABO%2FRh_por_componente-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/> <img src="https://img.shields.io/badge/HU‑04-111827?style=flat-square&logoColor=white" height="18"/>
+│       │       │   ├── MovimentacaoInvalidaException.java <img src="https://img.shields.io/badge/-Exceção_·_transição_de_status-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/>
 │       │       │   ├── Endereco.java <img src="https://img.shields.io/badge/Value_Object-111827?style=flat&logo=openjdk&logoColor=A855F7" height="18"/>
 │       │       │   ├── Hospital.java <img src="https://img.shields.io/badge/Entidade-111827?style=flat&logo=openjdk&logoColor=3B82F6" height="18"/>
 │       │       │   ├── BancoDeSangue.java <img src="https://img.shields.io/badge/Entidade-111827?style=flat&logo=openjdk&logoColor=3B82F6" height="18"/>
@@ -566,19 +580,38 @@ Rotavital🩸/
 │       │       │   ├── PontoDeRedeRepository.java <img src="https://img.shields.io/badge/-JpaRepository-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       │   └── ResumoEstoqueRepository.java <img src="https://img.shields.io/badge/-Consultas_às_views_do_painel-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 │       │       └── servico <img src="https://img.shields.io/badge/-Service-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
+│       │           ├── AlertasDoEstoqueService.java <img src="https://img.shields.io/badge/-%40Transactional_·_alertas-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │           ├── DadosInvalidosException.java <img src="https://img.shields.io/badge/-Exceção_·_400-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/>
 │       │           ├── EstoqueService.java <img src="https://img.shields.io/badge/-%40Transactional_·_estoque_·_bolsa_·_validação-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │           ├── MovimentacaoDeBolsaService.java <img src="https://img.shields.io/badge/-%40Transactional_·_baixa_da_bolsa-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │           ├── RecursoNaoEncontradoException.java <img src="https://img.shields.io/badge/-Exceção_·_404-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/>
 │       │           ├── RedeDistribuicaoService.java <img src="https://img.shields.io/badge/-%40Transactional_·_rede_do_banco-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │           ├── RegraDeNegocioException.java <img src="https://img.shields.io/badge/-Exceção_·_422-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/>
-│       │           └── ResumoEstoqueService.java <img src="https://img.shields.io/badge/-%40Transactional_·_totais_do_estoque-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
-│       └── test/java/com/rotavital <img src="https://img.shields.io/badge/-JUnit_5-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
+│       │           ├── ResumoEstoqueService.java <img src="https://img.shields.io/badge/-%40Transactional_·_totais_do_estoque-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │           └── SugestaoDeLoteService.java <img src="https://img.shields.io/badge/-%40Transactional_·_sugestão_de_lote-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       └── test <img src="https://img.shields.io/badge/-JUnit_5-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/> <img src="https://img.shields.io/badge/-Testcontainers-111827?style=flat-square&logo=testcontainers&logoColor=9B489A" height="18"/> <img src="https://img.shields.io/badge/-Cucumber-111827?style=flat-square&logo=cucumber&logoColor=23D96C" height="18"/>/
+│           ├── resources/features <img src="https://img.shields.io/badge/-Gherkin_em_português_·_1_por_história-111827?style=flat-square&logo=cucumber&logoColor=23D96C" height="18"/>/
+│           │   ├── hu02_alertas_do_painel.feature
+│           │   ├── hu03_estoque_por_tipo.feature
+│           │   ├── hu04_sugestao_de_lote.feature
+│           │   └── hu08_baixa_da_bolsa.feature
+│           └── java/com/rotavital/
+│           ├── aceitacao <img src="https://img.shields.io/badge/-Aceitação_(Cucumber_·_mvn_verify)-111827?style=flat-square&logo=cucumber&logoColor=23D96C" height="18"/>/
+│           │   ├── AceitacaoIT.java <img src="https://img.shields.io/badge/-Suíte_·_relatório_em_target%2Fcucumber-111827?style=flat&logo=cucumber&logoColor=23D96C" height="18"/>
+│           │   └── Passos*.java · Vocabulario.java <img src="https://img.shields.io/badge/-Dado%2FQuando%2FEntão_→_HTTP_+_SQL-111827?style=flat&logo=cucumber&logoColor=23D96C" height="18"/>
+│           ├── integracao <img src="https://img.shields.io/badge/-Integração_(Postgres_real_·_mvn_verify)-111827?style=flat-square&logo=testcontainers&logoColor=9B489A" height="18"/>/
+│           │   ├── EstoqueIT.java · BaixaDaBolsaIT.java <img src="https://img.shields.io/badge/-API_+_JPA_+_Postgres_17-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│           │   └── PostgresDeTeste.java · RelogioDeTeste.java · DadosDeTeste.java
 │           ├── api <img src="https://img.shields.io/badge/-API_(MockMvc)-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
 │           │   └── ErrosDoEstoqueTest.java <img src="https://img.shields.io/badge/-%40Test_·_respostas_de_erro_400_·_404_·_422-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           ├── benchmark <img src="https://img.shields.io/badge/-Benchmark-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
 │           │   └── AuditoriaTelemetriaTest.java <img src="https://img.shields.io/badge/-%40Test_·_concorrência-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           ├── dominio <img src="https://img.shields.io/badge/-Domínio-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
+│           │   ├── AlertasDoEstoqueTest.java <img src="https://img.shields.io/badge/-%40Test_·_HU--02_alertas-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           │   ├── BolsaHemocomponenteTest.java <img src="https://img.shields.io/badge/-%40Test_·_status_e_validade-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│           │   ├── CompatibilidadeSanguineaTest.java <img src="https://img.shields.io/badge/-%40Test_·_tabela_ABO%2FRh_8×8-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│           │   ├── MovimentacaoDaBolsaTest.java <img src="https://img.shields.io/badge/-%40Test_·_36_transições_de_status-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│           │   ├── SugestaoDeLoteTest.java <img src="https://img.shields.io/badge/-%40Test_·_mesmo_tipo_→_FEFO-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           │   ├── EstoqueTest.java <img src="https://img.shields.io/badge/-%40Test_·_estoque_do_banco-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           │   ├── FilaRequisicoesHospitalaresTest.java <img src="https://img.shields.io/badge/-%40Test_·_ordem_FIFO-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           │   ├── PilhaOperacoesTest.java <img src="https://img.shields.io/badge/-%40Test_·_ordem_LIFO-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
@@ -609,7 +642,7 @@ Rotavital🩸/
 │   ├── Dockerfile <img src="https://img.shields.io/badge/-Build_+_Nginx-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
 │   ├── .dockerignore <img src="https://img.shields.io/badge/-Docker_Ignore-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
 │   ├── .env.example <img src="https://img.shields.io/badge/-VITE__API__URL_·_timeout-111827?style=flat&logo=vite&logoColor=646CFF" height="18"/>
-│   ├── nginx.conf <img src="https://img.shields.io/badge/-Proxy_%2Fapi_→_backend-111827?style=flat&logo=nginx&logoColor=009639" height="18"/>
+│   ├── nginx/default.conf.template <img src="https://img.shields.io/badge/-Proxy_%2Fapi_→_backend_·_%24%7BPORT%7D_·_%24%7BAPI__UPSTREAM%7D-111827?style=flat&logo=nginx&logoColor=009639" height="18"/>
 │   ├── .gitignore <img src="https://img.shields.io/badge/-GitIgnore-111827?style=flat&logo=git&logoColor=F05032" height="18"/>
 │   ├── index.html <img src="https://img.shields.io/badge/-HTML5-111827?style=flat&logo=html5&logoColor=E34F26" height="18"/>
 │   ├── package.json <img src="https://img.shields.io/badge/-npm-111827?style=flat&logo=npm&logoColor=CB3837" height="18"/>
@@ -743,8 +776,18 @@ Rotavital🩸/
 │   │   └── 20260925120200_views_painel.sql <img src="https://img.shields.io/badge/-Views_do_Painel-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 │   └── seed.sql <img src="https://img.shields.io/badge/-Dados_de_exemplo_·_idempotente-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 │
+├── db <img src="https://img.shields.io/badge/-Postgres_17_do_Compose-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>/
+│   ├── Dockerfile <img src="https://img.shields.io/badge/-postgres:17--alpine_+_script-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
+│   └── 00_rotavital.sh <img src="https://img.shields.io/badge/-aplica_supabase%2Fmigrations_e_o_seed_na_1ª_subida-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
+│
+├── .github <img src="https://img.shields.io/badge/-GitHub_Actions-111827?style=flat-square&logo=githubactions&logoColor=2088FF" height="18"/>/
+│   ├── workflows/esteira.yml <img src="https://img.shields.io/badge/-testes_→_imagens_→_deploy_→_smoke_test-111827?style=flat&logo=githubactions&logoColor=2088FF" height="18"/>
+│   └── scripts <img src="https://img.shields.io/badge/-deploy__render.sh_·_resumo__testes.py-111827?style=flat&logo=gnubash&logoColor=white" height="18"/>
+│
 ├── img <img src="https://img.shields.io/badge/Assets-green?style=flat&logo=image&logoColor=white" height="18"/>/
-├── docker-compose.yml <img src="https://img.shields.io/badge/-Docker_Compose-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
+├── compose.yaml <img src="https://img.shields.io/badge/-db_·_backend_·_frontend_·_volume_·_healthcheck-111827?style=flat&logo=docker&logoColor=2496ED" height="18"/>
+├── .env.example <img src="https://img.shields.io/badge/-Variáveis_do_Compose_(sem_segredo)-111827?style=flat&logo=dotenv&logoColor=ECD53F" height="18"/>
+├── render.yaml <img src="https://img.shields.io/badge/-Blueprint_do_Render-111827?style=flat&logo=render&logoColor=46E3B7" height="18"/>
 ├── package-lock.json <img src="https://img.shields.io/badge/-npm_lock-111827?style=flat&logo=npm&logoColor=CB3837" height="18"/>
 ├── .gitignore <img src="https://img.shields.io/badge/-GitIgnore-111827?style=flat&logo=git&logoColor=F05032" height="18"/>
 ├── LICENSE <img src="https://img.shields.io/badge/License-MIT-FF8C00?style=flat&logo=opensource&logoColor=white" height="18"/>
@@ -753,9 +796,10 @@ Rotavital🩸/
 </pre>
 
 > [!NOTE]
-> **Backend:** Spring Boot 3.3 (Java 21) com 5 controllers — `AcessoController`, `EstoqueController`,
-> `RotaController`, `BenchmarkController` e `DiagnosticoController` (`GET /api/v1/diagnostico`, usado pela tela
-> de admin). Os controllers de domínio leem do **banco (Supabase)** via JPA: bolsas pelo `EstoqueService`,
+> **Backend:** Spring Boot 3.3 (Java 21) com 8 controllers — `AcessoController`, `EstoqueController`,
+> `RotaController`, `BenchmarkController`, `DiagnosticoController` (`GET /api/v1/diagnostico`, usado pela tela
+> de admin) e os três que nasceram por TDD no [Desafio do PI](#container-tdd-deploy): `SugestaoDeLoteController`
+> (HU‑04), `AlertasDoEstoqueController` (HU‑02) e `MovimentacaoDeBolsaController` (HU‑08). Os controllers de domínio leem do **banco (Supabase)** via JPA: bolsas pelo `EstoqueService`,
 > totais do estoque pelo `ResumoEstoqueService` (views do painel) e rede/rotas pelo `RedeDistribuicaoService`;
 > não há mais dados fixos em memória. Os erros saem no formato RFC 7807 pelo `TratadorDeErros`, com a
 > explicação no `detail` (dado inválido → 400, recurso inexistente → 404, regra de negócio → 422). O CORS fica em
@@ -837,7 +881,7 @@ Copie [`backend/.env.example`](./backend/.env.example) para `backend/.env` (já 
 
 | Variável | Uso | Pode ir para o Git? |
 | :--- | :--- | :---: |
-| `SUPABASE_DB_PASSWORD` | Senha do banco (JDBC e `docker-compose.yml`) | ❌ |
+| `SUPABASE_DB_PASSWORD` | Senha do banco (JDBC; no Render, variável secreta do serviço) | ❌ |
 | `SUPABASE_URL` | URL pública do projeto (API REST/Auth) | ✅ |
 | `SUPABASE_KEY` | Chave `anon` da API do Supabase | ⚠️ só a `anon` |
 
@@ -959,7 +1003,7 @@ mvn spring-boot:run            # ou: java -jar target\rotavital-backend-0.1.0-SN
 </details>
 
 > O `RotaVitalApplication` procura e carrega o `backend/.env` sozinho ao subir (variáveis já exportadas no
-> ambiente têm prioridade) e imprime "✅ CONECTADO AO SUPABASE COM SUCESSO!" quando o banco responde.
+> ambiente têm prioridade) e imprime "✅ CONECTADO AO BANCO DE DADOS COM SUCESSO!" (com a URL do banco) quando o banco responde.
 >
 > A API sobe em `http://localhost:8080/api/v1`:
 >
@@ -967,6 +1011,10 @@ mvn spring-boot:run            # ou: java -jar target\rotavital-backend-0.1.0-SN
 > | :--- | :--- | :--- |
 > | `POST` | `/api/v1/acessos` | `curl -X POST localhost:8080/api/v1/acessos -H 'Content-Type: application/json' -d '{"nome":"Dra. Ana","tipoAcesso":"MEDICO"}'` |
 > | `GET` | `/api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` | `curl localhost:8080/api/v1/bancos/BS-01/estoque` |
+> | `GET` | `/api/v1/bancos/{bancoId}/sugestao-lote?tipoComponente=&tipoSanguineo=&quantidade=` (HU‑04) | `curl "localhost:8080/api/v1/bancos/BS-01/sugestao-lote?tipoComponente=HEMACIAS&tipoSanguineo=A_NEGATIVO&quantidade=2"` |
+> | `GET` | `/api/v1/bancos/{bancoId}/alertas` (HU‑02) | `curl localhost:8080/api/v1/bancos/BS-01/alertas` |
+> | `PATCH` | `/api/v1/hemocomponentes/{id}` (HU‑08) | `curl -X PATCH localhost:8080/api/v1/hemocomponentes/CH-1042 -H 'Content-Type: application/json' -d '{"status":"RESERVADA"}'` |
+> | `GET` | `/actuator/health` · `/actuator/info` | `curl localhost:8080/actuator/health` |
 > | `GET` | `/api/v1/pontos` · `/api/v1/conexoes` | `curl localhost:8080/api/v1/pontos` |
 > | `GET` | `/api/v1/rotas?origemId=&destinoId=` | `curl "localhost:8080/api/v1/rotas?origemId=BS-01&destinoId=HOSP-01"` |
 > | `GET`/`POST` | `/api/v1/benchmarks/auditoria-telemetria` | `curl "localhost:8080/api/v1/benchmarks/auditoria-telemetria?tamanho=100000&modo=TODOS"` |
@@ -974,7 +1022,8 @@ mvn spring-boot:run            # ou: java -jar target\rotavital-backend-0.1.0-SN
 | Comando (em `backend/`) | Descrição |
 | :--- | :--- |
 | `mvn compile` | Só compila o código de `src/main/java` |
-| `mvn test` | Compila e roda os testes JUnit 5: domínio e serviços (sem banco de dados, com repositórios falsos) e `AuditoriaTelemetriaTest` |
+| `mvn test` | Compila e roda os testes unitários (JUnit 5): domínio e serviços, sem banco de dados (repositórios falsos) |
+| `mvn verify` | Unitários + integração e aceitação (`*IT`, Cucumber) contra um Postgres 17 do Testcontainers — precisa de Docker ([detalhes](#cdt-testes)) |
 | `mvn clean package` | Compila, testa e gera o `.jar` executável em `target/` |
 | `mvn spring-boot:run` | Sobe a API (precisa do `backend/.env` com `SUPABASE_DB_PASSWORD`) |
 
@@ -1024,26 +1073,27 @@ npm run dev
 | `npm run preview` | Serve localmente o build de produção gerado por `npm run build` |
 | `npm run lint` | Roda o ESLint sobre o código do frontend |
 
-<h4 align="center"> 🚢🐳 Com Docker (backend + frontend + Supabase) <br>
-<img src="https://img.shields.io/badge/-Docker-111827?style=flat-square&logo=docker&logoColor=2496ED"/><img src="https://img.shields.io/badge/-Supabase-111827?style=flat-square&logo=supabase&logoColor=3ECF8E"/></h4>
+<h4 align="center"> 🚢🐳 Com Docker (banco + backend + frontend, sem instalar nada além do Docker) <br>
+<img src="https://img.shields.io/badge/-Docker-111827?style=flat-square&logo=docker&logoColor=2496ED"/><img src="https://img.shields.io/badge/-PostgreSQL_17-111827?style=flat-square&logo=postgresql&logoColor=4169E1"/></h4>
 
 <p align="center">
-O <a href="./docker-compose.yml"><code>docker-compose.yml</code></a> na raiz do projeto sobe o backend Spring Boot
-e o frontend (build de produção servido via Nginx) já conectados ao banco <b>Supabase</b>. Crie um arquivo
-<code>backend/.env</code> com a variável <code>SUPABASE_DB_PASSWORD</code> antes de subir os containers
-(o compose injeta esse arquivo no container do backend).
+O <a href="./compose.yaml"><code>compose.yaml</code></a> na raiz sobe o sistema inteiro do zero: um Postgres 17 local
+(com as migrations e o seed do Supabase), o backend Spring Boot e o frontend servido pelo Nginx. A senha do banco
+local vem do <code>.env</code> da raiz (copiado de <a href="./.env.example"><code>.env.example</code></a>).
+Passo a passo, healthchecks e evidências em <a href="#cdt-como-rodar">Desafio do PI › Como rodar</a>.
 </p>
 
 ```bash
 # a partir de Rotavital/
-docker compose up --build -d   # compila as imagens e sobe os containers em segundo plano
-docker compose logs -f backend # acompanha os logs do Spring Boot
-docker compose down            # derruba os containers
+cp .env.example .env            # uma vez (e troque DB_PASSWORD)
+docker compose up -d --build    # db → backend → frontend, cada um depois do healthcheck do anterior
+docker compose logs -f backend  # acompanha os logs do Spring Boot
+docker compose down             # derruba os containers (os dados ficam no volume)
 ```
 
-> Frontend em `http://localhost:80` e backend em `http://localhost:8080`. O Nginx do frontend repassa
-> `/api/` para o container do backend (`frontend/nginx.conf`), então no Docker a API também responde em
-> `http://localhost/api/v1`.
+> Frontend em `http://localhost` e backend em `http://localhost:8080`. O Nginx do frontend repassa
+> `/api/` para o container do backend (`frontend/nginx/default.conf.template`), então no Docker a API também
+> responde em `http://localhost/api/v1`.
 
 <h2 align="center" id="figma-vs-real">🖼️ Figma × Sistema Real <br>
 <img src="https://img.shields.io/badge/Protótipo-111827?style=flat&logo=figma&logoColor=orange" height="22"/> vs <img src="https://img.shields.io/badge/Sistema_real-111827?style=flat&logo=react&logoColor=61DAFB" height="22"/>
@@ -1385,3 +1435,498 @@ export default function PaginaPortalDoador()
 | 🧾 [`evidencias/`](./docs/evidencias/) | Chamadas reais aos endpoints |
 | 📕 [`arquitetura-rotavital-paes-silva.pdf`](./pdf/arquitetura-rotavital-paes-silva.pdf) | PDF final entregue - Atividade de Infraestrutura de Redes (RSD) |
 | 🗺️ [`arquitetura-rotavital-paes-silva.drawio`](./docs/arquitetura-rotavital-paes-silva.drawio) | Arquivo-fonte do diagrama entregue junto com o PDF (RSD) |
+
+<h2 align="center" id="container-tdd-deploy">🐳🧪🚀 Desafio do PI — Container, TDD e Deploy automatizados <br>
+<img src="https://img.shields.io/badge/-Docker_Compose-111827?style=flat&logo=docker&logoColor=2496ED" height="22"/>
+<img src="https://img.shields.io/badge/-Testcontainers-111827?style=flat&logo=testcontainers&logoColor=9B489A" height="22"/>
+<img src="https://img.shields.io/badge/-Cucumber-111827?style=flat&logo=cucumber&logoColor=23D96C" height="22"/>
+<img src="https://img.shields.io/badge/-GitHub_Actions-111827?style=flat&logo=githubactions&logoColor=2088FF" height="22"/>
+<img src="https://img.shields.io/badge/-Render-111827?style=flat&logo=render&logoColor=46E3B7" height="22"/>
+<br>
+<img src="https://img.shields.io/badge/Unitários-157%2F157-22C55E?style=flat&logo=junit5&logoColor=white" height="22"/>
+<img src="https://img.shields.io/badge/Integração-7%2F7-22C55E?style=flat&logo=postgresql&logoColor=white" height="22"/>
+<img src="https://img.shields.io/badge/Aceitação_(Gherkin)-13%2F13-22C55E?style=flat&logo=cucumber&logoColor=white" height="22"/>
+<img src="https://img.shields.io/badge/Red_→_Green-9_pares_de_commits-E0234E?style=flat&logo=git&logoColor=white" height="22"/>
+</h2>
+
+<p align="center">
+Unidade 2 de <b>Infraestrutura de Software</b> (2026.2), com os mesmos integrantes do PI. A pergunta do desafio:
+<i>"se um colega clonar o repositório amanhã, ele consegue rodar, testar e publicar o sistema sem pedir ajuda a
+ninguém?"</i> A resposta do grupo está nas três entregas abaixo. Uma apoia a outra: a esteira do E3 usa os
+Dockerfiles do E1 e só publica se os testes do E2 passarem.
+</p>
+
+| Entrega | O que foi feito | Onde está | Status |
+| :--- | :--- | :--- | :---: |
+| 🐳 **E1 · Container automatizado** | Dockerfile multi-stage que roda os testes no 1º estágio; `compose.yaml` com Postgres 17 + backend + frontend, volume, healthcheck e `depends_on`; `.env.example` sem segredos | [`compose.yaml`](./compose.yaml), [`backend/Dockerfile`](./backend/Dockerfile), [`db/`](./db/), [`frontend/Dockerfile`](./frontend/Dockerfile) | <img src="https://img.shields.io/badge/Feito-22C55E?style=flat-square" height="18"/> |
+| 🧪 **E2 · TDD** | Story map com a Release 1; 3 histórias quebradas em 13 tarefas; 9 pares de commits `test:` 🔴 → `feat:` 🟢; testes unitário, integração (Postgres real) e aceitação (Gherkin) na esteira | [`backend/src/test`](./backend/src/test/), [`features/`](./backend/src/test/resources/features/) | <img src="https://img.shields.io/badge/Feito-22C55E?style=flat-square" height="18"/> |
+| 🚀 **E3 · Deploy automatizado** | GitHub Actions: testes → imagens no GHCR → deploy no Render → smoke test, só na `main` e só com tudo verde; rollback por versão | [`.github/workflows/esteira.yml`](./.github/workflows/esteira.yml), [`render.yaml`](./render.yaml) | <img src="https://img.shields.io/badge/Esteira_pronta_·_falta_ligar_o_Render-F59E0B?style=flat-square" height="18"/> |
+
+> [!IMPORTANT]
+> O que ainda depende do grupo (só quem tem acesso às contas consegue fazer): subir esta branch, proteger a
+> `main`, criar os serviços no Render, cadastrar os segredos e colher os prints das execuções vermelha e verde.
+> O passo a passo, na ordem certa, está em [Configuração única](#cdt-configuracao), e a tabela de
+> [Evidências do E3](#cdt-evidencias-e3) fica pronta para receber os links.
+
+<p align="center">
+<b>Seções pedidas no enunciado:</b>
+<a href="#cdt-integrantes">Integrantes</a> ·
+<a href="#cdt-como-rodar">Como rodar</a> ·
+<a href="#cdt-testes">Testes</a> ·
+<a href="#cdt-pipeline">Pipeline e deploy</a> ·
+<a href="#cdt-decisoes">Decisões</a> ·
+<a href="#cdt-ia">Uso de IA</a> ·
+<a href="#cdt-jornada">Jornada TDD e lições</a>
+</p>
+
+<h3 align="center" id="cdt-integrantes">👥 Integrantes</h3>
+
+<p align="center">
+Os mesmos do Projeto Integrador (lista completa, com LinkedIn e GitHub, em <a href="#integrantes">Integrantes do Projeto</a>):
+Victor José Paes e Silva (líder) · Eduardo de Souza Cavalcanti Junior · Felipe Franca Alves de Lima ·
+Helamã Leone de Lima Procídio · João Pedro Arruda Guimarães · Júlia Oliveira Veríssimo ·
+Lucas Paguetti Pereira · Tiago Luiz Moreira de Vasconcelos.
+</p>
+
+<h3 align="center" id="cdt-como-rodar">▶️ Como rodar — E1 · Container automatizado <br>
+<img src="https://img.shields.io/badge/-docker_compose_up_--d_----build-111827?style=flat&logo=docker&logoColor=2496ED" height="20"/>
+</h3>
+
+<p align="center">
+Pré-requisitos: <b>Git</b> e <b>Docker</b> (Docker Desktop no Windows/macOS). Não precisa de Java, Maven, Node nem
+Postgres instalados: tudo é compilado e testado dentro dos containers.
+</p>
+
+```bash
+git clone https://github.com/viictorpaes/Rotavital.git
+cd Rotavital
+cp .env.example .env            # uma vez; troque DB_PASSWORD (o .env fica fora do Git)
+docker compose up -d --build    # compila, roda os testes, sobe db → backend → frontend
+docker compose ps               # os três precisam aparecer como (healthy)
+```
+
+<details>
+<summary>🪟 <b>Windows (PowerShell)</b></summary>
+
+```powershell
+git clone https://github.com/viictorpaes/Rotavital.git
+cd Rotavital
+Copy-Item .env.example .env     # e troque DB_PASSWORD
+docker compose up -d --build
+docker compose ps
+```
+</details>
+
+| Endereço | O que responde |
+| :--- | :--- |
+| 🖥️ `http://localhost` | Frontend (React servido pelo Nginx) |
+| 🩺 `http://localhost:8080/actuator/health` | Saúde da API **e** do banco (`{"status":"UP"}`) |
+| 🏷️ `http://localhost:8080/actuator/info` | Versão da imagem em execução (`local` na máquina; o sha do commit em produção) |
+| ☕ `http://localhost:8080/api/v1/...` ou `http://localhost/api/v1/...` | API (direto ou pelo proxy do Nginx) |
+
+```mermaid
+flowchart LR
+    U["🧑‍⚕️ Navegador<br/>localhost:80"] --> FE["frontend<br/>Nginx sem root :8080"]
+    FE -->|"/api/ → http://backend:8080"| BE["backend<br/>Spring Boot :8080"]
+    BE -->|"jdbc:postgresql://db:5432/rotavital"| DB[("db<br/>Postgres 17")]
+    DB --- VOL[("volume<br/>dados-postgres")]
+    MIG["📜 supabase/migrations<br/>+ seed.sql"] -. "1ª subida<br/>(volume vazio)" .-> DB
+```
+
+| Serviço | Imagem | Porta na máquina | Healthcheck | Só sobe depois de |
+| :--- | :--- | :---: | :--- | :--- |
+| 🐘 `db` | `postgres:17-alpine` + [`db/00_rotavital.sh`](./db/00_rotavital.sh) | — (só rede interna) | `pg_isready` | — |
+| ☕ `backend` | [`backend/Dockerfile`](./backend/Dockerfile) (2 estágios) | `8080` | `/actuator/health` = `UP` (inclui o banco) | `db` healthy |
+| 🖥️ `frontend` | [`frontend/Dockerfile`](./frontend/Dockerfile) (2 estágios) | `80` | `GET /` | `backend` healthy |
+
+| Comando | Para quê |
+| :--- | :--- |
+| `docker compose logs -f backend` | Acompanhar a API (mostra a URL do banco ao conectar) |
+| `docker compose exec db psql -U rotavital` | Abrir o banco local no terminal |
+| `docker compose down` | Derrubar os containers — **os dados continuam no volume** |
+| `docker compose down -v` | Derrubar e apagar o volume (a próxima subida recria o banco com o seed) |
+
+> [!NOTE]
+> O compose local usa um **Postgres 17 próprio**, criado pelas mesmas migrations de `supabase/migrations/`: assim
+> qualquer pessoa sobe o sistema sem a senha do Supabase e sem internet. Em produção (Render), a API continua
+> usando o **Supabase**. O `db/00_rotavital.sh` só cria uma tabela mínima `auth.users`, que no Supabase já existe
+> (a migration `escopo_clinico` aponta para ela).
+
+<details>
+<summary>📸 <b>Evidências do E1</b> — saídas reais do terminal (14/10/2026, macOS + Docker Desktop 29.7)</summary>
+
+**Subida do zero** (`docker compose down -v` e depois `docker compose up -d --build`, 1min44s): o 1º estágio do
+backend roda os testes antes de gerar a imagem.
+
+```text
+#38 10.28 [INFO] Tests run: 157, Failures: 0, Errors: 0, Skipped: 0
+#38 10.70 [INFO] BUILD SUCCESS
+ Container rotavital-backend-1 Healthy
+ Container rotavital-frontend-1 Started
+```
+
+**`docker compose ps`**
+
+```text
+SERVICE    IMAGE                      STATUS                    PORTS
+backend    rotavital-backend:local    Up 27 seconds (healthy)   0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+db         rotavital-db:local         Up 32 seconds (healthy)   5432/tcp
+frontend   rotavital-frontend:local   Up 16 seconds (healthy)   0.0.0.0:80->8080/tcp, [::]:80->8080/tcp
+```
+
+**API respondendo** (direto e pelo proxy do Nginx, com o seed carregado)
+
+```text
+$ curl localhost:8080/actuator/health
+{"status":"UP"}
+$ curl localhost:8080/actuator/info
+{"app":{"nome":"Rota Vital API","versao":"local"}}
+$ curl "localhost/api/v1/bancos/BS-01/sugestao-lote?tipoComponente=HEMACIAS&tipoSanguineo=A_NEGATIVO&quantidade=2"
+{"bancoDeSangueId":"BS-01","tipoComponente":"HEMACIAS","tipoSanguineoPaciente":"A_NEGATIVO",
+ "quantidadeSolicitada":2,"quantidadeSugerida":2,"faltam":0,
+ "lotes":[{"id":"CH-1061","tipoSanguineo":"A_NEGATIVO","dataValidade":"2026-10-23",...},
+          {"id":"CH-1042","tipoSanguineo":"O_NEGATIVO","dataValidade":"2026-10-17",...}]}
+$ curl localhost/api/v1/bancos/BS-01/alertas
+{"bancoDeSangueId":"BS-01","total":4,"criticos":1,"alertas":[
+ {"bolsaId":"PQ-3014","tipo":"FORA_DA_FAIXA","nivel":"CRITICO","mensagem":"Bolsa PQ-3014 está a 25.6 °C, fora da faixa de 20.0 a 24.0 °C."},
+ {"bolsaId":"CH-1042","tipo":"VENCE_EM_BREVE","nivel":"ATENCAO","mensagem":"Bolsa CH-1042 vence em 3 dias (17/10/2026)."}, ...]}
+```
+
+**Os dados sobrevivem ao `docker compose down`** (volume nomeado)
+
+```text
+$ curl -X PATCH localhost/api/v1/hemocomponentes/CH-1080 -d {"status":"RESERVADA"}
+status: RESERVADA
+$ docker compose down
+$ docker compose up -d
+$ curl localhost/api/v1/hemocomponentes/CH-1080
+status: RESERVADA
+$ curl -X PATCH ... CH-1080 -d {"status":"ENTREGUE"}   # RESERVADA → ENTREGUE não existe
+{"title":"Regra de negócio violada","status":422,"detail":"A bolsa CH-1080 está RESERVADA e não pode passar para ENTREGUE."}
+```
+
+| Imagem final | Tamanho (`docker images`) | Usuário do processo |
+| :--- | :---: | :--- |
+| `rotavital-backend` | 378 MB | `rotavital` (sem root) |
+| `rotavital-frontend` | 91 MB | `101` (Nginx sem root) |
+
+</details>
+
+<h3 align="center" id="cdt-testes">🧪 Testes — E2 · TDD <br>
+<img src="https://img.shields.io/badge/-Story_map_→_tarefas_→_teste_→_código-111827?style=flat&logo=todoist&logoColor=E44332" height="20"/>
+</h3>
+
+<h4 align="left">🗺️ Story map do PI — backbone e Release 1</h4>
+
+<p align="center">
+As colunas são o <b>backbone</b>: as atividades do médico e do doador, na ordem em que acontecem (as mesmas telas
+das HUs da <a href="#-entrega-01">Entrega 01</a>). As linhas são as releases. A <b>Release 1</b> desta entrega pegou,
+em cada atividade, a regra cujo erro machuca mais (ver <a href="#cdt-risco">por que essas primeiro</a>).
+</p>
+
+| | 🔐 Entrar | 📊 Acompanhar o painel | 📦 Consultar o estoque | 🏥 Requisitar | 🚚 Transportar | 🩺 Atender o paciente | ❤️ Doar |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Backbone** | escolher o perfil | ver números e alertas | ver lotes por tipo | pedir hemocomponente | planejar a rota | concluir o procedimento | agendar a doação |
+| ✅ **Já existia** | HU‑01 login por perfil | totais por tipo (PI3‑188) | HU‑03 consulta e erros (PI3‑181) | — | HU‑07 rota (Dijkstra) | — | HU‑09 / HU‑10 (frontend, dados mockados) |
+| 🟢 **Release 1 (TDD)** | — | **HU‑02** alertas de validade e temperatura | HU‑03 cenários de caracterização | **HU‑04** sugestão de lote FEFO + ABO/Rh | — | **HU‑08** baixa da bolsa usada | — |
+| 🔵 **Release 2** | HU‑F01 login com senha | HU‑F03 notificar alerta crítico | HU‑05 registrar recebimento | gravar requisição e alocação · HU‑06 campanha | HU‑F04 rastreio ao vivo · telemetria | ligar a baixa ao paciente e ao procedimento | HU‑F06 elegibilidade do doador |
+
+<h4 align="left">🧩 Histórias da Release 1 quebradas em tarefas</h4>
+
+<p align="center">
+Cada tarefa de regra tem um teste unitário, e cada história tem ao menos um cenário de aceitação em Gherkin rodando
+contra a API e o Postgres. Os links levam aos commits: primeiro o teste vermelho, depois o código que o deixa verde.
+</p>
+
+<details open>
+<summary>▶️🏥 <b>HU‑04</b> — Sugestão de lote por FEFO e compatibilidade ABO/Rh (5 tarefas)</summary>
+
+> 🟨 Como **médico**, quero que o sistema sugira o lote certo ao preencher a requisição, para atender o paciente com
+> uma bolsa compatível — a que vence primeiro — sem escolher na mão.
+
+| Tarefa | Regra | Teste (nível) | 🔴 test | 🟢 feat |
+| :---: | :--- | :--- | :---: | :---: |
+| T4.1 | Compatibilidade ABO/Rh de **hemácias**: tabela completa receptor × doador (8 × 8); O− doa para todos; Rh+ nunca vai para Rh− | [`CompatibilidadeSanguineaTest`](./backend/src/test/java/com/rotavital/dominio/CompatibilidadeSanguineaTest.java) (unitário) | [`67d4c55`](https://github.com/viictorpaes/Rotavital/commit/67d4c55) | [`1b9cd69`](https://github.com/viictorpaes/Rotavital/commit/1b9cd69) |
+| T4.2 | **Plasma e crio**: ABO invertido (AB doa para todos), Rh indiferente; **plaquetas** seguem a regra das hemácias | idem (unitário) | [`9baea07`](https://github.com/viictorpaes/Rotavital/commit/9baea07) | [`cbbd912`](https://github.com/viictorpaes/Rotavital/commit/cbbd912) |
+| T4.3 | **Bolsa apta**: disponível, dentro da validade (vencer hoje ainda vale) e na faixa de temperatura | [`BolsaHemocomponenteTest`](./backend/src/test/java/com/rotavital/dominio/BolsaHemocomponenteTest.java) (unitário) | [`e901034`](https://github.com/viictorpaes/Rotavital/commit/e901034) | [`21c2312`](https://github.com/viictorpaes/Rotavital/commit/21c2312) |
+| T4.4 | **Ordem da sugestão**: mesmo tipo do paciente primeiro (poupa o O−), FEFO dentro do grupo, nunca incompatível, no máximo a quantidade | [`SugestaoDeLoteTest`](./backend/src/test/java/com/rotavital/dominio/SugestaoDeLoteTest.java) (unitário) | [`8c9fb6b`](https://github.com/viictorpaes/Rotavital/commit/8c9fb6b) | [`e4d884b`](https://github.com/viictorpaes/Rotavital/commit/e4d884b) |
+| T4.5 | `GET /api/v1/bancos/{bancoId}/sugestao-lote` | [`hu04_sugestao_de_lote.feature`](./backend/src/test/resources/features/hu04_sugestao_de_lote.feature) (aceitação, 6 cenários) | [`2dcd504`](https://github.com/viictorpaes/Rotavital/commit/2dcd504) | [`547a00f`](https://github.com/viictorpaes/Rotavital/commit/547a00f) |
+
+```gherkin
+Cenário: Nunca sugere hemácias Rh+ para paciente Rh-
+  Quando peço 3 unidades de hemácias para um paciente "O-" no banco "BS-01"
+  Então o sistema sugere os lotes "CH-1042, CH-1043"
+  E a sugestão avisa que faltam 1 unidade
+```
+</details>
+
+<details>
+<summary>▶️📊 <b>HU‑02</b> — Caixa de alertas do painel: validade e temperatura (5 tarefas)</summary>
+
+> 🟨 Como **médico**, quero ver no painel os alertas críticos do estoque, para tirar de uso a bolsa vencida ou fora
+> da faixa e usar primeiro a que está para vencer.
+
+| Tarefa | Regra | Teste (nível) | 🔴 test | 🟢 feat |
+| :---: | :--- | :--- | :---: | :---: |
+| T2.1 | Bolsa **vencida** ainda no estoque → alerta **CRÍTICO** | [`AlertasDoEstoqueTest`](./backend/src/test/java/com/rotavital/dominio/AlertasDoEstoqueTest.java) (unitário) | [`93980fa`](https://github.com/viictorpaes/Rotavital/commit/93980fa) | [`5baca27`](https://github.com/viictorpaes/Rotavital/commit/5baca27) |
+| T2.2 | Vence em **0 a 7 dias** → **ATENÇÃO** (com 8 dias, nenhum alerta) — o card "Vencendo em 7 dias" do Figma | idem | ↑ | ↑ |
+| T2.3 | **Fora da faixa** de temperatura do componente → **CRÍTICO** | idem | ↑ | ↑ |
+| T2.4 | Só bolsa que ainda está no estoque (disponível ou reservada); críticos primeiro, depois quem vence antes | idem | ↑ | ↑ |
+| T2.5 | `GET /api/v1/bancos/{bancoId}/alertas` | [`hu02_alertas_do_painel.feature`](./backend/src/test/resources/features/hu02_alertas_do_painel.feature) (aceitação, 2 cenários) | [`b82afdb`](https://github.com/viictorpaes/Rotavital/commit/b82afdb) | [`591006a`](https://github.com/viictorpaes/Rotavital/commit/591006a) |
+
+<sub>T2.1 a T2.4 viraram um único par de commits: as quatro regras compartilham o mesmo método (`Estoque.listarAlertas`) e a mesma ordenação.</sub>
+</details>
+
+<details>
+<summary>▶️🩺 <b>HU‑08</b> — Baixa da bolsa usada no procedimento (3 tarefas)</summary>
+
+> 🟨 Como **médico**, quero dar baixa na bolsa usada ao concluir o atendimento do paciente, para que o estoque reflita
+> com exatidão o que foi realmente consumido.
+
+| Tarefa | Regra | Teste (nível) | 🔴 test | 🟢 feat |
+| :---: | :--- | :--- | :---: | :---: |
+| T8.1 | **Transições de status** permitidas: 12 das 36 combinações; `UTILIZADA` e `DESCARTADA` são finais | [`MovimentacaoDaBolsaTest`](./backend/src/test/java/com/rotavital/dominio/MovimentacaoDaBolsaTest.java) (unitário) | [`60207da`](https://github.com/viictorpaes/Rotavital/commit/60207da) | [`1dd60ba`](https://github.com/viictorpaes/Rotavital/commit/1dd60ba) |
+| T8.2 | Bolsa **vencida só pode ser descartada** | idem | ↑ | ↑ |
+| T8.3 | `PATCH /api/v1/hemocomponentes/{id}` grava no Postgres; transição recusada → 422 sem gravar nada | [`hu08_baixa_da_bolsa.feature`](./backend/src/test/resources/features/hu08_baixa_da_bolsa.feature) (aceitação, 3) + [`BaixaDaBolsaIT`](./backend/src/test/java/com/rotavital/integracao/BaixaDaBolsaIT.java) (integração, 4) | [`ec1c83d`](https://github.com/viictorpaes/Rotavital/commit/ec1c83d) | [`f2d1e0f`](https://github.com/viictorpaes/Rotavital/commit/f2d1e0f) |
+
+```text
+DISPONIVEL ──► RESERVADA ──► EM_TRANSITO ──► ENTREGUE ──► UTILIZADA (baixa)
+     ▲            │  │                          │
+     └────────────┘  └──────────► UTILIZADA     └──► DESCARTADA
+  (cancelar reserva)       (qualquer status não final ──► DESCARTADA)
+```
+</details>
+
+<h4 align="left">📶 Testes por nível</h4>
+
+| Nível | O que garante | Ferramenta | Quantidade | Onde roda | Comando (em `backend/`) |
+| :--- | :--- | :--- | :---: | :--- | :--- |
+| 🧩 **Unitário** | Cada regra do domínio e dos serviços, sem banco | JUnit 5 (+ repositório falso e MockMvc) | **157** (59 de antes + 98 novos) | 1º estágio do `Dockerfile` e esteira | `mvn test` |
+| 🔗 **Integração** | API + JPA + **Postgres 17 de verdade**, criado com as migrations do Supabase (constraints, gatilhos, views) | Spring Boot Test + Testcontainers | **7** — [`EstoqueIT`](./backend/src/test/java/com/rotavital/integracao/EstoqueIT.java) (3), [`BaixaDaBolsaIT`](./backend/src/test/java/com/rotavital/integracao/BaixaDaBolsaIT.java) (4) | esteira | `mvn verify` |
+| ✅ **Aceitação (BDD)** | Um `.feature` por história, em português, chamando a API por HTTP | Cucumber 7 + Gherkin | **13 cenários** — HU‑02 (2), HU‑03 (2), HU‑04 (6), HU‑08 (3) | esteira (relatório HTML em `target/cucumber/`) | `mvn verify` |
+
+> `mvn package` roda só os unitários (é o que o Dockerfile faz, e lá dentro não há Docker para o Testcontainers).
+> `mvn verify` roda também os `*IT` e o Cucumber: é o que a esteira executa em todo push e PR. A HU‑03 já existia
+> antes do TDD, então os 2 cenários dela são de **caracterização** (escritos depois do código, a partir dos cenários
+> BDD do README).
+
+<h4 align="left">🔴 → 🟢 Histórico red → green</h4>
+
+<p align="center">
+Cada par é um commit <code>test:</code>, em que o teste novo falha porque o código só tem a assinatura, seguido de um
+<code>feat:</code> que o faz passar sem quebrar os anteriores. As contagens abaixo são das execuções locais de cada commit.
+</p>
+
+| # | 🔴 `test:` — o que falhou | 🟢 `feat:` — resultado |
+| :---: | :--- | :--- |
+| T4.1 | [`67d4c55`](https://github.com/viictorpaes/Rotavital/commit/67d4c55) — 9 de 10 falham (`expected: <[O_NEGATIVO]> but was: <[]>`) | [`1b9cd69`](https://github.com/viictorpaes/Rotavital/commit/1b9cd69) — 69/69 unitários |
+| T4.2 | [`9baea07`](https://github.com/viictorpaes/Rotavital/commit/9baea07) — as 8 linhas do plasma falham (a regra ainda era a das hemácias) | [`cbbd912`](https://github.com/viictorpaes/Rotavital/commit/cbbd912) — 93/93 |
+| T4.3 | [`e901034`](https://github.com/viictorpaes/Rotavital/commit/e901034) — 3 de 9 falham | [`21c2312`](https://github.com/viictorpaes/Rotavital/commit/21c2312) — 98/98 |
+| T4.4 | [`8c9fb6b`](https://github.com/viictorpaes/Rotavital/commit/8c9fb6b) — 7 de 8 falham | [`e4d884b`](https://github.com/viictorpaes/Rotavital/commit/e4d884b) — 106/106 |
+| T4.5 | [`2dcd504`](https://github.com/viictorpaes/Rotavital/commit/2dcd504) — 6 cenários falham com 404 | [`547a00f`](https://github.com/viictorpaes/Rotavital/commit/547a00f) — 106 + 11 verdes |
+| T2.1–T2.4 | [`93980fa`](https://github.com/viictorpaes/Rotavital/commit/93980fa) — 9 de 11 falham | [`5baca27`](https://github.com/viictorpaes/Rotavital/commit/5baca27) — 117/117 |
+| T2.5 | [`b82afdb`](https://github.com/viictorpaes/Rotavital/commit/b82afdb) — 2 cenários falham com 404 | [`591006a`](https://github.com/viictorpaes/Rotavital/commit/591006a) — 117 + 13 verdes |
+| T8.1–T8.2 | [`60207da`](https://github.com/viictorpaes/Rotavital/commit/60207da) — 29 de 40 falham | [`1dd60ba`](https://github.com/viictorpaes/Rotavital/commit/1dd60ba) — 157/157 |
+| T8.3 | [`ec1c83d`](https://github.com/viictorpaes/Rotavital/commit/ec1c83d) — 7 falham com 405 (3 cenários + 4 de integração) | [`f2d1e0f`](https://github.com/viictorpaes/Rotavital/commit/f2d1e0f) — 157 + 20 verdes |
+
+> [!WARNING]
+> Para o histórico continuar visível na `main`, o PR desta entrega precisa ser mesclado com **"Create a merge
+> commit"**. *Squash and merge* junta todos os commits da branch em um só e apaga o red → green.
+
+<h4 align="left" id="cdt-risco">⚠️ Quais regras ganharam teste primeiro, e por quê</h4>
+
+| Ordem | Regra | Se der errado... | Por isso |
+| :---: | :--- | :--- | :--- |
+| 1️⃣ | Compatibilidade ABO/Rh (T4.1, T4.2) | Reação hemolítica: o paciente pode morrer | Maior risco do sistema. E havia um gap: o README prometia "FEFO + compatibilidade ABO/Rh", mas o código só aceitava bolsa do **mesmo** tipo |
+| 2️⃣ | Bolsa apta, vencida só se descarta (T4.3, T8.2) | Bolsa vencida ou com a cadeia fria rompida chega ao paciente | Segundo risco clínico, e é o filtro que a sugestão usa |
+| 3️⃣ | Baixa e transições de status (T8.1, T8.3) | Bolsa usada duas vezes, descartada que volta ao estoque: o estoque mente | Erro de dado que se espalha; precisa de teste com o banco (integração) |
+| 4️⃣ | Ordem FEFO + mesmo tipo (T4.4) | Bolsa perdida por vencimento; O− gasto com quem podia receber outro tipo | Desperdício de um recurso escasso, não risco direto à vida |
+| 5️⃣ | Alertas do painel (T2.x) | O problema existe, mas ninguém vê a tempo | Aviso, não bloqueio: as regras acima já impedem o uso indevido |
+
+<h4 align="left">🚧 O que ficou sem teste (e por quê)</h4>
+
+| Ponto | Situação |
+| :--- | :--- |
+| 🖥️ Frontend (React) | Sem testes automatizados: a esteira só garante que compila (`tsc` + `vite build`). O `npm run lint` tem 18 erros herdados e por isso ainda não é gate. |
+| 🔐 HU‑01 (login) e rotas da HU‑07 no frontend | Fora da Release 1; o login ainda é só de nome (HU‑F01). |
+| 🩸 Plaquetas | Seguem a regra das hemácias por decisão conservadora do grupo; **falta validar com um hemoterapeuta**. |
+| 🗄️ Alocação gravada no banco | A FK `fk_alocacao_bolsa_compativel` ainda exige bolsa do **mesmo** tipo da requisição. Quando a alocação for gravada (Release 2), uma migration nova precisa aceitar os tipos compatíveis. |
+| 🔁 `reservar()` / `descartar()` antigos | Não validam a transição (o fluxo de demonstração `TesteFluxo` ainda usa). O caminho oficial da API é `alterarStatus`. |
+| 🌐 Produção | O smoke test confere versão, saúde e o proxy frontend → API → banco, mas não executa fluxos de negócio no Supabase de produção (não gravamos dados de teste lá). |
+
+<h3 align="center" id="cdt-pipeline">⚙️ Pipeline e deploy — E3 · Deploy automatizado <br>
+<img src="https://img.shields.io/badge/-GitHub_Flow_·_main_protegida-111827?style=flat&logo=git&logoColor=F05032" height="20"/>
+<img src="https://img.shields.io/badge/-GHCR_→_Render-111827?style=flat&logo=render&logoColor=46E3B7" height="20"/>
+</h3>
+
+```mermaid
+flowchart LR
+    PUSH["📤 push em qualquer branch<br/>ou PR para a main"] --> BE["☕ Backend · testes<br/>mvn verify<br/>unitário · integração · aceitação"]
+    PUSH --> FE["🖥️ Frontend · build<br/>npm ci · tsc · vite build"]
+    BE --> IMG["🐳 Imagens Docker<br/>os 2 Dockerfiles do E1<br/>(o do backend roda os testes de novo)"]
+    FE --> IMG
+    IMG -->|"só push na main<br/>(merge de PR)"| GHCR[("📦 GHCR<br/>:sha e :latest")]
+    GHCR --> DEP["🚀 Deploy · Render<br/>deploy hook + imgURL<br/>smoke test"]
+    DEP --> PROD(("🌐 Produção"))
+    RB["↩️ Run workflow<br/>sha anterior"] --> ROLL["Rollback · Render"] --> PROD
+```
+
+| Job | Roda quando | O que faz | Barra o quê |
+| :--- | :--- | :--- | :--- |
+| ☕ **Backend · testes** | todo push e PR | `mvn verify`: 157 unitários, 7 de integração e 13 cenários Gherkin contra um Postgres do Testcontainers; publica o resumo por nível e os relatórios como artefato | Qualquer teste vermelho para a esteira aqui |
+| 🖥️ **Frontend · build** | todo push e PR | `npm ci` + `npm run build` (checagem de tipos do TypeScript) | Erro de tipo ou de build |
+| 🐳 **Imagens Docker** | depois dos dois acima | Builda os dois Dockerfiles; **só na `main`** publica no GHCR com a tag do sha do commit | Dockerfile quebrado; sem os testes verdes, nem roda |
+| 🚀 **Deploy · Render** | só push na `main`, depois das imagens | Chama os deploy hooks do Render com a imagem do commit e faz o **smoke test**: espera `/actuator/info` com o sha novo, `/actuator/health` `UP` e o frontend chegando na API pelo proxy | Se a versão nova não responder em 15 min, o job fica vermelho |
+| ↩️ **Rollback · Render** | manual (*Run workflow*) | Reimplanta as imagens de um sha anterior, sem recompilar | — |
+
+<h4 align="left">🌿 Fluxo de branch — GitHub Flow</h4>
+
+<p align="center">
+<code>main</code> sempre publicável e protegida → uma branch por tarefa (<code>feature/...</code>, <code>fix/...</code>,
+<code>docs/...</code>) → PR com a esteira verde → merge → deploy automático. É o fluxo que o grupo já usava (PRs #17 a
+#22 vieram de branches); agora a esteira e a proteção da <code>main</code> passam a garantir isso.
+</p>
+
+| Regra na `main` (Settings → Branches → *Add branch ruleset*) | Para quê |
+| :--- | :--- |
+| Exigir pull request antes do merge | Ninguém publica direto na `main` |
+| Exigir os checks **Backend · testes**, **Frontend · build** e **Imagens Docker** | Teste vermelho barra o merge e, portanto, o deploy |
+| Exigir a branch atualizada com a `main` | O que foi testado é o que vai ser mesclado |
+| Bloquear *force push* e exclusão | O histórico (e o red → green) não se perde |
+
+<h4 align="left">🔐 Onde ficam os segredos</h4>
+
+| Segredo / configuração | Onde fica | Quem lê |
+| :--- | :--- | :--- |
+| Senha do Postgres local (`DB_PASSWORD`) | `.env` na máquina de cada um (no `.gitignore`; modelo em [`.env.example`](./.env.example)) | `docker compose` |
+| Senha do Supabase (`SUPABASE_DB_PASSWORD`) | Variáveis secretas do serviço `rotavital-api` no **Render** | Só a API em produção |
+| `RENDER_DEPLOY_HOOK_API`, `RENDER_DEPLOY_HOOK_WEB` | **GitHub → Settings → Environments → `producao` → Secrets** | Só os jobs de deploy e rollback |
+| `API_URL`, `WEB_URL` (não são segredo) | GitHub → Environments → `producao` → Variables | Smoke test |
+| Login no GHCR | `GITHUB_TOKEN` automático do Actions | Job de imagens |
+
+<h4 align="left" id="cdt-configuracao">🛠️ Configuração única e coleta das evidências (quem tem acesso às contas)</h4>
+
+<p align="center">
+O commit <a href="https://github.com/viictorpaes/Rotavital/commit/67d4c55"><code>67d4c55</code></a> é o teste da
+compatibilidade ABO/Rh <b>antes</b> do código, e a esteira já existe nele: dá para mostrar a esteira barrando um teste
+vermelho de verdade. A ordem importa, porque a proteção da <code>main</code> só lista os checks depois que eles rodam uma vez.
+</p>
+
+```bash
+# 1. Sobe a branch só até o commit vermelho e abre o PR para a main
+git push origin 67d4c55:refs/heads/feature/container-tdd-deploy
+```
+
+2. Com o PR aberto e o **Backend · testes** vermelho, proteja a `main` com as regras da [tabela acima](#cdt-pipeline).
+   O PR passa a mostrar o merge bloqueado → 📸 **print 🔴**.
+3. Suba o resto da branch: `git push origin feature/container-tdd-deploy`. A esteira roda de novo, tudo verde, merge liberado.
+4. Faça o merge com **"Create a merge commit"**. Na `main`, a esteira publica `ghcr.io/viictorpaes/rotavital-backend` e
+   `rotavital-frontend` no GHCR. O job de deploy falha avisando que faltam os segredos (esperado, só desta vez).
+5. **GHCR:** em *Packages*, deixe os dois pacotes como **Public** (ou cadastre uma *Registry Credential* no Render).
+6. **Render:** *New → Blueprint →* este repositório. O [`render.yaml`](./render.yaml) cria `rotavital-api` e `rotavital-web`
+   (plano gratuito, Ohio) e pede a `SUPABASE_DB_PASSWORD`. Se o Render der outro domínio à API, ajuste a variável
+   `API_UPSTREAM` do `rotavital-web`.
+7. **Deploy hooks:** em cada serviço, *Settings → Deploy Hook*. Cadastre os dois no environment `producao` do GitHub
+   (`RENDER_DEPLOY_HOOK_API`, `RENDER_DEPLOY_HOOK_WEB`), junto com as variáveis `API_URL` e `WEB_URL`.
+8. Em *Actions*, abra a execução do passo 4 e clique em *Re-run failed jobs*: o deploy publica, o smoke test passa →
+   📸 **print 🟢** + **URL pública**.
+9. **Rollback:** depois do próximo merge (por exemplo, o PR que preenche a tabela abaixo), rode *Run workflow* com o sha do
+   merge anterior → 📸 **print ↩️**.
+
+Salve os prints em `docs/evidencias/container-tdd-deploy/` e troque os ⏳ abaixo pelos links das execuções
+(*Actions → execução → copiar a URL*).
+
+<h4 align="left" id="cdt-evidencias-e3">📸 Evidências do E3</h4>
+
+| Evidência | Link / print |
+| :--- | :--- |
+| 🔴 Execução **vermelha** que barrou o merge (e, portanto, o deploy) — passo 2 | ⏳ *a preencher* |
+| 🟢 Execução **verde** que publicou na `main` — passo 8 | ⏳ *a preencher* |
+| 🌐 **URL pública** do sistema | ⏳ `https://rotavital-web.onrender.com` *(confirmar o domínio que o Render gerar)* |
+| ↩️ **Rollback** executado — passo 9 | ⏳ *a preencher* |
+
+<h4 align="left">↩️ Como voltar à versão anterior (rollback)</h4>
+
+| Jeito | Como | Quando usar |
+| :--- | :--- | :--- |
+| ⭐ **Pela esteira** | *Actions → Esteira CI/CD → Run workflow*, informando o **sha completo** da versão boa (`git log --format=%H`). O job reimplanta as imagens `:sha` que já estão no GHCR e roda o smoke test | Padrão: em poucos minutos, sem recompilar, e fica registrado no GitHub |
+| 🖱️ Pelo Render | *Events* do serviço → deploy anterior → **Rollback** | Se o próprio GitHub estiver fora |
+| 🔁 Pelo Git | `git revert <sha-ruim>` numa branch → PR → merge: a esteira testa e publica a correção | Depois de qualquer rollback, para a `main` não continuar com o código ruim |
+
+<h3 align="center" id="cdt-decisoes">🧭 Decisões</h3>
+
+| Decisão | Escolha | Alternativas | Por quê |
+| :--- | :--- | :--- | :--- |
+| 🐳 Imagem base do backend | `eclipse-temurin:21-jre-alpine` | `eclipse-temurin:21-jdk`, `openjdk`, distroless | Só o JRE (sem compilador, Maven nem código-fonte) em Alpine: menos pacotes e menos vulnerabilidades. Temurin é a distribuição mantida; a imagem `openjdk` foi descontinuada. |
+| 🏗️ Por que multi-stage | 1º estágio `maven:3.9.9-eclipse-temurin-21-alpine` compila e **roda os testes**; 2º leva só o `.jar` | 1 estágio; build fora do Docker | "Compila e passa nos testes" vale igual em qualquer máquina, e a produção não carrega Maven nem JDK. As dependências viram uma camada em cache (`dependency:go-offline`). |
+| 🖥️ Imagens do frontend | `node:24-alpine` (build) + `nginxinc/nginx-unprivileged:1.30-alpine` | `node:20`, `nginx:alpine` (root) | O Node 20 saiu de suporte em abril/2026; o Nginx roda sem root (porta 8080) e a imagem final fica com 91 MB. |
+| 👤 Usuário dos containers | `rotavital` (backend) e `101` (Nginx) | root (padrão) | Se a aplicação for comprometida, o processo não é root dentro do container. |
+| 🐘 Banco no Compose | Postgres 17 próprio ([`db/`](./db/)) com as migrations do Supabase | Compose apontando para o Supabase (como antes); H2 | Sobe sem internet e sem a senha de ninguém; mesma versão maior do Supabase; o schema segue com uma fonte só (`supabase/migrations`). |
+| 💾 Dados | Volume nomeado `dados-postgres` | Bind mount `./data`; sem volume | Os dados sobrevivem ao `docker compose down` (testado acima) e não sujam o repositório; `down -v` zera tudo. |
+| 🔌 Como os serviços se encontram | Rede padrão do Compose, pelo nome do serviço (`db`, `backend`) | IPs fixos; `network_mode: host` | O DNS interno do Compose resolve os nomes; o banco nem publica porta para fora. |
+| ⏱️ Ordem de subida | `healthcheck` + `depends_on: condition: service_healthy` | `depends_on` simples; `sleep` | O backend só sobe com o Postgres aceitando conexões, e o frontend só com o `/actuator/health` em `UP` (que já testa o banco). |
+| 🔑 Configuração | `.env` + `.env.example`; `SPRING_DATASOURCE_*` no Compose; `server.port=${PORT:8080}` | Senha no `application.properties` ou no Compose | Nenhum segredo no repositório; o Compose se recusa a subir sem `DB_PASSWORD`; a mesma imagem roda no Compose e no Render. |
+| 🧪 Testes primeiro | ABO/Rh → bolsa apta/vencida → baixa → FEFO → alertas | Começar pelo mais fácil | Ordem de risco ao paciente ([tabela](#cdt-risco)). Ex.: "compatibilidade ABO/Rh primeiro: um erro ali põe um paciente em risco". |
+| 📶 Níveis na esteira | Unitários no `package` (Dockerfile); integração e aceitação no `verify` (esteira) | Tudo no `package` | Dentro do `docker build` não há Docker para o Testcontainers; na esteira há, e ela roda todos os níveis. |
+| 🗄️ Banco nos testes | Testcontainers: Postgres 17 + as mesmas migrations | H2 em memória; `services:` do Actions | Mesmo SQL de produção (CHECKs, gatilhos, views), e roda igual na máquina e na esteira. Os dados de teste respeitam até o prazo máximo por componente. |
+| 🥒 Aceitação | Cucumber + Gherkin em português | JUnit com nomes "dado/quando/então" | Os cenários BDD do README (Entrega 01) já eram Dado/Quando/Então: agora rodam de verdade, e o médico consegue lê-los. |
+| 🕐 "Hoje" das regras | `Clock` injetado no fuso `America/Recife` | `LocalDate.now()` direto | O teste fixa o dia ("Dado que hoje é 01/10/2026"); no Render (UTC), depois das 21h de Recife já seria o dia seguinte. |
+| ⚙️ CI/CD | GitHub Actions | GitLab CI, Jenkins | O código já está no GitHub; GHCR e environments com segredos sem serviço extra. |
+| 🌿 Fluxo de branch | GitHub Flow | Git Flow, GitLab Flow | Grupo pequeno, uma versão no ar e deploy a cada merge. Git Flow (develop/release) seria cerimônia sem release agendada; GitLab Flow (branches por ambiente) é para mais de um ambiente. |
+| 📦 Registro de imagens | GHCR, tag = sha do commit (+ `latest`) | Docker Hub | Autentica com o `GITHUB_TOKEN`; a tag por sha permite rollback exato para qualquer versão. |
+| ☁️ Provedor de deploy | Render: 2 web services por imagem, plano gratuito, região Ohio, [Blueprint](./render.yaml) | Railway, Fly.io | Deploy por imagem com deploy hook; o Blueprint deixa a infraestrutura como código; Ohio fica na mesma região do Supabase. |
+| 🟢 Banco em produção | Supabase (já existente) | Postgres do Render | Já tem os dados, as migrations aplicadas e o RLS; o Postgres gratuito do Render expira. |
+| 🔐 Segredos | Deploy hooks no environment `producao` do GitHub; senha do Supabase só no Render; `.env` no `.gitignore` | Segredos no repositório ou em variáveis do workflow | Cada segredo fica só onde é usado, e o environment limita quem lê. |
+| ✅ Fim do deploy | Smoke test: sha em `/actuator/info` + health `UP` + frontend → API | Considerar pronto ao disparar o hook | O job só fica verde quando a versão nova responde de verdade. |
+| ↩️ Rollback | *Run workflow* com o sha anterior (reimplanta a imagem do GHCR) | Só `git revert` + rebuild; só o botão do Render | Volta em minutos sem recompilar e fica registrado; o `git revert` corrige a `main` depois. |
+
+<h3 align="center" id="cdt-ia">🤖 Uso de IA</h3>
+
+<p align="center">
+Uso permitido pelo enunciado e declarado aqui: <b>a IA rascunha; o grupo valida e assina.</b>
+</p>
+
+| Item | Detalhe |
+| :--- | :--- |
+| 🛠️ Ferramenta | **Claude Code** (modelo Claude Opus 5.5, da Anthropic), na extensão do VS Code, em 14/10/2026, numa sessão aberta por Lucas Paguetti Pereira |
+| ✍️ O que a IA rascunhou | Dockerfiles, `compose.yaml`, `db/`, `.env.example`; a esteira (`esteira.yml`, `deploy_render.sh`, `resumo_testes.py`) e o `render.yaml`; o story map e a quebra em tarefas; os testes e o código das HU‑04, HU‑02 e HU‑08 em pares `test:` → `feat:`; esta seção do README |
+| 🔎 Como foi verificado | Cada commit `test:` rodou e **falhou** antes do `feat:` (contagens na tabela red → green); `mvn verify` completo com o Postgres do Testcontainers; `docker compose down -v` + `up -d --build` do zero; persistência no volume; a esteira passou no `actionlint`; o script de deploy foi testado contra um servidor que simula o Render |
+| ⚠️ O que a IA errou e foi corrigido | Script do banco executado direto de um bind mount (o Docker Desktop do macOS bloqueia → virou `db/Dockerfile`); `${var,,}` no script de deploy, que não existe no bash do macOS (→ `tr`); rollback aceitando sha curto, que não casa com a tag da imagem (→ sha completo obrigatório) |
+| 👥 O que fica com o grupo | Configurar Render, GHCR e a proteção da `main`; colher os prints da esteira; conferir as regras clínicas (principalmente a das plaquetas) e apresentar |
+
+<details>
+<summary>▶️ <b>Prompts principais</b></summary>
+
+1. *"com base em: Desafio do PI - Container TDD e Deploy automatizados - 2026.2.pdf e neste: Em grupos (os mesmos do PI).
+   Três entregas no projeto do PI, cada decisão justificada no README: E1 · Container automatizado [...] E2 · TDD [...]
+   E3 · Deploy automatizado [...] Entreguem: link do repositório, URL pública, README (Integrantes · Como rodar · Testes ·
+   Pipeline e deploy · Decisões · Uso de IA) e evidências do pipeline (uma execução vermelha e uma verde). [...] Se usarem
+   TDD, expliquem como foi a jornada de desenvolvimento e as lições aprendidas; use o final da sessão do README principal
+   p fzr essa atividade, do jeito q o README está"*
+2. *"USE O README"*, confirmado depois como: *"tudo no README, depois da última seção"*.
+3. Quando o `pom.xml` voltou ao estado anterior no meio do trabalho, a IA perguntou antes de reaplicar as dependências
+   de teste; resposta: *"Não, pode reaplicar"*.
+</details>
+
+> ✍️ **Revisado por:** *(cada integrante que revisou uma parte coloca o nome aqui antes da entrega)*
+
+<h3 align="center" id="cdt-jornada">🧭 Jornada TDD e lições aprendidas</h3>
+
+<p align="center">
+Roteiro para a apresentação: a ordem em que as coisas aconteceram e o que cada etapa ensinou.
+</p>
+
+| # | O que aconteceu | Lição |
+| :---: | :--- | :--- |
+| 1 | Montamos o story map e marcamos, em cada atividade, a regra que mais machuca se errar. A primeira foi a compatibilidade ABO/Rh. | Story map não é só backlog: ele mostrou **onde** testar primeiro. |
+| 2 | Ao escrever o teste da tabela 8 × 8 de hemácias, vimos que o código só aceitava bolsa do **mesmo** tipo, embora o README prometesse "FEFO + ABO/Rh". O teste primeiro expôs um gap que a documentação escondia. | O teste vira a especificação executável; documento sozinho não garante nada. |
+| 3 | O primeiro código verde (T4.1) tratava todo componente como hemácias. Só o teste do plasma (T4.2) obrigou a separar a regra por componente. | Triangulação: o design nasceu dos testes, não de um diagrama feito antes. |
+| 4 | "Bolsa que vence hoje ainda pode ser usada?" virou um teste com nome próprio (`bolsaQueVenceHojeAindaEstaApta`). | As fronteiras são onde moram os bugs: decidir e registrar no teste. |
+| 5 | Regras de validade dependem do dia: trocamos `LocalDate.now()` por um `Clock` injetado e escrevemos "Dado que hoje é 01/10/2026". | Teste que depende do relógio real passa hoje e quebra semana que vem. |
+| 6 | Os testes de integração e aceitação rodam contra um Postgres de verdade, criado com as migrations do Supabase: os dados de teste tiveram de respeitar as constraints reais (ex.: plaquetas valem no máximo 7 dias) e deu para testar o gatilho `atualizado_em`. | Mock não pega o que o banco garante; a pirâmide precisa de uma camada com o banco real. |
+| 7 | Cada `test:` foi commitado **vermelho**, e o código só tinha a assinatura. Em todos os 9 pares vimos o teste falhar pelo motivo certo antes de passar. | Se você nunca viu o teste falhar, não sabe se ele testa alguma coisa. |
+| 8 | No container, o Docker Desktop do macOS não deixou executar o script do banco montado da máquina, e o Docker parou no meio de uma execução dos testes. | "Funciona na minha máquina" é exatamente o que o E1 combate: o que sobe na esteira tem que subir em qualquer PC. |
+| 9 | A IA acelerou o rascunho, mas errou detalhes que só apareceram rodando (o script no bind mount, o `${var,,}` que o bash do macOS não tem). | A IA rascunha, o grupo roda, confere e assina. |
+
+> **Resumo para os slides:** 3 histórias → 13 tarefas → 9 pares 🔴 → 🟢 → 157 unitários + 7 de integração + 13 cenários
+> Gherkin, todos na esteira, que só publica no Render com tudo verde.
