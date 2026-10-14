@@ -12,7 +12,12 @@ public final class CompatibilidadeSanguinea
 
     public static boolean podeTransfundir(TipoComponente componente, TipoSanguineo doador, TipoSanguineo receptor)
     {
-        // TDD: só a assinatura, para o teste compilar e falhar. A regra entra no próximo commit.
-        return false;
+        // O receptor tem anticorpos contra os antígenos ABO que não tem, e quem é Rh- pode criar
+        // anticorpos contra o Rh: as hemácias do doador não podem trazer nenhum desses antígenos.
+        boolean aboCompativel = (!doador.temAntigenoA() || receptor.temAntigenoA())
+                && (!doador.temAntigenoB() || receptor.temAntigenoB());
+        boolean rhCompativel = !doador.isRhPositivo() || receptor.isRhPositivo();
+
+        return aboCompativel && rhCompativel;
     }
 }
