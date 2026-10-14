@@ -1,5 +1,6 @@
 package com.rotavital.dominio;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -119,7 +120,17 @@ public class BolsaHemocomponente
      */
     public void alterarStatus(StatusBolsa novoStatus, LocalDate hoje)
     {
-        // TDD: só a assinatura, para o teste compilar e falhar. A regra entra no próximo commit.
+        if (!status.podePassarPara(novoStatus))
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " está " + status
+                    + " e não pode passar para " + novoStatus + ".");
+        }
+        if (novoStatus != StatusBolsa.DESCARTADA && estaVencida(hoje))
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " venceu em "
+                    + DateTimeFormatter.ofPattern("dd/MM/yyyy").format(dataValidade) + " e só pode ser descartada.");
+        }
+
         this.status = novoStatus;
     }
 
