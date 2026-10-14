@@ -1,0 +1,85 @@
+# ===================================================================
+# Rota Vital — sobe o sistema inteiro do zero, com um comando:
+#
+#   cp .env.example .env          # uma vez, e troque a senha
+#   docker compose up -d --build
+#
+# db (Postgres 17) → backend (Spring Boot) → frontend (Nginx com o build do React).
+# Cada serviço só sobe depois que o anterior passa no healthcheck.
+# Os serviços se encontram pelo nome (db, backend) na rede padrão que o Compose cria.
+# ===================================================================
+name: rotavital
+
+services:
+  db:
+    # postgres:17-alpine + o script que aplica as migrations na primeira subida (db/Dockerfile)
+    build:
+      context: ./db
+    image: rotavital-db:local
+    environment:
+      POSTGRES_DB: ${DB_NAME:-rotavital}
+      POSTGRES_USER: ${DB_USER:-rotavital}
+      # Sem valor padrão de propósito: a senha vem do .env (fora do Git), nunca do repositório.
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no arquivo .env (copie de .env.example)}
+      TZ: America/Recife
+    volumes:
+      # Volume nomeado: os dados sobrevivem ao "docker compose down" (só somem com "down -v").
+      - dados-postgres:/var/lib/postgresql/data
+      # Na primeira subida (volume vazio), db/00_rotavital.sh aplica estas migrations e o seed.
+      - ./supabase/migrations:/rotavital/migrations:ro
+      - ./supabase/seed.sql:/rotavital/seed.sql:ro
+    # Sem "ports": o banco só é alcançável pela rede interna do Compose (pelo backend).
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    image: rotavital-backend:local
+    environment:
+      # Sobrescreve a conexão do application.properties (Supabase) pelo Postgres do Compose:
+      # "db" é o nome do serviço acima, resolvido pelo DNS da rede do Compose.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME:-rotavital}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-rotavital}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_SHOW_SQL: "false"
+      TZ: America/Recife
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # O /actuator/health também consulta o banco: só fica UP com a API e o Postgres respondendo.
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 40s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    image: rotavital-frontend:local
+    environment:
+      # O Nginx repassa /api/ para cá (frontend/nginx/default.conf.template).
+      API_UPSTREAM: http://backend:8080
+    ports:
+      - "${WEB_PORT:-80}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ > /dev/null"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    restart: unless-stopped
+
+volumes:
+  dados-postgres:

@@ -74,15 +74,16 @@ public class RotaVitalApplication
             try (Connection conn = dataSource.getConnection())
             {
                 System.out.println("=================================================");
-                System.out.println("✅ CONECTADO AO SUPABASE COM SUCESSO!");
+                System.out.println("✅ CONECTADO AO BANCO DE DADOS COM SUCESSO!");
                 System.out.println("Catálogo: " + conn.getCatalog());
                 System.out.println("Schema:   " + conn.getSchema());
+                System.out.println("URL:      " + conn.getMetaData().getURL());
                 System.out.println("=================================================");
             }
             catch (Exception e)
             {
                 System.err.println("=================================================");
-                System.err.println("❌ FALHA AO CONECTAR COM SUPABASE: " + e.getMessage());
+                System.err.println("❌ FALHA AO CONECTAR COM O BANCO DE DADOS: " + e.getMessage());
                 System.err.println("=================================================");
             }
         };

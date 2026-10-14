@@ -1,0 +1,35 @@
+server
+{
+    # PORT: 8080 no Compose; no Render, a porta que a plataforma define.
+    listen ${PORT};
+    server_name _;
+
+    location /
+    {
+        root /usr/share/nginx/html;
+        index index.html index.htm;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Encaminha chamadas /api/ para o backend preservando o prefixo
+    # (o backend expõe tudo em /api/v1/..., então o caminho vai intacto).
+    # API_UPSTREAM: http://backend:8080 no Compose; a URL https da API no Render.
+    location /api/
+    {
+        proxy_pass ${API_UPSTREAM};
+        # Host do próprio backend (não o do frontend): o Render roteia pelo Host.
+        proxy_set_header Host $proxy_host;
+        proxy_ssl_server_name on;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # O plano gratuito do Render "dorme" a API: a primeira chamada pode levar ~1 min.
+        proxy_read_timeout 90s;
+    }
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html
+    {
+        root /usr/share/nginx/html;
+    }
+}

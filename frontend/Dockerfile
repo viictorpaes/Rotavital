@@ -1,25 +1,27 @@
-# 1. Estagio de build (Node.js 20)
-FROM node:20-alpine AS build
+# 1. Estágio de build (Node.js 24 LTS — o Node 20 saiu de suporte em abril/2026)
+FROM node:24-alpine AS build
 WORKDIR /app
 
-# Copia dependencias e instala
+# npm ci instala exatamente o que está no package-lock.json (build reproduzível)
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
-# Copia o codigo e compila
+# tsc -b (checagem de tipos) + vite build: erro de tipo derruba o build da imagem
 COPY . .
 RUN npm run build
 
-# 2. Estagio de producao com Nginx
-FROM nginx:alpine
+# 2. Estágio de produção: só o Nginx e os arquivos estáticos do build.
+# Variante "unprivileged": o Nginx roda sem root, por isso escuta na 8080 (portas < 1024 exigem root).
+FROM nginxinc/nginx-unprivileged:1.30-alpine
 
-# Copia os arquivos compilados do React/Vite
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copia a configuracao do Nginx com suporte a rotas do React Router
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# A imagem oficial do Nginx troca ${PORT} e ${API_UPSTREAM} do template ao subir o container:
+# no Compose a API é http://backend:8080; no Render, a URL pública do serviço da API.
+COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+ENV PORT=8080 \
+    API_UPSTREAM=http://backend:8080
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]
-

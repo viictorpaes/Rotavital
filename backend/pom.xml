@@ -33,6 +33,12 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- /actuator/health (healthcheck do Compose e do Render) e /actuator/info (versão publicada) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- Driver JDBC do PostgreSQL -->
         <dependency>
             <groupId>org.postgresql</groupId>
