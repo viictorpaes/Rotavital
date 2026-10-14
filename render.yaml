@@ -1,0 +1,41 @@
+# ===================================================================
+# Rota Vital — Blueprint do Render (infraestrutura como código).
+#
+# Render → New → Blueprint → este repositório: cria os dois serviços abaixo,
+# a partir das imagens que a esteira publica no GHCR. Os valores com
+# "sync: false" (segredos) são pedidos na tela e ficam só no Render.
+#
+# O deploy de cada versão NÃO é automático pelo Render: quem dispara é a esteira
+# (.github/workflows/esteira.yml), pelo deploy hook, e só depois dos testes verdes.
+# ===================================================================
+services:
+  - type: web
+    name: rotavital-api
+    runtime: image
+    image:
+      url: ghcr.io/viictorpaes/rotavital-backend:latest
+    plan: free
+    # Ohio: mesma região do Supabase (aws us-east-2), menor latência até o banco.
+    region: ohio
+    healthCheckPath: /actuator/health
+    envVars:
+      # Senha do Supabase: digitada na criação do Blueprint, nunca vai para o Git.
+      - key: SUPABASE_DB_PASSWORD
+        sync: false
+      - key: SPRING_JPA_SHOW_SQL
+        value: "false"
+      - key: TZ
+        value: America/Recife
+
+  - type: web
+    name: rotavital-web
+    runtime: image
+    image:
+      url: ghcr.io/viictorpaes/rotavital-frontend:latest
+    plan: free
+    region: ohio
+    healthCheckPath: /
+    envVars:
+      # O Nginx do frontend repassa /api/ para a API pública (frontend/nginx/default.conf.template).
+      - key: API_UPSTREAM
+        value: https://rotavital-api.onrender.com

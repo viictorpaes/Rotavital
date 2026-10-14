@@ -10,6 +10,11 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
+# Versão (sha do commit) gravada pela esteira em /versao.json; o smoke test do deploy confere por ela.
+# Fica depois do build para trocar de versão não invalidar o cache do npm run build.
+ARG APP_VERSAO=local
+RUN printf '{"versao":"%s"}\n' "$APP_VERSAO" > dist/versao.json
+
 # 2. Estágio de produção: só o Nginx e os arquivos estáticos do build.
 # Variante "unprivileged": o Nginx roda sem root, por isso escuta na 8080 (portas < 1024 exigem root).
 FROM nginxinc/nginx-unprivileged:1.30-alpine

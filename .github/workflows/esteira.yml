@@ -1,0 +1,188 @@
+# ===================================================================
+# Rota Vital — esteira de CI/CD
+#
+#   testes (backend + frontend) → imagens Docker → deploy no Render → smoke test
+#
+# * Todo push e todo PR para a main rodam os testes e o build das imagens.
+# * Só um push na main (o merge de um PR) publica as imagens no GHCR e faz o deploy.
+# * Se qualquer job falhar, os seguintes não rodam: teste vermelho nunca chega à produção.
+# * Rollback: aba Actions → "Esteira CI/CD" → Run workflow → sha completo da versão anterior.
+# ===================================================================
+name: Esteira CI/CD
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      versao:
+        description: "Rollback: sha completo do commit (tag da imagem no GHCR) da versão a reimplantar"
+        required: true
+        type: string
+
+# Um push novo na mesma branch cancela a execução anterior, menos na main
+# (lá cada merge precisa terminar o próprio deploy, na ordem).
+concurrency:
+  group: esteira-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend · testes
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # verify = surefire (unitários) + failsafe (integração e aceitação, *IT).
+      # Os *IT sobem um Postgres 17 com Testcontainers e aplicam as migrations de supabase/migrations.
+      - name: Unitários, integração (Postgres) e aceitação (Cucumber)
+        working-directory: backend
+        run: mvn -B -ntp verify
+
+      - name: Resumo dos testes
+        if: always()
+        run: python3 .github/scripts/resumo_testes.py backend/target >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Relatórios de teste
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: relatorios-de-teste
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+            backend/target/cucumber/
+          if-no-files-found: ignore
+
+  frontend:
+    name: Frontend · build
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      # tsc -b (checagem de tipos) + vite build
+      - run: npm run build
+
+  imagens:
+    name: Imagens Docker
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      PUBLICAR: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Nomes das imagens no GHCR
+        run: |
+          dono="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "IMAGEM_API=ghcr.io/$dono/rotavital-backend" >> "$GITHUB_ENV"
+          echo "IMAGEM_WEB=ghcr.io/$dono/rotavital-frontend" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v4
+
+      # O GITHUB_TOKEN já tem permissão de escrever no GHCR do repositório: nenhum segredo extra.
+      - name: Login no GHCR
+        if: env.PUBLICAR == 'true'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Mesmo Dockerfile do docker compose: o 1º estágio roda os testes unitários de novo.
+      # Em PR e branch a imagem só é construída (prova que o Dockerfile funciona); na main é publicada.
+      - name: Backend
+        uses: docker/build-push-action@v7
+        with:
+          context: backend
+          build-args: APP_VERSAO=${{ github.sha }}
+          push: ${{ env.PUBLICAR == 'true' }}
+          tags: |
+            ${{ env.IMAGEM_API }}:${{ github.sha }}
+            ${{ env.IMAGEM_API }}:latest
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Frontend
+        uses: docker/build-push-action@v7
+        with:
+          context: frontend
+          build-args: APP_VERSAO=${{ github.sha }}
+          push: ${{ env.PUBLICAR == 'true' }}
+          tags: |
+            ${{ env.IMAGEM_WEB }}:${{ github.sha }}
+            ${{ env.IMAGEM_WEB }}:latest
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  deploy:
+    name: Deploy · Render
+    needs: imagens
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Os segredos do deploy ficam no environment "producao": só este job e o rollback os leem.
+    environment:
+      name: producao
+      url: ${{ vars.WEB_URL }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # Manda o Render trocar a imagem dos dois serviços pela deste commit e espera
+      # a API responder com essa versão e o banco UP (smoke test).
+      - name: Deploy da versão ${{ github.sha }}
+        env:
+          VERSAO: ${{ github.sha }}
+          RENDER_DEPLOY_HOOK_API: ${{ secrets.RENDER_DEPLOY_HOOK_API }}
+          RENDER_DEPLOY_HOOK_WEB: ${{ secrets.RENDER_DEPLOY_HOOK_WEB }}
+          API_URL: ${{ vars.API_URL }}
+          WEB_URL: ${{ vars.WEB_URL }}
+        run: .github/scripts/deploy_render.sh
+
+  rollback:
+    name: Rollback · Render
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: producao
+      url: ${{ vars.WEB_URL }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # A imagem de cada versão que já passou pela main continua no GHCR, marcada com o sha:
+      # voltar é só reimplantar essa tag, sem recompilar nada.
+      - name: Rollback para ${{ inputs.versao }}
+        env:
+          VERSAO: ${{ inputs.versao }}
+          RENDER_DEPLOY_HOOK_API: ${{ secrets.RENDER_DEPLOY_HOOK_API }}
+          RENDER_DEPLOY_HOOK_WEB: ${{ secrets.RENDER_DEPLOY_HOOK_WEB }}
+          API_URL: ${{ vars.API_URL }}
+          WEB_URL: ${{ vars.WEB_URL }}
+        run: .github/scripts/deploy_render.sh
