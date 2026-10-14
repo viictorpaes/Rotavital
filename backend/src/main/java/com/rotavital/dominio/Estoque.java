@@ -70,6 +70,15 @@ public class Estoque
         .collect(Collectors.toList());
     }
 
+    /**
+     * Alertas de validade e temperatura das bolsas que ainda estão no estoque (HU-02).
+     */
+    public List<AlertaDeEstoque> listarAlertas(LocalDate hoje)
+    {
+        // TDD: só a assinatura, para o teste compilar e falhar. A regra entra no próximo commit.
+        return List.of();
+    }
+
     public List<BolsaHemocomponente> listarVencidas(LocalDate dataReferencia)
     {
         return bolsas().stream()
