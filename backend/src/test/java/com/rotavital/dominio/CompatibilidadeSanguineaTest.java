@@ -8,8 +8,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 
-// HU-04 · T4.1 — Compatibilidade ABO/Rh. Cada linha é um receptor e os doadores que ele aceita:
+// HU-04 · T4.1 e T4.2 — Compatibilidade ABO/Rh. Cada linha é um receptor e os doadores que ele aceita:
 // a tabela inteira (8 × 8) está aqui, então qualquer combinação errada derruba o teste.
 public class CompatibilidadeSanguineaTest
 {
@@ -54,6 +55,43 @@ public class CompatibilidadeSanguineaTest
                         TipoComponente.HEMACIAS, doador, receptor), doador + " → " + receptor);
             }
         }
+    }
+
+    // HU-04 · T4.2 — Plasma leva os anticorpos do doador, não as hemácias: a regra se inverte
+    // (AB é o doador universal de plasma) e o Rh não importa.
+    @ParameterizedTest(name = "receptor {0} recebe plasma de {1}")
+    @CsvSource(delimiter = '|', textBlock = """
+            O_NEGATIVO  | O_NEGATIVO O_POSITIVO A_NEGATIVO A_POSITIVO B_NEGATIVO B_POSITIVO AB_NEGATIVO AB_POSITIVO
+            O_POSITIVO  | O_NEGATIVO O_POSITIVO A_NEGATIVO A_POSITIVO B_NEGATIVO B_POSITIVO AB_NEGATIVO AB_POSITIVO
+            A_NEGATIVO  | A_NEGATIVO A_POSITIVO AB_NEGATIVO AB_POSITIVO
+            A_POSITIVO  | A_NEGATIVO A_POSITIVO AB_NEGATIVO AB_POSITIVO
+            B_NEGATIVO  | B_NEGATIVO B_POSITIVO AB_NEGATIVO AB_POSITIVO
+            B_POSITIVO  | B_NEGATIVO B_POSITIVO AB_NEGATIVO AB_POSITIVO
+            AB_NEGATIVO | AB_NEGATIVO AB_POSITIVO
+            AB_POSITIVO | AB_NEGATIVO AB_POSITIVO
+            """)
+    public void plasma(TipoSanguineo receptor, String doadores)
+    {
+        Assertions.assertEquals(tipos(doadores), doadoresAceitos(TipoComponente.PLASMA, receptor));
+    }
+
+    // Crioprecipitado é feito do plasma: mesma regra.
+    @ParameterizedTest(name = "receptor {0}")
+    @EnumSource(TipoSanguineo.class)
+    public void crioprecipitadoSegueARegraDoPlasma(TipoSanguineo receptor)
+    {
+        Assertions.assertEquals(doadoresAceitos(TipoComponente.PLASMA, receptor),
+                doadoresAceitos(TipoComponente.CRIOPRECIPITADO, receptor));
+    }
+
+    // Decisão do grupo: plaquetas têm hemácias residuais (sensibilizam Rh-), então seguem a regra
+    // mais conservadora, a das hemácias. A ser revisada com um hemoterapeuta.
+    @ParameterizedTest(name = "receptor {0}")
+    @EnumSource(TipoSanguineo.class)
+    public void plaquetasSeguemARegraDasHemacias(TipoSanguineo receptor)
+    {
+        Assertions.assertEquals(doadoresAceitos(TipoComponente.HEMACIAS, receptor),
+                doadoresAceitos(TipoComponente.PLAQUETAS, receptor));
     }
 
     static Set<TipoSanguineo> doadoresAceitos(TipoComponente componente, TipoSanguineo receptor)
