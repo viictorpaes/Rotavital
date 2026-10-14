@@ -1460,7 +1460,7 @@ Dockerfiles do E1 e só publica se os testes do E2 passarem.
 | :--- | :--- | :--- | :---: |
 | 🐳 **E1 · Container automatizado** | Dockerfile multi-stage que roda os testes no 1º estágio; `compose.yaml` com Postgres 17 + backend + frontend, volume, healthcheck e `depends_on`; `.env.example` sem segredos | [`compose.yaml`](./compose.yaml), [`backend/Dockerfile`](./backend/Dockerfile), [`db/`](./db/), [`frontend/Dockerfile`](./frontend/Dockerfile) | <img src="https://img.shields.io/badge/Feito-22C55E?style=flat-square" height="18"/> |
 | 🧪 **E2 · TDD** | Story map com a Release 1; 3 histórias quebradas em 13 tarefas; 9 pares de commits `test:` 🔴 → `feat:` 🟢; testes unitário, integração (Postgres real) e aceitação (Gherkin) na esteira | [`backend/src/test`](./backend/src/test/), [`features/`](./backend/src/test/resources/features/) | <img src="https://img.shields.io/badge/Feito-22C55E?style=flat-square" height="18"/> |
-| 🚀 **E3 · Deploy automatizado** | GitHub Actions: testes → imagens no GHCR → deploy no Render → smoke test, só na `main` e só com tudo verde; rollback por versão | [`.github/workflows/esteira.yml`](./.github/workflows/esteira.yml), [`render.yaml`](./render.yaml) | <img src="https://img.shields.io/badge/Esteira_pronta_·_falta_ligar_o_Render-F59E0B?style=flat-square" height="18"/> |
+| 🚀 **E3 · Deploy automatizado** | GitHub Actions: testes → imagens no GHCR → deploy no Render → smoke test, só na `main` e só com tudo verde; rollback por versão. A esteira [já roda verde no GitHub](https://github.com/viictorpaes/Rotavital/actions/runs/38563433392) | [`.github/workflows/esteira.yml`](./.github/workflows/esteira.yml), [`render.yaml`](./render.yaml) | <img src="https://img.shields.io/badge/Esteira_verde_·_falta_ligar_o_Render-F59E0B?style=flat-square" height="18"/> |
 
 > [!IMPORTANT]
 > O que ainda depende do grupo (só quem tem acesso às contas consegue fazer): subir esta branch, proteger a
@@ -1809,17 +1809,18 @@ flowchart LR
 <p align="center">
 O commit <a href="https://github.com/viictorpaes/Rotavital/commit/67d4c55"><code>67d4c55</code></a> é o teste da
 compatibilidade ABO/Rh <b>antes</b> do código, e a esteira já existe nele: dá para mostrar a esteira barrando um teste
-vermelho de verdade. A ordem importa, porque a proteção da <code>main</code> só lista os checks depois que eles rodam uma vez.
+vermelho de verdade, num PR de demonstração. A ordem importa, porque a proteção da <code>main</code> só lista os checks
+depois que eles rodam uma vez (e eles já rodaram nesta branch).
 </p>
 
 ```bash
-# 1. Sobe a branch só até o commit vermelho e abre o PR para a main
-git push origin 67d4c55:refs/heads/feature/container-tdd-deploy
+# 1. Cria uma branch de demonstração no commit vermelho e abre um PR dela para a main
+git push origin 67d4c55:refs/heads/demo/esteira-vermelha
 ```
 
-2. Com o PR aberto e o **Backend · testes** vermelho, proteja a `main` com as regras da [tabela acima](#cdt-pipeline).
-   O PR passa a mostrar o merge bloqueado → 📸 **print 🔴**.
-3. Suba o resto da branch: `git push origin feature/container-tdd-deploy`. A esteira roda de novo, tudo verde, merge liberado.
+2. Proteja a `main` com as regras da [tabela acima](#cdt-pipeline). No PR de demonstração, o **Backend · testes** fica
+   vermelho e o merge, bloqueado → 📸 **print 🔴**. Depois, feche esse PR sem mesclar e apague a branch `demo/esteira-vermelha`.
+3. Abra o PR de `feature/container-tdd-deploy` para a `main`: a esteira roda verde e o merge é liberado.
 4. Faça o merge com **"Create a merge commit"**. Na `main`, a esteira publica `ghcr.io/viictorpaes/rotavital-backend` e
    `rotavital-frontend` no GHCR. O job de deploy falha avisando que faltam os segredos (esperado, só desta vez).
 5. **GHCR:** em *Packages*, deixe os dois pacotes como **Public** (ou cadastre uma *Registry Credential* no Render).
@@ -1840,6 +1841,7 @@ Salve os prints em `docs/evidencias/container-tdd-deploy/` e troque os ⏳ abaix
 
 | Evidência | Link / print |
 | :--- | :--- |
+| 🟢 Esteira verde nesta branch (testes + imagens; deploy pulado por não ser a `main`) | ✅ [execução 38563433392](https://github.com/viictorpaes/Rotavital/actions/runs/38563433392) — commit `f2d1e0f`, 14/10/2026: Backend · testes 55 s, Frontend · build, Imagens Docker |
 | 🔴 Execução **vermelha** que barrou o merge (e, portanto, o deploy) — passo 2 | ⏳ *a preencher* |
 | 🟢 Execução **verde** que publicou na `main` — passo 8 | ⏳ *a preencher* |
 | 🌐 **URL pública** do sistema | ⏳ `https://rotavital-web.onrender.com` *(confirmar o domínio que o Render gerar)* |
