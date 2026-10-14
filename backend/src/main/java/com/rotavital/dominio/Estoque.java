@@ -1,11 +1,19 @@
 package com.rotavital.dominio;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Estoque
 {
+    // "Vencendo em 7 dias" do card do painel (Figma, HU-02).
+    public static final int DIAS_PARA_ALERTA_DE_VENCIMENTO = 7;
+
+    private static final DateTimeFormatter DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     private final BancoDeSangue bancoDeSangue;
 
     public Estoque(BancoDeSangue bancoDeSangue)
@@ -75,8 +83,52 @@ public class Estoque
      */
     public List<AlertaDeEstoque> listarAlertas(LocalDate hoje)
     {
-        // TDD: só a assinatura, para o teste compilar e falhar. A regra entra no próximo commit.
-        return List.of();
+        List<AlertaDeEstoque> alertas = new ArrayList<>();
+
+        for (BolsaHemocomponente bolsa : bolsas())
+        {
+            // Só o que ainda está no estoque: bolsa descartada, em trânsito ou usada não é problema do painel.
+            if (bolsa.getStatus() != StatusBolsa.DISPONIVEL && bolsa.getStatus() != StatusBolsa.RESERVADA)
+            {
+                continue;
+            }
+
+            long diasParaVencer = ChronoUnit.DAYS.between(hoje, bolsa.getDataValidade());
+            if (diasParaVencer < 0)
+            {
+                alertas.add(alerta(bolsa, AlertaDeEstoque.Tipo.VENCIDA, AlertaDeEstoque.Nivel.CRITICO,
+                "Bolsa " + bolsa.getId() + " venceu em " + DATA.format(bolsa.getDataValidade())
+                + ": retirar do estoque e descartar."));
+            }
+            else if (diasParaVencer <= DIAS_PARA_ALERTA_DE_VENCIMENTO)
+            {
+                alertas.add(alerta(bolsa, AlertaDeEstoque.Tipo.VENCE_EM_BREVE, AlertaDeEstoque.Nivel.ATENCAO,
+                "Bolsa " + bolsa.getId() + (diasParaVencer == 0 ? " vence hoje."
+                : " vence em " + diasParaVencer + (diasParaVencer == 1 ? " dia" : " dias")
+                + " (" + DATA.format(bolsa.getDataValidade()) + ").")));
+            }
+
+            if (bolsa.estaForaDaFaixa())
+            {
+                TipoComponente componente = bolsa.getTipoComponente();
+                alertas.add(alerta(bolsa, AlertaDeEstoque.Tipo.FORA_DA_FAIXA, AlertaDeEstoque.Nivel.CRITICO,
+                "Bolsa " + bolsa.getId() + " está a " + bolsa.getTemperaturaCelsius() + " °C, fora da faixa de "
+                + componente.getTemperaturaMinima() + " a " + componente.getTemperaturaMaxima() + " °C."));
+            }
+        }
+
+        alertas.sort(Comparator.comparing(AlertaDeEstoque::nivel)
+        .thenComparing(AlertaDeEstoque::dataValidade)
+        .thenComparing(AlertaDeEstoque::bolsaId)
+        .thenComparing(AlertaDeEstoque::tipo));
+        return alertas;
+    }
+
+    private static AlertaDeEstoque alerta(BolsaHemocomponente bolsa, AlertaDeEstoque.Tipo tipo,
+    AlertaDeEstoque.Nivel nivel, String mensagem)
+    {
+        return new AlertaDeEstoque(bolsa.getId(), bolsa.getTipoComponente(), bolsa.getTipoSanguineo(),
+        bolsa.getDataValidade(), tipo, nivel, mensagem);
     }
 
     public List<BolsaHemocomponente> listarVencidas(LocalDate dataReferencia)
