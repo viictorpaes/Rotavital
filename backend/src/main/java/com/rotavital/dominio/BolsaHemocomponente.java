@@ -113,6 +113,16 @@ public class BolsaHemocomponente
         this.status = StatusBolsa.DESCARTADA;
     }
 
+    /**
+     * Movimenta a bolsa para um novo status (HU-08: reservar, enviar, receber, usar ou descartar).
+     * Transição não permitida lança MovimentacaoInvalidaException e mantém o status atual.
+     */
+    public void alterarStatus(StatusBolsa novoStatus, LocalDate hoje)
+    {
+        // TDD: só a assinatura, para o teste compilar e falhar. A regra entra no próximo commit.
+        this.status = novoStatus;
+    }
+
     public String getId()
     {
         return id;
