@@ -41,6 +41,17 @@ public class Estoque
         .collect(Collectors.toList());
     }
 
+    /**
+     * Lotes sugeridos para uma requisição (HU-04): só bolsas aptas e compatíveis com o paciente,
+     * no máximo a quantidade pedida.
+     */
+    public List<BolsaHemocomponente> sugerirLotes(TipoComponente tipoComponente, TipoSanguineo tipoSanguineoPaciente,
+    int quantidade, LocalDate hoje)
+    {
+        // TDD: só a assinatura, para o teste compilar e falhar. A regra entra no próximo commit.
+        return List.of();
+    }
+
     public List<BolsaHemocomponente> listarVencidas(LocalDate dataReferencia)
     {
         return bolsas().stream()
