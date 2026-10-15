@@ -2,10 +2,16 @@ export type TipoSanguineo = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "
 
 export type PapelUsuario = "medico" | "doador" | "admin";
 
+/** Quem entrou, como o POST /acessos devolveu (PI3-183). */
 export interface Usuario
 {
+  id: string;
   nome: string;
   papel: PapelUsuario;
+  /** Rota da tela inicial do perfil: /painel, /portal-doador ou /admin. */
+  telaInicial: string;
+  /** Token do Supabase Auth; a API ainda não o exige nos outros endpoints. */
+  accessToken: string;
 }
 
 export type Sexo = "Feminino" | "Masculino";

@@ -56,7 +56,7 @@ export class ErroHttp extends Error
 
 type InterceptorRequisicao = (config: RequestInit & { url: string }) => Promise<RequestInit & { url: string }> | (RequestInit & { url: string });
 type InterceptorResposta = (resposta: Response) => Promise<Response> | Response;
-type InterceptorErro = (erro: any) => Promise<any> | any;
+type InterceptorErro = (erro: any, config: ConfiguracaoRequisicao) => Promise<any> | any;
 
 class ClienteHttp
 {
@@ -137,7 +137,7 @@ class ClienteHttp
     });
 
     // 3. Interceptor de Erro: formata timeout e erros de conexão
-    this.interceptorsErro.push((erro) =>
+    this.interceptorsErro.push((erro, config) =>
     {
       if (erro.name === "AbortError")
       {
@@ -147,7 +147,7 @@ class ClienteHttp
           detalhe: `A requisição demorou mais de ${this.timeoutPadraoMs / 1000}s para responder. Verifique sua conexão com o servidor.`,
         });
 
-        if (notificadorGlobal)
+        if (!config.silencioso && notificadorGlobal)
         {
           notificadorGlobal("erro", erroTimeout.titulo, erroTimeout.detalhe);
         }
@@ -293,7 +293,7 @@ class ClienteHttp
       // Executa a cadeia de interceptors de erro
       for (const interceptor of this.interceptorsErro)
       {
-        await interceptor(erro);
+        await interceptor(erro, config);
       }
       throw erro;
     }

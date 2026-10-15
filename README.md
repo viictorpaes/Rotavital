@@ -195,7 +195,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Escolher meu tipo de acesso ("Médico — acesso hospitalar completo" ou "Doador — portal de doações") e informar meu nome |
 | **Para que** | Eu veja a tela adequada ao meu papel sem precisar de um cadastro completo |
 | **Tela do Figma** | Tela inicial "Cesar Life · Estoque Inteligente" — cartões `Médico`/`Doador`, campo `Nome`, botão `Entrar` |
-| **Nível de código** | `POST /api/v1/acessos` (`AcessoController`) devolve a tela inicial e o menu do papel escolhido — é só identificação, como no protótipo: sem senha nem sessão real |
+| **Nível de código** | Desde a PI3-183/184, a entrada é por **e-mail e senha**: `POST /api/v1/acessos` confere as credenciais no Supabase Auth e devolve o perfil (médico, doador ou admin) e a tela inicial. Os cards do protótipo saíram da tela; ver [`PERFIS_DE_ACESSO.md`](./docs/PERFIS_DE_ACESSO.md) |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -1063,37 +1063,42 @@ Admin vêm das <a href="./docs/evidencias/PI3-182_perfis_de_acesso.md">evidênci
 exemplo do frontend (ver a nota da <a href="#arquitetura">Arquitetura</a>).</sub>
 </p>
 
-<h4 align="left">🔐 HU‑01 — Login (seleção Médico / Doador)</h4>
+<h4 align="left">🔐 HU‑01 — Login (e-mail e senha)</h4>
 
 | Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Login_Medico.png" width="420"/> | <img src="./img/real-login_medico.png" width="420"/> |
-| <img src="./img/FIGMA_Login_Doador.png" width="420"/> | <img src="./img/real-login_doador.png" width="420"/> |
+| <img src="./img/FIGMA_Login_Medico.png" width="420"/> | <img src="./docs/evidencias/PI3-184/01_login_senha_errada.png" width="320"/> |
+
+<sub>O Figma escolhe o perfil por cards; o sistema real pede e-mail e senha e descobre o perfil pela API
+(PI3-183/184). O print mostra o aviso de senha errada (PI3-196); os cenários estão nas
+<a href="./docs/evidencias/PI3-184_PI3-196_login.md">evidências da PI3-184/196</a>.</sub>
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Login/PaginaLogin.tsx"><code>frontend/src/pages/Login/PaginaLogin.tsx</code></a></summary>
 
 ```tsx
-export default function PaginaLogin()
+async function handleEntrar(evento: FormEvent<HTMLFormElement>)
 {
-  const [papel, setPapel] = useState<PapelUsuario | null>(null);
-  const [nome, setNome] = useState("");
-  const { login } = useAutenticacao();
-  const navigate = useNavigate();
-
-  const podeEntrar = papel !== null && nome.trim().length > 0;
-
-  function handleEntrar()
+  evento.preventDefault();
+  if (!email.trim() || !senha)
   {
-    if (!podeEntrar || !papel) 
-    {
-      return;
-    }
-    
-    login(nome, papel);
-    navigate(papel === "medico" ? "/painel" : "/portal-doador", { replace: true });
+    setAviso(AVISO_CAMPOS_VAZIOS);
+    return;
   }
-  // ...
+
+  setEntrando(true);
+  try
+  {
+    const acesso = await autenticarUsuario(email.trim(), senha); // POST /api/v1/acessos
+    const logado = login(acesso);
+    navigate(logado.telaInicial, { replace: true });             // /painel, /portal-doador ou /admin
+  }
+  catch (erro)
+  {
+    setAviso(avisoDoErro(erro)); // 401: "E-mail ou senha incorretos." — o mesmo para senha errada e e-mail sem cadastro
+    setSenha("");
+    setEntrando(false);
+  }
 }
 ```
 </details>

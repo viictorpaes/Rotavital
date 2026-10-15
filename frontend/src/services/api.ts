@@ -18,11 +18,12 @@ import type {
 
 /**
  * Login com e-mail e senha (Supabase Auth, conferido no backend). Devolve o perfil e a tela inicial.
+ * Silencioso: a tela de login mostra o aviso no próprio formulário, sem o toast global.
  */
 export async function autenticarUsuario(email: string, senha: string): Promise<RespostaAcesso>
 {
   const payload: LoginPayloadDTO = { email, senha };
-  return clienteHttp.post<RespostaAcesso>("/acessos", payload);
+  return clienteHttp.post<RespostaAcesso>("/acessos", payload, { silencioso: true });
 }
 
 /**
