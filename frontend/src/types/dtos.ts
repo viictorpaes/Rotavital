@@ -175,18 +175,21 @@ export interface MonitoramentoEntregaDTO
 
 export interface RespostaAcesso
 {
+  id: string;
   nome: string;
   tipoAcesso: TipoAcessoBackend;
-  painelPrincipal?: string;
-  telaInicial?: string;
-  modulosDisponiveis?: string[];
-  menu?: string[];
+  /** Rota do frontend: /painel, /portal-doador ou /admin. */
+  telaInicial: string;
+  menu: string[];
+  /** Token do Supabase Auth; a API ainda não o exige nos outros endpoints. */
+  accessToken: string;
+  expiraEmSegundos: number;
 }
 
 export interface LoginPayloadDTO
 {
-  nome: string;
-  tipoAcesso: TipoAcessoBackend;
+  email: string;
+  senha: string;
 }
 
 // ======================================================================

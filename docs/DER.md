@@ -108,7 +108,7 @@ erDiagram
         uuid id PK
         uuid auth_user_id UK "auth.users · opcional"
         text nome
-        text papel UK "MEDICO | DOADOR"
+        text papel UK "MEDICO | DOADOR | ADMIN"
         text ponto_rede_id FK "instituição · opcional"
         text tipo_sanguineo "doador"
         timestamptz criado_em
@@ -279,14 +279,14 @@ Legenda: ✅ coluna existente · 🆕 coluna nova · 🔧 coluna existente com m
 
 Ida e volta são duas linhas, como em `RedeDistribuicao.adicionarConexao`.
 
-<h3 align="left">4.3 <code>usuario</code> 🆕 — médico e doador</h3>
+<h3 align="left">4.3 <code>usuario</code> 🆕 — médico, doador e admin</h3>
 
 | Coluna | Tipo | Nulo | Default | Regra |
 | :--- | :--- | :---: | :--- | :--- |
 | `id` | uuid PK | — | `gen_random_uuid()` | — |
 | `auth_user_id` | uuid | sim | — | único; FK → `auth.users (id)` `on delete set null` (HU-F01) |
 | `nome` | text | — | — | não vazio |
-| `papel` | text | — | — | `MEDICO` \| `DOADOR` |
+| `papel` | text | — | — | `MEDICO` \| `DOADOR` \| `ADMIN` (admin: migration 6, PI3-183) |
 | `ponto_rede_id` | text FK → `ponto_rede` | sim | — | instituição do médico |
 | `tipo_sanguineo` | text | sim | — | enum ABO/Rh; preenchido para doador |
 | `criado_em` | timestamptz | — | `now()` | — |
@@ -508,7 +508,7 @@ PK `(procedimento_id, bolsa_id)`.
 
 <h2 align="left" id="8-migrations">📜 8. Plano de migrations</h2>
 
-As cinco migrations estão aplicadas no Supabase. As duas primeiras **não foram alteradas**: as mudanças entraram em migrations
+As seis migrations estão aplicadas no Supabase. As duas primeiras **não foram alteradas**: as mudanças entraram em migrations
 novas, com timestamp posterior:
 
 | # | Arquivo | Conteúdo | |
@@ -518,6 +518,7 @@ novas, com timestamp posterior:
 | 3 | `20260925120000_ajustes_schema_existente.sql` | Colunas novas em `ponto_rede`, `bolsa_hemocomponente`, `requisicao_hospitalar` e `alocacao`; índice parcial da alocação; gatilho de alocação atualizado; status `UTILIZADA`; remoção das FKs simples redundantes com as compostas | ✅ aplicada |
 | 4 | `20260925120100_escopo_clinico.sql` | `usuario`, `paciente`, `remessa`, `campanha_doacao`, `agendamento_doacao`, `procedimento`, `procedimento_bolsa`, gatilhos novos e RLS | ✅ aplicada |
 | 5 | `20260925120200_views_painel.sql` | `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ✅ aplicada |
+| 6 | `20261015010623_papel_admin.sql` | `ADMIN` no `ck_usuario_papel` (PI3-183, decisão 3 de [`PERFIS_DE_ACESSO.md`](PERFIS_DE_ACESSO.md)) | ✅ aplicada |
 | — | `supabase/seed.sql` | Pontos e conexões de `RedeDistribuicaoEmMemoria` e bolsas de `BancosEmMemoria` (PI3-149). Pacientes e remessas dos mocks do frontend ainda não entraram | ✅ criado |
 
 > A migration 4 cria `remessa` e `paciente`, que são alvo das FKs novas de `bolsa_hemocomponente` e

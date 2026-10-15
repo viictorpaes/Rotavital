@@ -19,8 +19,11 @@ info:
       `404` recurso inexistente, `422` regra de negócio violada
     - Erros no formato RFC 7807 (`application/problem+json`)
 
-    **Autenticação:** nenhuma no MVP. `POST /acessos` só seleciona o perfil
-    (médico/doador), por isso nenhum endpoint devolve `401`/`403` hoje.
+    **Autenticação:** `POST /acessos` confere e-mail e senha no Supabase Auth
+    e devolve o perfil (MEDICO/DOADOR/ADMIN), a tela inicial e o token da
+    sessão (PI3-183). Os demais endpoints ainda não exigem o token e não
+    devolvem `403` por perfil: isso fica para a próxima sprint (decisão 6 de
+    `docs/PERFIS_DE_ACESSO.md`).
 
     **Implementados hoje:** `acessos`, `bancos/{bancoId}/estoque`,
     `bancos/{bancoId}/estoque/resumo`, `GET hemocomponentes/{id}`, `pontos`,
@@ -38,7 +41,7 @@ info:
 
 tags:
   - name: Acesso
-    description: Identificação do tipo de usuário (médico/doador) e tela inicial correspondente (HU-01).
+    description: Login com e-mail e senha (Supabase Auth) e tela inicial do perfil médico, doador ou admin (HU-01).
   - name: Estoque
     description: Consulta consolidada do estoque por banco de sangue.
   - name: Hemocomponentes
@@ -69,12 +72,14 @@ paths:
   /acessos:
     post:
       tags: [Acesso]
-      summary: Identifica o tipo de usuário e devolve a tela inicial (HU-01)
+      summary: Login com e-mail e senha; devolve o perfil e a tela inicial (HU-01)
       description: >
-        Recebe nome e tipo de acesso (MEDICO/DOADOR) e devolve a tela inicial
-        e o menu correspondentes. Não persiste nada e não valida credenciais -
-        é seleção de perfil, não autenticação. Por não criar recurso, responde
-        200 (e não 201).
+        Confere e-mail e senha no Supabase Auth e busca o perfil (papel) na
+        tabela usuario, ligada a auth.users por auth_user_id. Devolve a rota da
+        tela inicial, o menu e o token da sessão. Senha errada, e-mail sem
+        cadastro e login sem linha em usuario respondem o mesmo 401, para não
+        revelar quais e-mails existem. Por não criar recurso, responde 200
+        (e não 201).
       operationId: entrar
       requestBody:
         required: true
@@ -82,31 +87,47 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/NovoAcessoRequest' }
             example:
-              nome: Dra. Ana
-              tipoAcesso: MEDICO
+              email: ana.lima@rotavital.dev
+              senha: "********"
       responses:
         '200':
-          description: Acesso concedido, com a tela inicial e o menu do tipo de usuário.
+          description: Login aceito, com o perfil, a tela inicial e o menu.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Acesso' }
               examples:
                 medico:
-                  summary: Acesso como médico
+                  summary: Médico
                   value:
-                    nome: Dra. Ana
+                    id: 3f1e2a9c-5b7d-4e8f-9a0b-1c2d3e4f5a6b
+                    nome: Dra. Ana Lima
                     tipoAcesso: MEDICO
-                    telaInicial: Painel Operacional
+                    telaInicial: /painel
                     menu: [Início, Estoque, Requisição, Rede, Pacientes, Doações]
+                    accessToken: eyJhbGciOiJIUzI1NiIs...
+                    expiraEmSegundos: 3600
                 doador:
-                  summary: Acesso como doador
+                  summary: Doador
                   value:
-                    nome: João
+                    id: 7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d
+                    nome: João Souza
                     tipoAcesso: DOADOR
-                    telaInicial: Portal do Doador
+                    telaInicial: /portal-doador
                     menu: []
+                    accessToken: eyJhbGciOiJIUzI1NiIs...
+                    expiraEmSegundos: 3600
+                admin:
+                  summary: Admin
+                  value:
+                    id: 0b1c2d3e-4f5a-4b6c-9d7e-8f9a0b1c2d3e
+                    nome: Equipe Técnica
+                    tipoAcesso: ADMIN
+                    telaInicial: /admin
+                    menu: [Início, Estoque, Requisição, Rede, Pacientes, Doações, Diagnóstico & Logs]
+                    accessToken: eyJhbGciOiJIUzI1NiIs...
+                    expiraEmSegundos: 3600
         '400':
-          description: Nome em branco ou tipo de acesso ausente.
+          description: E-mail ou senha em branco, ou corpo que não é JSON.
           content:
             application/problem+json:
               schema: { $ref: '#/components/schemas/Erro' }
@@ -114,7 +135,31 @@ paths:
                 type: about:blank
                 title: Requisição inválida
                 status: 400
-                detail: "Informe o nome e o tipo de acesso para entrar"
+                detail: "O campo 'email' é obrigatório. O campo 'senha' é obrigatório."
+                instance: /api/v1/acessos
+        '401':
+          description: >
+            E-mail ou senha não conferem. A mesma resposta vale para senha
+            errada, e-mail sem cadastro e login sem linha em usuario.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Não autorizado
+                status: 401
+                detail: "E-mail ou senha incorretos."
+                instance: /api/v1/acessos
+        '503':
+          description: Supabase Auth fora do ar ou chave do Supabase não configurada no backend.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Serviço indisponível
+                status: 503
+                detail: "Não foi possível conferir o login agora. Tente novamente em instantes."
                 instance: /api/v1/acessos
         default:
           $ref: '#/components/responses/InternalServerError'
@@ -775,30 +820,41 @@ components:
 
     TipoAcesso:
       type: string
-      enum: [MEDICO, DOADOR]
+      enum: [MEDICO, DOADOR, ADMIN]
 
     # ---- Acesso ----
     NovoAcessoRequest:
       type: object
       properties:
-        nome: { type: string, example: Dra. Ana }
-        tipoAcesso: { $ref: '#/components/schemas/TipoAcesso' }
-      required: [nome, tipoAcesso]
+        email: { type: string, format: email, example: ana.lima@rotavital.dev }
+        senha: { type: string, format: password }
+      required: [email, senha]
 
     Acesso:
       type: object
       properties:
-        nome: { type: string, example: Dra. Ana }
+        id:
+          type: string
+          format: uuid
+          description: Id do usuário na tabela usuario.
+        nome: { type: string, example: Dra. Ana Lima }
         tipoAcesso: { $ref: '#/components/schemas/TipoAcesso' }
         telaInicial:
           type: string
-          description: "Painel Operacional (MEDICO) ou Portal do Doador (DOADOR)."
-          example: Painel Operacional
+          description: "Rota do frontend: /painel (MEDICO), /portal-doador (DOADOR) ou /admin (ADMIN)."
+          example: /painel
         menu:
           type: array
           items: { type: string }
-          description: Itens de menu do tipo de usuário; vazio para DOADOR.
-      required: [nome, tipoAcesso, telaInicial, menu]
+          description: Itens de menu do perfil; vazio para DOADOR.
+        accessToken:
+          type: string
+          description: Token da sessão do Supabase Auth. A API ainda não o exige nos outros endpoints.
+        expiraEmSegundos:
+          type: integer
+          format: int64
+          example: 3600
+      required: [id, nome, tipoAcesso, telaInicial, menu, accessToken, expiraEmSegundos]
 
     # ---- Hemocomponentes / Estoque ----
     BolsaHemocomponente:
