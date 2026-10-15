@@ -61,7 +61,7 @@ flowchart LR
 | Módulo | Subtask | Recursos | Espelha no domínio | Implementado? |
 |---|---|---|---|:---:|
 | 🔑 Acesso | HU-01 | `/acessos` | *(nenhuma — seleção de perfil, não é entidade de domínio)* | ✅ |
-| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque`) |
+| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque`, `GET /bancos/{bancoId}/estoque/resumo` e `GET /hemocomponentes/{id}`) |
 | 🏥 Requisições e Alocação | PI3-47 | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ❌ sem controller |
 | 🚚 Roteirização e Logística | PI3-48 | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ |
 | 🌡️ Telemetria e Cadeia Fria | PI3-49 | `/entregas/{id}/leituras` | *(gap — sem classe de domínio)* | ❌ sem controller |
@@ -109,11 +109,17 @@ flowchart LR
 
 **DTO Java equivalente**: [`ErroDTO`](../backend/src/main/java/com/rotavital/api/dto/comum/ErroDTO.java).
 
+**Onde o erro é montado** (PI3-181): o [`TratadorDeErros`](../backend/src/main/java/com/rotavital/api/TratadorDeErros.java)
+converte em `ErroDTO` as exceções dos serviços (`DadosInvalidosException` → 400, `RecursoNaoEncontradoException` → 404,
+`RegraDeNegocioException` → 422) e os valores que o Spring não consegue converter: enum fora da lista, data fora do
+formato `AAAA-MM-DD`, texto no lugar de número e JSON quebrado. Nesses casos o `detail` diz o campo, o valor recusado
+e o que mandar no lugar, ex.: `"O parâmetro 'tipoSanguineo' não aceita o valor 'O-'. Valores aceitos: A_POSITIVO, …"`.
+
 <h3 align="left" id="2-1-divergencias">🔧 2.1 Divergências REST resolvidas (Etapa 2)</h3>
 
 Antes da tabela de endpoints, o grupo decidiu **ajustar código e contrato** (em vez de documentar como
 estava e assumir o desconto). Controllers, `openapi.yaml`, `nginx.conf` e o
-[diagrama de contêineres](diagrama-arquitetura.drawio) foram alterados juntos, então a tabela abaixo bate com o
+[diagrama de arquitetura](arquitetura-rotavital-paes-silva.drawio) foram alterados juntos, então a tabela abaixo bate com o
 código em execução.
 
 | Divergência encontrada | Antes | Depois | Regra aplicada |
@@ -152,11 +158,12 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | **🔑 Acessos** | *`AcessoController`* | | | | |
 | `POST` | `/api/v1/acessos` | ✅ Identifica o perfil (MÉDICO/DOADOR) e devolve tela inicial + menu. Não persiste nada, por isso 200 | Pública | `Acesso` | `200` · `400` |
 | **🏦 Bancos → Estoque** | *`EstoqueController`* | | | | |
-| `GET` | `/api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` | ✅ Estoque consolidado de um banco de sangue | Nenhuma no MVP (alvo: médico) | `Estoque` | `200` · `404` |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` | ✅ Estoque consolidado de um banco de sangue | Nenhuma no MVP (alvo: médico) | `Estoque` | `200` · `400` · `404` |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | ✅ Totais de bolsas disponíveis e válidas por tipo sanguíneo e componente (tela inicial) | Nenhuma no MVP (alvo: médico) | `ResumoEstoque` | `200` · `404` |
 | **📦 Hemocomponentes** | *`HemocomponenteController` (planejado)* | | | | |
 | `GET` | `/api/v1/hemocomponentes?bancoId=&tipoComponente=&tipoSanguineo=&status=&page=0&size=20` | 🕓 Lista bolsas com filtros e paginação | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente[]` | `200` |
 | `POST` | `/api/v1/hemocomponentes` | 🕓 Cadastra uma bolsa (status inicial `DISPONIVEL`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `201` · `400` · `422` |
-| `GET` | `/api/v1/hemocomponentes/{id}` | 🕓 Detalhe de uma bolsa | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` |
+| `GET` | `/api/v1/hemocomponentes/{id}` | ✅ Detalhe de uma bolsa (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` |
 | `PATCH` | `/api/v1/hemocomponentes/{id}` | 🕓 Transição de status (reservar, descartar…) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` · `422` |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | 🕓 Remove um cadastro feito por engano | Nenhuma no MVP (alvo: médico) | *(sem corpo)* | `204` · `404` |
 | **🏥 Requisições** | *`RequisicaoController` (planejado)* | | | | |
@@ -185,14 +192,14 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 
 **Evidência de execução:** [`evidencias/PI3-14_endpoints_rest.md`](evidencias/PI3-14_endpoints_rest.md) reúne as 14 chamadas reais (status esperado × obtido, com `curl` e corpo da resposta) e o resultado do lint Spectral.
 
-**Rastreabilidade com o diagrama:** cada grupo da tabela aparece na caixa *Container: backend* do
-[`diagrama-arquitetura.drawio`](diagrama-arquitetura.drawio). Os grupos ✅ estão listados pelo controller, e os 🕓 estão
-na linha *PLANEJADO (só contrato)*.
+**Rastreabilidade com o diagrama:** cada grupo da tabela aparece na caixa *Backend API* do
+[`arquitetura-rotavital-paes-silva.drawio`](arquitetura-rotavital-paes-silva.drawio). Os grupos ✅ estão listados pelo controller, e os 🕓 estão
+em laranja na linha *Planejado (só contrato OpenAPI)*.
 
 <h3 align="left" id="2-4-principais">🔎 2.4 Os 6 endpoints principais, em detalhe</h3>
 
 Os seis endpoints abaixo cobrem o fluxo central do MVP: entrar → consultar estoque → registrar o pedido →
-alocar a bolsa → calcular a rota. Os exemplos usam os dados em memória (`BS-01`, `HOSP-01`). Os
+alocar a bolsa → calcular a rota. Os exemplos usam os dados do `supabase/seed.sql` (`BS-01`, `HOSP-01`), que o backend lê do banco. Os
 marcados com ✅ foram conferidos com `curl` contra o backend.
 
 **1. `POST /api/v1/acessos`** ✅ · Pública
@@ -290,6 +297,7 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 | Método | Endpoint | Descrição | Equivalente no domínio |
 |---|---|---|---|
 | `GET` | `/api/v1/bancos/{bancoId}/estoque` | Estoque consolidado de um banco de sangue (filtro: `tipoSanguineo`) | `BancoDeSangue.getEstoque()` |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | Totais por tipo sanguíneo e componente, só bolsas `DISPONIVEL` e dentro da validade | views `vw_estoque_por_tipo` e `vw_estoque_agrupado` |
 | `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `Estoque.getBolsas()` / `buscarDisponiveis(...)` |
 | `POST` | `/api/v1/hemocomponentes` | Cadastra uma nova bolsa (status inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | Detalhe de uma bolsa | — |
@@ -308,6 +316,26 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 | `volumeMl` | `number` | — |
 | `status` | enum | `DISPONIVEL` \| `RESERVADA` \| `EM_TRANSITO` \| `ENTREGUE` \| `DESCARTADA` |
 | `bancoOrigemId` | `string` | — |
+
+> ✅ **Implementado em parte.** Só `GET /api/v1/bancos/{bancoId}/estoque` roda hoje: o `EstoqueController`
+> usa o `EstoqueService`, que lê o banco de sangue e as suas bolsas das tabelas `ponto_rede` e
+> `bolsa_hemocomponente` do banco (Supabase), ordenadas por `dataValidade`. Banco de sangue inexistente →
+> `404`.
+>
+> `GET /api/v1/bancos/{bancoId}/estoque/resumo` também roda: o `ResumoEstoqueService` lê os totais já
+> contados pelas views do painel (`vw_estoque_por_tipo` e `vw_estoque_agrupado`) e devolve os 8 tipos
+> sanguíneos, cada um dividido nos 4 componentes, mais o total de cada componente. Tipos e componentes
+> sem bolsa vêm com `0`. Banco de sangue inexistente → `404`.
+>
+> `GET /api/v1/hemocomponentes/{id}` também roda (PI3-181): o `EstoqueService.buscarBolsa` lê a bolsa da tabela
+> `bolsa_hemocomponente`; bolsa inexistente → `404` com `"Nenhuma bolsa encontrada com id BOLSA-999."`. A edição e o
+> descarte (PI3-190) devem usar o mesmo método, para responder a mesma mensagem. `tipoSanguineo` fora da lista no
+> `GET /bancos/{bancoId}/estoque` → `400` com os valores aceitos.
+>
+> A validação do cadastro (PI3-179) já existe em `EstoqueService.validarNovaBolsa`. Campo obrigatório ausente ou
+> `volumeMl` ≤ 0 → `400`. Coleta depois de hoje, validade antes da coleta, bolsa já vencida ou banco de origem
+> inexistente → `422`. A mensagem junta todos os problemas encontrados. Os demais endpoints de `/hemocomponentes`
+> continuam só no contrato.
 
 **DTOs Java equivalentes** (`backend/src/main/java/com/rotavital/api/dto/estoque/`):
 [`BolsaHemocomponenteDTO`](../backend/src/main/java/com/rotavital/api/dto/estoque/BolsaHemocomponenteDTO.java) ·
@@ -373,15 +401,16 @@ Consulta do grafo de distribuição e cálculo de rota mínima com janela de tem
 | `GET` | `/api/v1/rotas?origemId=&destinoId=&janelaEntregaLimite=` | Calcula a rota de menor custo entre origem e destino, avaliando a janela de entrega (consulta idempotente, por isso `GET`) | algoritmo de menor caminho sobre o grafo |
 
 **Schema `PontoRede`**: `id`, `nome`, `tipo` (`HOSPITAL`/`BANCO_DE_SANGUE`), `latitude`, `longitude` —
-corresponde à interface `PontoDeRede`, implementada por `Hospital` e `BancoDeSangue` **sem relação de
-herança entre si** (só o contrato em comum — ver [`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md#1-visao-geral)).
+corresponde à interface `PontoDeRede`, implementada por `PontoDeRedeBase`, a classe abstrata da qual
+`Hospital` e `BancoDeSangue` herdam (ver [`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md#1-visao-geral)). O
+campo `tipo` é a mesma coluna `tipo` da tabela `ponto_rede`.
 
 > ✅ **Implementado.** O grafo de distribuição existe no domínio —
 > [`RedeDistribuicao`](MODELO_DE_DOMINIO.md#10-rededistribuicao) guarda nós (`PontoDeRede`) e arestas
-> (`Conexao`) e calcula o menor caminho com Dijkstra, devolvendo `RotaCalculada`. Os três endpoints abaixo
-> rodam via `RotaController`, sobre uma `RedeDistribuicao` populada em memória por
-> `RedeDistribuicaoEmMemoria` (hemocentro `BS-01` + 6 hospitais, topologia em estrela — dados sintéticos,
-> mesma convenção de `BancosEmMemoria`).
+> (`Conexao`) e calcula o menor caminho com Dijkstra, devolvendo `RotaCalculada`. Os três endpoints acima
+> rodam via `RotaController`, sobre uma `RedeDistribuicao` montada a cada chamada com as tabelas
+> `ponto_rede` e `conexao` do banco (Supabase) — com o `supabase/seed.sql`, o hemocentro `BS-01` + 6
+> hospitais em topologia de estrela (dados sintéticos).
 
 **DTOs Java equivalentes** (`backend/src/main/java/com/rotavital/api/dto/rota/`):
 [`PontoRedeDTO`](../backend/src/main/java/com/rotavital/api/dto/rota/PontoRedeDTO.java) ·

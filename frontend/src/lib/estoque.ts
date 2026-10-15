@@ -55,3 +55,85 @@ export function formatarTemperatura(valor: number)
 {
   return `${valor.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}°C`;
 }
+
+export function converterTipoSanguineo(tipo: string): TipoSanguineo
+{
+  switch (tipo)
+  {
+    case "A_POSITIVO":
+      return "A+";
+    case "A_NEGATIVO":
+      return "A-";
+    case "B_POSITIVO":
+      return "B+";
+    case "B_NEGATIVO":
+      return "B-";
+    case "AB_POSITIVO":
+      return "AB+";
+    case "AB_NEGATIVO":
+      return "AB-";
+    case "O_POSITIVO":
+      return "O+";
+    case "O_NEGATIVO":
+      return "O-";
+    default:
+      return (tipo as TipoSanguineo) || "O+";
+  }
+}
+
+export function converterTipoComponente(tipo: string): any
+{
+  switch (tipo)
+  {
+    case "HEMACIAS":
+      return "Concentrado de Hemácias";
+    case "PLASMA":
+      return "Plasma Fresco Congelado";
+    case "PLAQUETAS":
+      return "Concentrado de Plaquetas";
+    case "CRIOPRECIPITADO":
+      return "Crioprecipitado";
+    default:
+      return tipo || "Concentrado de Hemácias";
+  }
+}
+
+export function obterFaixaTemperatura(tipo: string): { minima: number; maxima: number }
+{
+  switch (tipo)
+  {
+    case "HEMACIAS":
+    case "Concentrado de Hemácias":
+      return { minima: 2.0, maxima: 6.0 };
+    case "PLASMA":
+    case "Plasma Fresco Congelado":
+      return { minima: -30.0, maxima: -18.0 };
+    case "PLAQUETAS":
+    case "Concentrado de Plaquetas":
+      return { minima: 20.0, maxima: 24.0 };
+    case "CRIOPRECIPITADO":
+    case "Crioprecipitado":
+      return { minima: -30.0, maxima: -18.0 };
+    default:
+      return { minima: 2.0, maxima: 6.0 };
+  }
+}
+
+export function converterBolsaParaLote(bolsa: any): LoteHemocomponente
+{
+  const componente = converterTipoComponente(bolsa.tipoComponente);
+  const tipoSanguineo = converterTipoSanguineo(bolsa.tipoSanguineo);
+
+  return {
+    id: bolsa.id,
+    codigo: bolsa.loteSintetico || bolsa.id,
+    componente,
+    tipoSanguineo,
+    unidades: 1,
+    volumeMl: bolsa.volumeMl,
+    dataValidade: bolsa.dataValidade,
+    temperaturaAtual: bolsa.temperaturaCelsius ?? bolsa.temperaturaAtual ?? 4.0,
+    temperaturaIdeal: obterFaixaTemperatura(bolsa.tipoComponente),
+    localizacao: bolsa.localizacao || bolsa.localizacaoFisica || "Câmara Fria",
+  };
+}

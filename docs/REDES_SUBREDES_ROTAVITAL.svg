@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1060" viewBox="0 0 1800 1060" role="img" aria-labelledby="title desc">
+  <title id="title">RotaVital — definição de redes e sub-redes</title>
+  <desc id="desc">VPC 10.0.0.0/16 com sub-rede pública (Nginx), sub-rede privada de aplicação (Backend API) e sub-rede privada de dados (PostgreSQL); navegador, OSRM e OpenStreetMap fora da VPC; setas [1] a [5] com protocolo e porta.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#1f2937"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #172033; }
+      .title { font-size: 30px; font-weight: 700; }
+      .section { font-size: 22px; font-weight: 700; }
+      .subnet { font-size: 19px; font-weight: 700; }
+      .component { font-size: 17px; font-weight: 700; }
+      .detail { font-size: 14px; fill: #475569; }
+      .edge-label { font-size: 14px; font-weight: 700; }
+      .note { font-size: 15px; fill: #334155; }
+    </style>
+  </defs>
+
+  <rect width="1800" height="1060" fill="#ffffff"/>
+  <text x="40" y="55" class="title">RotaVital — Definição de redes e sub-redes</text>
+  <text x="40" y="91" class="section">Rede principal (VPC RotaVital): 10.0.0.0/16 · ambiente de produção projetado</text>
+
+  <!-- Internet (fora da VPC) -->
+  <rect x="40" y="120" width="300" height="790" rx="18" fill="#f5f5f5" stroke="#64748b" stroke-width="2"/>
+  <text x="60" y="157" class="subnet">Internet (fora da VPC)</text>
+
+  <rect x="70" y="200" width="240" height="100" rx="40" fill="#ffffff" stroke="#64748b" stroke-width="2"/>
+  <text x="190" y="242" text-anchor="middle" class="component">OSRM (terceiro)</text>
+  <text x="190" y="268" text-anchor="middle" class="detail">router.project-osrm.org</text>
+
+  <rect x="70" y="465" width="240" height="110" rx="12" fill="#ffffff" stroke="#64748b" stroke-width="2"/>
+  <text x="190" y="510" text-anchor="middle" class="component">Navegador</text>
+  <text x="190" y="536" text-anchor="middle" class="detail">executa a SPA React</text>
+
+  <rect x="70" y="740" width="240" height="100" rx="40" fill="#ffffff" stroke="#64748b" stroke-width="2"/>
+  <text x="190" y="782" text-anchor="middle" class="component">OpenStreetMap</text>
+  <text x="190" y="808" text-anchor="middle" class="detail">tile.openstreetmap.org</text>
+
+  <!-- VPC -->
+  <rect x="380" y="120" width="1380" height="790" rx="18" fill="#f8fafc" stroke="#1a1a2e" stroke-width="4"/>
+  <text x="405" y="157" class="subnet">VPC RotaVital — 10.0.0.0/16</text>
+
+  <rect x="420" y="205" width="380" height="640" rx="16" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+  <text x="445" y="245" class="subnet">Sub-rede pública</text>
+  <text x="445" y="274" class="detail">sub-publica · 10.0.1.0/24</text>
+  <text x="445" y="298" class="detail">entrada: 0.0.0.0/0 → TCP 443</text>
+  <text x="445" y="322" class="detail">saída: 10.0.10.0/24 → TCP 8080</text>
+
+  <rect x="840" y="205" width="480" height="640" rx="16" fill="#f0fdf4" stroke="#16a34a" stroke-width="3"/>
+  <text x="865" y="245" class="subnet">Sub-rede privada de aplicação</text>
+  <text x="865" y="274" class="detail">sub-app · 10.0.10.0/24</text>
+  <text x="865" y="298" class="detail">entrada: somente 10.0.1.0/24 → TCP 8080</text>
+  <text x="865" y="322" class="detail">saída: somente 10.0.20.0/24 → TCP 5432</text>
+
+  <rect x="1360" y="205" width="360" height="640" rx="16" fill="#faf5ff" stroke="#7c3aed" stroke-width="3"/>
+  <text x="1385" y="245" class="subnet">Sub-rede privada de dados</text>
+  <text x="1385" y="274" class="detail">sub-dados · 10.0.20.0/24</text>
+  <text x="1385" y="298" class="detail">entrada: somente 10.0.10.0/24 → TCP 5432</text>
+  <text x="1385" y="322" class="detail">saída: nenhuma (sem internet)</text>
+
+  <rect x="460" y="460" width="300" height="120" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="610" y="500" text-anchor="middle" class="component">Nginx (container frontend)</text>
+  <text x="610" y="528" text-anchor="middle" class="detail">serve a SPA · proxy reverso /api/*</text>
+  <text x="610" y="552" text-anchor="middle" class="detail">termina o TLS na porta 443</text>
+
+  <rect x="930" y="460" width="280" height="120" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="1070" y="500" text-anchor="middle" class="component">Backend API</text>
+  <text x="1070" y="528" text-anchor="middle" class="detail">Spring Boot 3.3 · Java 21 · 8080</text>
+  <text x="1070" y="552" text-anchor="middle" class="detail">base /api/v1 · 5 controllers</text>
+
+  <rect x="1440" y="450" width="230" height="140" rx="12" fill="#f3e8ff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="1555" y="500" text-anchor="middle" class="component">PostgreSQL</text>
+  <text x="1555" y="528" text-anchor="middle" class="detail">Supabase gerenciado</text>
+  <text x="1555" y="552" text-anchor="middle" class="detail">via pooler · TLS</text>
+
+  <!-- Setas (todas síncronas, linha contínua) -->
+  <line x1="190" y1="465" x2="190" y2="302" stroke="#1f2937" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="125" y="368" width="130" height="28" rx="6" fill="#ffffff"/>
+  <text x="190" y="387" text-anchor="middle" class="edge-label">[2] HTTPS / 443</text>
+
+  <line x1="190" y1="575" x2="190" y2="738" stroke="#1f2937" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="125" y="643" width="130" height="28" rx="6" fill="#ffffff"/>
+  <text x="190" y="662" text-anchor="middle" class="edge-label">[3] HTTPS / 443</text>
+
+  <line x1="310" y1="520" x2="458" y2="520" stroke="#1f2937" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="320" y="482" width="130" height="28" rx="6" fill="#ffffff"/>
+  <text x="385" y="501" text-anchor="middle" class="edge-label">[1] HTTPS / 443</text>
+
+  <line x1="760" y1="520" x2="928" y2="520" stroke="#1f2937" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="763" y="482" width="164" height="28" rx="6" fill="#ffffff"/>
+  <text x="845" y="501" text-anchor="middle" class="edge-label">[4] HTTP/1.1 / 8080</text>
+
+  <line x1="1210" y1="520" x2="1438" y2="520" stroke="#1f2937" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="1225" y="482" width="200" height="28" rx="6" fill="#ffffff"/>
+  <text x="1325" y="501" text-anchor="middle" class="edge-label">[5] TCP (PostgreSQL) / 5432</text>
+
+  <rect x="40" y="935" width="1720" height="95" rx="12" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="65" y="972" class="note">Regras: R1 Internet → sub-publica TCP 443 · R2 sub-publica → sub-app TCP 8080 · R3 sub-app → sub-dados TCP 5432 · R4–R6 negam o resto (a internet nunca chega à aplicação nem ao banco; o banco não tem saída).</text>
+  <text x="65" y="1002" class="note">Todas as setas são síncronas (linha contínua) e seguem [nº] PROTOCOLO / porta; o nº é a linha da tabela de ligações. Não há fila, NAT Gateway nem load balancer separado no projeto.</text>
+</svg>

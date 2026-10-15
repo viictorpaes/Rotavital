@@ -6,9 +6,14 @@ export function LayoutPrincipal()
 {
   const { usuario } = useAutenticacao();
 
-  if (usuario?.papel !== "medico")
+  if (!usuario)
   {
     return <Navigate to="/login" replace />;
+  }
+
+  if (usuario.papel === "doador")
+  {
+    return <Navigate to="/portal-doador" replace />;
   }
 
   return (

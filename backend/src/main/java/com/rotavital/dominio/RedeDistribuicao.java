@@ -22,10 +22,18 @@ public class RedeDistribuicao
         pontos.add(ponto);
     }
 
-    public void adicionarConexao(PontoDeRede origem, PontoDeRede destino, double distanciaKm, double tempoEstimadoMin)
+    public void adicionarConexao(PontoDeRede origem, PontoDeRede destino, 
+    double distanciaKm, double tempoEstimadoMin)
     {
         conexoes.add(new Conexao(origem, destino, distanciaKm, tempoEstimadoMin));
         conexoes.add(new Conexao(destino, origem, distanciaKm, tempoEstimadoMin));
+    }
+
+    // Adiciona exatamente esta aresta, em um único sentido. Usado para as conexões lidas do banco,
+    // que já guarda ida e volta como duas linhas (adicionarConexao duplicaria as arestas).
+    public void adicionarConexaoDirigida(Conexao conexao)
+    {
+        conexoes.add(conexao);
     }
 
     public List<PontoDeRede> getPontos()
@@ -38,7 +46,8 @@ public class RedeDistribuicao
         return conexoes;
     }
 
-    public RotaCalculada calcularRotaMinima(String origemId, String destinoId, LocalDateTime janelaEntregaLimite)
+    public RotaCalculada calcularRotaMinima(String origemId, 
+    String destinoId, LocalDateTime janelaEntregaLimite)
     {
         PontoDeRede origem = buscarPonto(origemId);
         PontoDeRede destino = buscarPonto(destinoId);
@@ -57,7 +66,8 @@ public class RedeDistribuicao
 
         List<PontoDeRede> visitados = new ArrayList<>();
         PriorityQueue<PontoDeRede> fila = new PriorityQueue<>(
-                (a, b) -> Double.compare(distancias.get(a), distancias.get(b)));
+        (a, b) -> Double.compare(distancias.get(a), distancias.get(b)));
+        
         fila.add(origem);
 
         while (!fila.isEmpty())

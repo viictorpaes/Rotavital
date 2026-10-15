@@ -7,6 +7,7 @@ import {
   Package,
   ClipboardList,
   Stethoscope,
+  Terminal,
 } from "lucide-react";
 import { useAutenticacao } from "@/context/ContextoAutenticacao";
 import { cn } from "@/lib/utilitarios";
@@ -19,6 +20,7 @@ const ITENS_NAVEGACAO =
   { to: "/rede", label: "Rede", icon: Network },
   { to: "/pacientes", label: "Pacientes", icon: Stethoscope },
   { to: "/doacoes", label: "Doações", icon: HeartHandshake },
+  { to: "/admin", label: "Diagnóstico & Logs", icon: Terminal },
 ];
 
 export function BarraLateral()
@@ -31,6 +33,15 @@ export function BarraLateral()
     logout();
     navigate("/login", { replace: true });
   }
+
+  const itensVisiveis = ITENS_NAVEGACAO.filter((item) =>
+  {
+    if (item.to === "/admin")
+    {
+      return usuario?.papel === "admin";
+    }
+    return true;
+  });
 
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-rota-border bg-white md:flex">
@@ -47,7 +58,7 @@ export function BarraLateral()
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {ITENS_NAVEGACAO.map(({ to, label, icon: Icon }) => (
+        {itensVisiveis.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
@@ -65,7 +76,12 @@ export function BarraLateral()
       </nav>
 
       <div className="border-t border-rota-border px-5 py-4">
-        <p className="text-sm font-bold text-gray-900">{usuario?.nome}</p>
+        {usuario?.papel === "admin" && (
+          <span className="mb-1.5 inline-block rounded bg-purple-100 px-2 py-0.5 font-mono text-[10px] font-bold text-purple-700">
+            Modo Administrador
+          </span>
+        )}
+        <p className="text-sm font-bold text-gray-900">{usuario?.nome || "Usuário"}</p>
         <p className="font-mono text-[11px] text-gray-400">HEMOPE · Recife — PE</p>
         <button
           type="button"

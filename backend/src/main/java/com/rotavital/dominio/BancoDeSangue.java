@@ -1,18 +1,35 @@
 package com.rotavital.dominio;
 
-public final class BancoDeSangue implements PontoDeRede
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Transient;
+
+@Entity
+@DiscriminatorValue("BANCO_DE_SANGUE")
+public class BancoDeSangue extends PontoDeRedeBase
 {
-    private final String id;
-    private final String nome;
-    private final Endereco endereco;
-    private final Estoque estoque;
+    // Bolsas armazenadas neste banco (lado inverso de BolsaHemocomponente.bancoOrigem),
+    // da que vence primeiro para a que vence por último (FEFO).
+    @OneToMany(mappedBy = "bancoOrigem")
+    @OrderBy("dataValidade ASC, id ASC")
+    private List<BolsaHemocomponente> bolsas = new ArrayList<>();
+
+    @Transient
+    private final Estoque estoque = new Estoque(this);
+
+    // Exigido pelo Hibernate para criar o objeto ao ler do banco; no código, use o construtor com parâmetros.
+    protected BancoDeSangue()
+    {
+    }
 
     public BancoDeSangue(String id, String nome, Endereco endereco)
     {
-        this.id = id;
-        this.nome = nome;
-        this.endereco = endereco;
-        this.estoque = new Estoque(this);
+        super(id, nome, endereco);
     }
 
     public Estoque getEstoque()
@@ -20,38 +37,15 @@ public final class BancoDeSangue implements PontoDeRede
         return estoque;
     }
 
-    public Endereco getEndereco()
+    // Usado só pelo Estoque: é sempre a lista atual, inclusive a que o JPA carrega do banco.
+    List<BolsaHemocomponente> bolsas()
     {
-        return endereco;
-    }
-
-    @Override
-    public String getId()
-    {
-        return id;
-    }
-
-    @Override
-    public String getNome()
-    {
-        return nome;
-    }
-
-    @Override
-    public double getLatitude()
-    {
-        return endereco.getLatitude();
-    }
-
-    @Override
-    public double getLongitude()
-    {
-        return endereco.getLongitude();
+        return bolsas;
     }
 
     @Override
     public String toString()
     {
-        return "Banco de Sangue " + nome + " (" + endereco + ")";
+        return "Banco de Sangue " + getNome() + " (" + getEndereco() + ")";
     }
 }

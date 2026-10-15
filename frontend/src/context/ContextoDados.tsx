@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type {
   LoteHemocomponente,
   OrigemAtendimento,
@@ -10,6 +10,8 @@ import { lotesEstoque } from "@/data/estoqueMock";
 import { pessoasNecessitadas } from "@/data/pessoasMock";
 import { requisicoesRecebidas } from "@/data/requisicoesMock";
 import { reservarPorFefo } from "@/lib/pacientes";
+import { converterBolsaParaLote } from "@/lib/estoque";
+import { buscarEstoque } from "@/services/api";
 import {
   gerarProtocolo,
   loteDaRequisicaoRecebida,
@@ -41,9 +43,7 @@ interface ValorContextoDados
 const ContextoDados = createContext<ValorContextoDados | undefined>(undefined);
 
 /**
- * Estado compartilhado das telas operacionais — ainda em memória, alimentado
- * pelos mocks. Existe para que o recebimento de remessas e a publicação de
- * campanhas reflitam de imediato em Estoque, Pacientes e Doações.
+ * Estado compartilhado das telas operacionais — integrado com o banco de dados Supabase.
  */
 export function ProvedorDados({ children }: { children: ReactNode })
 {
@@ -52,6 +52,28 @@ export function ProvedorDados({ children }: { children: ReactNode })
   const [recebimentosPendentes, setPendentes] = useState<RequisicaoRecebida[]>(requisicoesRecebidas);
   const [recebimentosConfirmados, setConfirmados] = useState<RequisicaoRecebida[]>([]);
   const [procedimentosConcluidos, setProcedimentos] = useState<ProcedimentoConcluido[]>([]);
+
+  useEffect(() =>
+  {
+    async function carregarEstoqueReal()
+    {
+      try
+      {
+        const res = await buscarEstoque("BS-01");
+        if (res && res.bolsas && res.bolsas.length > 0)
+        {
+          const convertidos = res.bolsas.map(converterBolsaParaLote);
+          setLotes(convertidos);
+        }
+      }
+      catch (e)
+      {
+        console.warn("ContextoDados: usando estoque local de contingência", e);
+      }
+    }
+
+    carregarEstoqueReal();
+  }, []);
 
   const valor = useMemo<ValorContextoDados>(() =>
   {
