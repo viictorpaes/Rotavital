@@ -249,7 +249,11 @@ paths:
     post:
       tags: [Hemocomponentes]
       summary: Registra uma nova bolsa de hemocomponente no estoque
-      description: Cria uma bolsa com status inicial DISPONIVEL, equivalente ao construtor de BolsaHemocomponente no domínio.
+      description: >-
+        Cria uma bolsa com status inicial DISPONIVEL, equivalente ao construtor de BolsaHemocomponente no domínio.
+        O id é gerado pelo backend a partir da sigla do componente, seguindo o maior número já usado na faixa dele
+        (HEMACIAS → CH-1001…CH-1999, PLASMA → PF-2001…PF-2999, PLAQUETAS → PQ-3001…PQ-3999,
+        CRIOPRECIPITADO → CR-4001…CR-4999).
       operationId: criarHemocomponente
       requestBody:
         required: true
@@ -263,10 +267,16 @@ paths:
               dataValidade: "2026-09-26"
               loteSintetico: LOTE-SIM-0001
               volumeMl: 450.0
+              temperaturaCelsius: 4.0
+              localizacao: "R1 · P3 · N2"
               bancoOrigemId: BS-01
       responses:
         '201':
           description: Bolsa criada com status inicial DISPONIVEL.
+          headers:
+            Location:
+              description: Endereço da bolsa criada (ex.: /api/v1/hemocomponentes/CH-1091).
+              schema: { type: string }
           content:
             application/json:
               schema: { $ref: '#/components/schemas/BolsaHemocomponente' }
@@ -829,9 +839,22 @@ components:
           type: string
           description: Identifica o lote gerado para simulação com dados sintéticos.
           example: LOTE-SIM-0001
-        volumeMl: { type: number, format: double }
+        volumeMl:
+          type: number
+          format: double
+          description: Maior que 0 e no máximo 700 ml.
+        temperaturaCelsius:
+          type: number
+          format: double
+          description: >-
+            Temperatura medida na entrada da bolsa, entre -80 e 60 °C (faixa física do sensor). Fora da faixa
+            ideal do componente a bolsa ainda entra, e aparece como alerta (foraDaFaixa).
+        localizacao:
+          type: string
+          description: Onde a bolsa fica guardada. Opcional.
+          example: "R1 · P3 · N2"
         bancoOrigemId: { type: string }
-      required: [tipoComponente, tipoSanguineo, dataColeta, dataValidade, loteSintetico, volumeMl, bancoOrigemId]
+      required: [tipoComponente, tipoSanguineo, dataColeta, dataValidade, loteSintetico, volumeMl, temperaturaCelsius, bancoOrigemId]
 
     AtualizarStatusBolsaRequest:
       type: object
