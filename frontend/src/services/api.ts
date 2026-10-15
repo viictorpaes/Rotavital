@@ -4,6 +4,7 @@ export { clienteHttp, ErroHttp };
 
 export * from "@/types/dtos";
 import type {
+  LoginPayloadDTO,
   RespostaAcesso,
   EstoqueDTO,
   PontoRedeDTO,
@@ -16,18 +17,12 @@ import type {
 // ----------------------------------------------------------------------
 
 /**
- * Autentica o usuário e obtém os módulos permitidos no back-end.
+ * Login com e-mail e senha (Supabase Auth, conferido no backend). Devolve o perfil e a tela inicial.
  */
-export async function autenticarUsuario(nome: string, papel: "medico" | "doador" | "admin"): Promise<RespostaAcesso>
+export async function autenticarUsuario(email: string, senha: string): Promise<RespostaAcesso>
 {
-  let tipoAcessoBackend: "MEDICO" | "DOADOR" | "ADMIN" = "MEDICO";
-  if (papel === "doador") tipoAcessoBackend = "DOADOR";
-  if (papel === "admin") tipoAcessoBackend = "ADMIN";
-
-  return clienteHttp.post<RespostaAcesso>("/acessos", {
-    nome,
-    tipoAcesso: tipoAcessoBackend,
-  });
+  const payload: LoginPayloadDTO = { email, senha };
+  return clienteHttp.post<RespostaAcesso>("/acessos", payload);
 }
 
 /**

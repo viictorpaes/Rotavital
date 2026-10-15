@@ -51,7 +51,7 @@ flowchart LR
     API --> M3["🚚 Rotas<br/>PI3-48"]
     API --> M4["🌡️ Telemetria<br/>PI3-49"]
 
-    M0 -. "sem classe de domínio dedicada" .-> D0["AcessoDTO (seleção de perfil)"]
+    M0 -. "espelha" .-> D0["Usuario + Supabase Auth"]
     M1 -. "espelha" .-> D1["Estoque / BolsaHemocomponente"]
     M2 -. "espelha" .-> D2["Hospital / RequisicaoHospitalar"]
     M3 -. "espelha" .-> D3["PontoDeRede + RedeDistribuicao"]
@@ -60,7 +60,7 @@ flowchart LR
 
 | Módulo | Subtask | Recursos | Espelha no domínio | Implementado? |
 |---|---|---|---|:---:|
-| 🔑 Acesso | HU-01 | `/acessos` | *(nenhuma — seleção de perfil, não é entidade de domínio)* | ✅ |
+| 🔑 Acesso | HU-01 | `/acessos` | `Usuario` (senha conferida pelo Supabase Auth) | ✅ |
 | 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque`, `GET /bancos/{bancoId}/estoque/resumo` e `GET /hemocomponentes/{id}`) |
 | 🏥 Requisições e Alocação | PI3-47 | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ❌ sem controller |
 | 🚚 Roteirização e Logística | PI3-48 | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ |
@@ -136,10 +136,12 @@ código em execução.
 
 <h3 align="left" id="2-2-autenticacao">🔐 2.2 Autenticação e 401 × 403</h3>
 
-**O MVP não tem autenticação.** `POST /api/v1/acessos` só escolhe o perfil (médico ou doador) e não emite
-token. Por isso **nenhum endpoint devolve 401 ou 403 hoje**, e a coluna *Status* abaixo não lista esses códigos.
-A coluna *Autenticação* mostra o que vale agora e, entre parênteses, o perfil que cada rota vai exigir quando
-houver token. Quando isso entrar, a regra será:
+**Login com e-mail e senha (PI3-183).** `POST /api/v1/acessos` confere as credenciais no Supabase Auth e devolve
+o perfil, a tela inicial e o token da sessão. Esse é o **único endpoint que devolve 401** hoje (credenciais que
+não conferem). Os demais ainda não exigem o token, por isso não devolvem 401 nem 403: o bloqueio por perfil na
+API fica para a próxima sprint (decisão 6 de [`PERFIS_DE_ACESSO.md`](PERFIS_DE_ACESSO.md)). A coluna
+*Autenticação* mostra o que vale agora e, entre parênteses, o perfil que cada rota vai exigir. Quando o token
+passar a ser exigido, a regra será:
 
 | Código | Quando | Exemplo |
 |---|---|---|
@@ -156,7 +158,7 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | Método | Caminho | Descrição | Autenticação | Resposta | Status |
 |---|---|---|---|---|---|
 | **🔑 Acessos** | *`AcessoController`* | | | | |
-| `POST` | `/api/v1/acessos` | ✅ Identifica o perfil (MÉDICO/DOADOR) e devolve tela inicial + menu. Não persiste nada, por isso 200 | Pública | `Acesso` | `200` · `400` |
+| `POST` | `/api/v1/acessos` | ✅ Login com e-mail e senha (Supabase Auth); devolve perfil (MÉDICO/DOADOR/ADMIN), tela inicial, menu e token. Não cria recurso, por isso 200 | Pública | `Acesso` | `200` · `400` · `401` · `503` |
 | **🏦 Bancos → Estoque** | *`EstoqueController`* | | | | |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` | ✅ Estoque consolidado de um banco de sangue | Nenhuma no MVP (alvo: médico) | `Estoque` | `200` · `400` · `404` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | ✅ Totais de bolsas disponíveis e válidas por tipo sanguíneo e componente (tela inicial) | Nenhuma no MVP (alvo: médico) | `ResumoEstoque` | `200` · `404` |
@@ -207,12 +209,14 @@ marcados com ✅ foram conferidos com `curl` contra o backend.
 POST /api/v1/acessos
 Content-Type: application/json
 
-{ "nome": "Dra. Ana", "tipoAcesso": "MEDICO" }
+{ "email": "ana.lima@rotavital.dev", "senha": "********" }
 ```
 | Status | Quando | Corpo |
 |---|---|---|
-| `200` | Perfil válido | `{"nome":"Dra. Ana","tipoAcesso":"MEDICO","telaInicial":"Painel Operacional","menu":["Início","Estoque","Requisição","Rede","Pacientes","Doações"]}` |
-| `400` | `nome` vazio ou `tipoAcesso` ausente | `Erro` com `instance: /api/v1/acessos` |
+| `200` | E-mail e senha conferem e o login tem linha em `usuario` | `{"id":"3f1e…","nome":"Dra. Ana Lima","tipoAcesso":"MEDICO","telaInicial":"/painel","menu":["Início","Estoque","Requisição","Rede","Pacientes","Doações"],"accessToken":"eyJ…","expiraEmSegundos":3600}` |
+| `400` | `email` ou `senha` em branco | `Erro`: `"O campo 'email' é obrigatório."` |
+| `401` | Senha errada, e-mail sem cadastro ou login sem linha em `usuario` (mesma resposta nos três) | `Erro`: `"E-mail ou senha incorretos."` |
+| `503` | Supabase Auth fora do ar ou `SUPABASE_KEY` não configurada | `Erro` |
 
 **2. `GET /api/v1/bancos/{bancoId}/estoque`** ✅ · Nenhuma no MVP (alvo: médico)
 ```http
@@ -266,29 +270,37 @@ GET /api/v1/rotas?origemId=BS-01&destinoId=HOSP-01&janelaEntregaLimite=2026-12-3
 
 <h2 align="left" id="3-acesso">🔑 3. Módulo de Acesso (HU-01)</h2>
 
-Identifica o tipo de usuário (médico ou doador) e devolve a tela inicial e o menu correspondentes.
-**Seleção de perfil, não autenticação** — não valida credenciais nem emite token/sessão; qualquer nome
-não-vazio é aceito.
+Login com e-mail e senha (PI3-183). A senha é conferida pelo **Supabase Auth** (o hash fica em `auth.users`,
+nunca no nosso banco); o perfil vem da tabela `usuario`, ligada a `auth.users` por `auth_user_id`. Perfis, telas
+e decisões: [`PERFIS_DE_ACESSO.md`](PERFIS_DE_ACESSO.md).
 
 | Método | Endpoint | Descrição | Equivalente no domínio |
 |---|---|---|---|
-| `POST` | `/api/v1/acessos` | Recebe nome e tipo de acesso, devolve tela inicial + menu | *(nenhum — lógica só em `AcessoController`, sem classe de domínio)* |
+| `POST` | `/api/v1/acessos` | Recebe e-mail e senha, devolve perfil, tela inicial, menu e token | `Usuario` · `AutenticacaoService` · `SupabaseAuth` |
 
 ```mermaid
 flowchart LR
-    R["POST /api/v1/acessos&#10;{nome, tipoAcesso}"] --> V{tipoAcesso}
-    V -- MEDICO --> M["200 · Painel Operacional&#10;menu: Início, Estoque, Requisição, Rede, Pacientes, Doações"]
-    V -- DOADOR --> D["200 · Portal do Doador&#10;menu: []"]
-    R -. "nome vazio ou tipoAcesso ausente" .-> E["400 BadRequest"]
+    R["POST /api/v1/acessos&#10;{email, senha}"] --> S{"Supabase Auth&#10;/auth/v1/token"}
+    S -- "não confere" --> E401["401 · E-mail ou senha incorretos"]
+    S -- "fora do ar" --> E503["503 · Serviço indisponível"]
+    S -- "ok · auth_user_id" --> U{"usuario.papel"}
+    U -- "sem linha" --> E401
+    U -- MEDICO --> M["200 · /painel"]
+    U -- DOADOR --> D["200 · /portal-doador"]
+    U -- ADMIN --> A["200 · /admin"]
+    R -. "email ou senha em branco" .-> E400["400 BadRequest"]
 ```
 
-✅ **Único módulo 100% implementado e documentado nos dois lados** — `AcessoController` bate exatamente
-com o contrato abaixo (testado manualmente com os dois exemplos e o caso de erro).
+Configuração no backend: `SUPABASE_KEY` (chave publicável do projeto, em *Project Settings → API
+Keys*) e, opcionalmente, `SUPABASE_URL`. Ver [`backend/.env.example`](../backend/.env.example).
+
+Testes: `AcessoControllerTest` (respostas HTTP por perfil e erros), `AutenticacaoServiceTest` (regras do login)
+e `SupabaseAuthTest` (conversa com o Supabase Auth, com servidor falso).
 
 **DTOs Java equivalentes** (`backend/src/main/java/com/rotavital/api/dto/acesso/`):
 [`AcessoDTO`](../backend/src/main/java/com/rotavital/api/dto/acesso/AcessoDTO.java) ·
 [`NovoAcessoRequest`](../backend/src/main/java/com/rotavital/api/dto/acesso/NovoAcessoRequest.java) ·
-[`TipoAcesso`](../backend/src/main/java/com/rotavital/api/dto/acesso/TipoAcesso.java) (enum).
+[`TipoAcesso`](../backend/src/main/java/com/rotavital/api/dto/acesso/TipoAcesso.java) (enum `MEDICO`, `DOADOR`, `ADMIN`).
 
 <h2 align="left" id="4-estoque">📦 4. Módulo de Estoque e Hemocomponentes (PI3-46)</h2>
 
@@ -485,7 +497,7 @@ API, não a evolução do modelo POO (ver [`MODELO_DE_DOMINIO.md`](MODELO_DE_DOM
 │  CONTRATOS DE API (RSD) — ROTA VITAL                              │
 ├──────────────────────────────────────────────────────────────────┤
 │  🌐 openapi.yaml   → OpenAPI 3.0.3, fonte da verdade               │
-│  🔑 acessos        → POST /api/v1/acessos → perfil médico/doador ✅│
+│  🔑 acessos        → POST /api/v1/acessos → login e-mail/senha  ✅│
 │  🧱 padrões        → /api/v1 + plural + sem verbo + RFC 7807       │
 │  📦 estoque        → GET/POST/PATCH/DELETE /hemocomponentes        │
 │  🏥 requisições    → POST /requisicoes/{id}/alocacoes → FEFO+ABO/Rh│

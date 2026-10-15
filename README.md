@@ -838,8 +838,8 @@ Copie [`backend/.env.example`](./backend/.env.example) para `backend/.env` (já 
 | Variável | Uso | Pode ir para o Git? |
 | :--- | :--- | :---: |
 | `SUPABASE_DB_PASSWORD` | Senha do banco (JDBC e `docker-compose.yml`) | ❌ |
-| `SUPABASE_URL` | URL pública do projeto (API REST/Auth) | ✅ |
-| `SUPABASE_KEY` | Chave `anon` da API do Supabase | ⚠️ só a `anon` |
+| `SUPABASE_URL` | URL pública do projeto (API REST/Auth); opcional, já tem o valor do projeto como padrão | ✅ |
+| `SUPABASE_KEY` | Chave publicável (`sb_publishable_…` ou a `anon` antiga), usada pelo login no Supabase Auth (PI3-183). Sem ela, `POST /acessos` responde `503` | ⚠️ só a publicável/`anon` |
 
 > [!WARNING]
 > A chave **`service_role`** ignora o RLS e dá acesso total ao banco — nunca vai para `.env.example`, commit ou frontend.
