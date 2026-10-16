@@ -71,7 +71,8 @@ public class EstoqueService
     /**
      * Bolsas de todos os bancos, com filtros opcionais e combináveis, da que vence primeiro para a
      * que vence por último (FEFO). Filtro nulo (ou bancoId em branco) não restringe; nada batendo
-     * devolve lista vazia. Página negativa ou tamanho fora de 1 a 100 lança DadosInvalidosException (400).
+     * devolve lista vazia. Página negativa, tamanho fora de 1 a 100 ou página tão alta que
+     * page × size passa de Integer.MAX_VALUE lança DadosInvalidosException (400).
      */
     @Transactional(readOnly = true)
     public List<BolsaHemocomponente> listarBolsas(String bancoId, TipoComponente tipoComponente,
@@ -86,6 +87,12 @@ public class EstoqueService
         if (tamanho < 1 || tamanho > TAMANHO_MAXIMO_PAGINA)
         {
             problemas.add("O parâmetro 'size' deve estar entre 1 e " + TAMANHO_MAXIMO_PAGINA + ".");
+        }
+        // O deslocamento (page × size) vai para a consulta como int: acima de Integer.MAX_VALUE o
+        // Spring Data recusa a consulta, e a API responderia 500 em vez de 400.
+        if (problemas.isEmpty() && (long) pagina * tamanho > Integer.MAX_VALUE)
+        {
+            problemas.add("O parâmetro 'page' é alto demais: page × size deve ser no máximo " + Integer.MAX_VALUE + ".");
         }
 
         if (!problemas.isEmpty())

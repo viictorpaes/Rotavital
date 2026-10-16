@@ -132,6 +132,13 @@ public class ListagemDeBolsasTest
     }
 
     @Test
+    public void paginaAltaDemaisDevolve400() throws Exception
+    {
+        Assertions.assertEquals(requisicaoInvalida("O parâmetro 'page' é alto demais: page × size deve ser no máximo 2147483647."),
+                erro(MockMvcRequestBuilders.get("/api/v1/hemocomponentes").param("page", "99999999").param("size", "100")));
+    }
+
+    @Test
     public void paginaComTextoDevolve400() throws Exception
     {
         Assertions.assertEquals(requisicaoInvalida("O parâmetro 'page' não aceita o valor 'primeira'. Use um número."),

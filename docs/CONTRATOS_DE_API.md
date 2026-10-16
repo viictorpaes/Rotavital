@@ -234,7 +234,7 @@ GET /api/v1/hemocomponentes?bancoId=BS-01&tipoSanguineo=O_POSITIVO&status=DISPON
 | Status | Quando | Corpo |
 |---|---|---|
 | `200` | Filtros válidos (lista vazia se nada bater). Todos os filtros são opcionais e combináveis; ordem por `dataValidade` (FEFO); padrão `page=0`, `size=20` | `BolsaHemocomponente[]` |
-| `400` | Filtro fora do enum, `page` negativa ou `size` fora de 1 a 100 | `Erro`: `"O parâmetro 'size' deve estar entre 1 e 100."` |
+| `400` | Filtro fora do enum, `page` negativa, `size` fora de 1 a 100 ou `page` × `size` acima de 2147483647 | `Erro`: `"O parâmetro 'size' deve estar entre 1 e 100."` |
 
 **4. `POST /api/v1/requisicoes`** 🕓 · Nenhuma no MVP (alvo: médico)
 ```http

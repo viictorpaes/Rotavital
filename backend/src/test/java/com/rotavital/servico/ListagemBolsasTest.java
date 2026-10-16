@@ -108,6 +108,26 @@ public class ListagemBolsasTest
     }
 
     @Test
+    public void paginaAltaDemaisDevolveErroSemConsultarOBanco()
+    {
+        // 99.999.999 × 100 passa de Integer.MAX_VALUE: sem a checagem, o Spring Data recusaria a consulta (500).
+        DadosInvalidosException erro = Assertions.assertThrows(DadosInvalidosException.class,
+                () -> servico.listarBolsas(null, null, null, null, 99_999_999, 100));
+
+        Assertions.assertEquals("O parâmetro 'page' é alto demais: page × size deve ser no máximo 2147483647.",
+                erro.getMessage());
+        Assertions.assertNull(consultaFeita, "Com parâmetro inválido, o banco de dados não deve ser consultado.");
+    }
+
+    @Test
+    public void deslocamentoNoLimiteEhAceito()
+    {
+        // page × size = Integer.MAX_VALUE, o maior deslocamento que o Spring Data aceita.
+        Assertions.assertDoesNotThrow(() -> servico.listarBolsas(null, null, null, null, Integer.MAX_VALUE, 1));
+        Assertions.assertEquals(Integer.MAX_VALUE, ((Pageable) consultaFeita[4]).getOffset());
+    }
+
+    @Test
     public void paginaETamanhoInvalidosTrazemAsDuasMensagens()
     {
         DadosInvalidosException erro = Assertions.assertThrows(DadosInvalidosException.class,
