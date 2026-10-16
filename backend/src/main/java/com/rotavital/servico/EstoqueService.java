@@ -6,12 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rotavital.api.dto.estoque.NovaBolsaHemocomponenteRequest;
 import com.rotavital.dominio.BolsaHemocomponente;
 import com.rotavital.dominio.Estoque;
+import com.rotavital.dominio.StatusBolsa;
+import com.rotavital.dominio.TipoComponente;
 import com.rotavital.dominio.TipoSanguineo;
 import com.rotavital.repositorio.BancoDeSangueRepository;
 import com.rotavital.repositorio.BolsaHemocomponenteRepository;
@@ -20,6 +23,7 @@ import com.rotavital.repositorio.BolsaHemocomponenteRepository;
 public class EstoqueService
 {
     private static final DateTimeFormatter DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final int TAMANHO_MAXIMO_PAGINA = 100;
 
     private final BancoDeSangueRepository bancos;
     private final BolsaHemocomponenteRepository bolsas;
@@ -62,6 +66,36 @@ public class EstoqueService
     {
         return bolsas.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Nenhuma bolsa encontrada com id " + id + "."));
+    }
+
+    /**
+     * Bolsas de todos os bancos, com filtros opcionais e combináveis, da que vence primeiro para a
+     * que vence por último (FEFO). Filtro nulo (ou bancoId em branco) não restringe; nada batendo
+     * devolve lista vazia. Página negativa ou tamanho fora de 1 a 100 lança DadosInvalidosException (400).
+     */
+    @Transactional(readOnly = true)
+    public List<BolsaHemocomponente> listarBolsas(String bancoId, TipoComponente tipoComponente,
+            TipoSanguineo tipoSanguineo, StatusBolsa status, int pagina, int tamanho)
+    {
+        List<String> problemas = new ArrayList<>();
+
+        if (pagina < 0)
+        {
+            problemas.add("O parâmetro 'page' deve ser maior ou igual a 0.");
+        }
+        if (tamanho < 1 || tamanho > TAMANHO_MAXIMO_PAGINA)
+        {
+            problemas.add("O parâmetro 'size' deve estar entre 1 e " + TAMANHO_MAXIMO_PAGINA + ".");
+        }
+
+        if (!problemas.isEmpty())
+        {
+            throw new DadosInvalidosException(String.join(" ", problemas));
+        }
+
+        String banco = bancoId == null || bancoId.isBlank() ? null : bancoId;
+
+        return bolsas.buscarComFiltros(banco, tipoComponente, tipoSanguineo, status, PageRequest.of(pagina, tamanho));
     }
 
     /**

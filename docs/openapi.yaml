@@ -263,7 +263,7 @@ paths:
     get:
       tags: [Hemocomponentes]
       summary: Lista bolsas de hemocomponentes com filtros
-      description: Lista bolsas cadastradas, opcionalmente filtradas por banco, tipo de componente, tipo sanguíneo e status.
+      description: Lista bolsas cadastradas, opcionalmente filtradas por banco, tipo de componente, tipo sanguíneo e status, da que vence primeiro para a que vence por último (FEFO).
       operationId: listarHemocomponentes
       parameters:
         - name: bancoId
@@ -288,6 +288,8 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/BolsaHemocomponente' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
         default:
           $ref: '#/components/responses/InternalServerError'
 

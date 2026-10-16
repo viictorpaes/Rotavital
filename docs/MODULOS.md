@@ -45,7 +45,7 @@ flowchart LR
 
 | Módulo | Recursos | Espelha no domínio | Tabelas no banco ([DER](DER.md)) | Status |
 | :--- | :--- | :--- | :--- | :---: |
-| 📦 Estoque e Hemocomponentes | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | `bolsa_hemocomponente`, `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ⚠️ Domínio + contrato prontos; só `GET /api/v1/bancos/{bancoId}/estoque` implementado |
+| 📦 Estoque e Hemocomponentes | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | `bolsa_hemocomponente`, `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ⚠️ Domínio + contrato prontos; implementados `GET /api/v1/bancos/{bancoId}/estoque` e `GET /api/v1/hemocomponentes` |
 | 🏥 Requisições e Alocação | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | `requisicao_hospitalar`, `alocacao` | ⚠️ Domínio + contrato prontos; nenhum controller ainda |
 | 🚚 Roteirização e Logística | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | `ponto_rede`, `conexao`, `entrega` | ✅ Implementado (`RotaController`, grafo + Dijkstra) |
 | 🌡️ Telemetria e Cadeia Fria | `/entregas/{id}/leituras` | *(nenhuma)* | `entrega`, `leitura_telemetria` | ⚠️ Contrato + tabelas; sem domínio nem controller |
@@ -68,7 +68,7 @@ Controla o cadastro e o ciclo de vida das bolsas de hemocomponentes de um banco 
 | Método | Endpoint | Descrição | Equivalente no domínio |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque` | Estoque consolidado de um banco de sangue | `BancoDeSangue.getEstoque()` |
-| `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `Estoque.buscarDisponiveis(...)` |
+| `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `BolsaHemocomponenteRepository.buscarComFiltros(...)` |
 | `POST` | `/api/v1/hemocomponentes` | Cadastra uma nova bolsa (`status` inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
 | `PATCH` | `/api/v1/hemocomponentes/{id}` | Transição de status (`reservar`, `descartar`) | `reservar()` / `descartar()` |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | Remove o cadastro (erro de lançamento) | — |
