@@ -142,6 +142,7 @@ export function converterBolsaParaLote(bolsa: BolsaHemocomponenteDTO): LoteHemoc
     temperaturaIdeal: obterFaixaTemperatura(bolsa.tipoComponente),
     localizacao: bolsa.localizacao || bolsa.localizacaoFisica || "Câmara Fria",
     statusBolsa: bolsa.status,
+    dataColeta: bolsa.dataColeta,
   };
 }
 
@@ -227,4 +228,23 @@ export function temperaturaSugerida(componente: TipoComponenteBackend): number
 {
   const { minima, maxima } = obterFaixaTemperatura(componente);
   return (minima + maxima) / 2;
+}
+
+/** Status em que a bolsa ainda está no estoque e aceita edição, reserva e descarte (PI3-190). */
+export function bolsaEditavel(lote: LoteHemocomponente): boolean
+{
+  return lote.statusBolsa === "DISPONIVEL" || lote.statusBolsa === "RESERVADA";
+}
+
+/** "Concentrado de Hemácias" → "HEMACIAS": o rótulo da tela de volta para o enum da API. */
+export function paraTipoComponenteBackend(componente: TipoComponente): TipoComponenteBackend
+{
+  return COMPONENTES_FILTRO.find((opcao) => opcao.rotulo === componente)?.valor ?? "HEMACIAS";
+}
+
+/** Texto de um input numérico → número; "" vira null e a vírgula decimal é aceita. */
+export function lerNumero(valor: string): number | null
+{
+  const normalizado = valor.trim().replace(",", ".");
+  return normalizado === "" ? null : Number(normalizado);
 }

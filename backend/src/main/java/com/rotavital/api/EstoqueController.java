@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rotavital.api.dto.comum.ErroDTO;
+import com.rotavital.api.dto.estoque.AtualizarBolsaHemocomponenteRequest;
 import com.rotavital.api.dto.estoque.BolsaHemocomponenteDTO;
 import com.rotavital.api.dto.estoque.EstoqueDTO;
 import com.rotavital.api.dto.estoque.NovaBolsaHemocomponenteRequest;
@@ -114,6 +116,15 @@ public class EstoqueController
 
         return ResponseEntity.created(URI.create("/api/v1/hemocomponentes/" + bolsa.getId()))
                 .body(paraBolsaDTO(bolsa));
+    }
+
+    // Alteração parcial (PI3-190): status e/ou correção de validade, volume, temperatura e localização.
+    // Bolsa inexistente → 404; corpo vazio ou malformado → 400; regra violada → 422 (TratadorDeErros).
+    @PatchMapping("/hemocomponentes/{id}")
+    public ResponseEntity<BolsaHemocomponenteDTO> atualizarBolsa(@PathVariable("id") String id,
+            @RequestBody AtualizarBolsaHemocomponenteRequest dados)
+    {
+        return ResponseEntity.ok(paraBolsaDTO(estoqueService.atualizarBolsa(id, dados)));
     }
 
     private BolsaHemocomponenteDTO paraBolsaDTO(BolsaHemocomponente bolsa)

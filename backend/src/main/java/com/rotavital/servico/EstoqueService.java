@@ -6,14 +6,17 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.rotavital.api.dto.estoque.AtualizarBolsaHemocomponenteRequest;
 import com.rotavital.api.dto.estoque.NovaBolsaHemocomponenteRequest;
 import com.rotavital.dominio.BancoDeSangue;
 import com.rotavital.dominio.BolsaHemocomponente;
@@ -35,6 +38,11 @@ public class EstoqueService
     private static final double VOLUME_MAXIMO_ML = 700.0;
     private static final double TEMPERATURA_MINIMA_SENSOR = -80.0;
     private static final double TEMPERATURA_MAXIMA_SENSOR = 60.0;
+
+    // PI3-190: só bolsa ainda no estoque pode ser alterada, e só estes status podem ser escolhidos na edição.
+    private static final Set<StatusBolsa> STATUS_ALTERAVEIS = EnumSet.of(StatusBolsa.DISPONIVEL, StatusBolsa.RESERVADA);
+    private static final Set<StatusBolsa> STATUS_ESCOLHIVEIS =
+            EnumSet.of(StatusBolsa.DISPONIVEL, StatusBolsa.RESERVADA, StatusBolsa.DESCARTADA);
 
     private final BancoDeSangueRepository bancos;
     private final BolsaHemocomponenteRepository bolsas;
@@ -180,40 +188,9 @@ public class EstoqueService
             problemas.add("A data de coleta (" + DATA.format(dados.dataColeta())
                     + ") não pode ser depois de hoje (" + DATA.format(hoje) + ").");
         }
-        if (dados.dataValidade().isBefore(dados.dataColeta()))
-        {
-            problemas.add("A data de validade (" + DATA.format(dados.dataValidade())
-                    + ") não pode ser anterior à data de coleta (" + DATA.format(dados.dataColeta()) + ").");
-        }
-        else
-        {
-            long diasDeValidade = ChronoUnit.DAYS.between(dados.dataColeta(), dados.dataValidade());
-            TipoComponente componente = dados.tipoComponente();
-
-            if (diasDeValidade == 0)
-            {
-                problemas.add("A data de validade (" + DATA.format(dados.dataValidade())
-                        + ") precisa ser depois da data de coleta.");
-            }
-            else if (diasDeValidade > componente.getPrazoMaximoDias())
-            {
-                problemas.add("A validade de " + componente + " é de no máximo " + componente.getPrazoMaximoDias()
-                        + " dias depois da coleta, e foram informados " + diasDeValidade + " dias.");
-            }
-            if (dados.dataValidade().isBefore(hoje))
-            {
-                problemas.add("A bolsa venceu em " + DATA.format(dados.dataValidade()) + " e não pode entrar no estoque.");
-            }
-        }
-        if (dados.volumeMl() > VOLUME_MAXIMO_ML)
-        {
-            problemas.add("O volume (" + dados.volumeMl() + " ml) passa do máximo de " + VOLUME_MAXIMO_ML + " ml por bolsa.");
-        }
-        if (dados.temperaturaCelsius() < TEMPERATURA_MINIMA_SENSOR || dados.temperaturaCelsius() > TEMPERATURA_MAXIMA_SENSOR)
-        {
-            problemas.add("A temperatura (" + dados.temperaturaCelsius() + " °C) está fora do que o sensor mede ("
-                    + TEMPERATURA_MINIMA_SENSOR + " °C a " + TEMPERATURA_MAXIMA_SENSOR + " °C).");
-        }
+        conferirValidade(dados.tipoComponente(), dados.dataColeta(), dados.dataValidade(), hoje, problemas);
+        conferirVolume(dados.volumeMl(), problemas);
+        conferirTemperatura(dados.temperaturaCelsius(), problemas);
         if (bolsas.existsByLoteSinteticoAndTipoComponente(dados.loteSintetico().strip(), dados.tipoComponente()))
         {
             problemas.add("Já existe uma bolsa de " + dados.tipoComponente() + " do lote " + dados.loteSintetico().strip()
@@ -227,6 +204,152 @@ public class EstoqueService
         if (!problemas.isEmpty())
         {
             throw new RegraDeNegocioException(String.join(" ", problemas));
+        }
+    }
+
+    // Regras de validade, volume e temperatura, iguais no cadastro (PI3-179) e na correção (PI3-190).
+    private void conferirValidade(TipoComponente componente, LocalDate dataColeta, LocalDate dataValidade,
+            LocalDate hoje, List<String> problemas)
+    {
+        if (dataValidade.isBefore(dataColeta))
+        {
+            problemas.add("A data de validade (" + DATA.format(dataValidade)
+                    + ") não pode ser anterior à data de coleta (" + DATA.format(dataColeta) + ").");
+            return;
+        }
+
+        long diasDeValidade = ChronoUnit.DAYS.between(dataColeta, dataValidade);
+
+        if (diasDeValidade == 0)
+        {
+            problemas.add("A data de validade (" + DATA.format(dataValidade)
+                    + ") precisa ser depois da data de coleta.");
+        }
+        else if (diasDeValidade > componente.getPrazoMaximoDias())
+        {
+            problemas.add("A validade de " + componente + " é de no máximo " + componente.getPrazoMaximoDias()
+                    + " dias depois da coleta, e foram informados " + diasDeValidade + " dias.");
+        }
+        if (dataValidade.isBefore(hoje))
+        {
+            problemas.add("A bolsa venceu em " + DATA.format(dataValidade) + " e não pode entrar no estoque.");
+        }
+    }
+
+    private void conferirVolume(double volumeMl, List<String> problemas)
+    {
+        if (volumeMl > VOLUME_MAXIMO_ML)
+        {
+            problemas.add("O volume (" + volumeMl + " ml) passa do máximo de " + VOLUME_MAXIMO_ML + " ml por bolsa.");
+        }
+    }
+
+    private void conferirTemperatura(double temperaturaCelsius, List<String> problemas)
+    {
+        if (temperaturaCelsius < TEMPERATURA_MINIMA_SENSOR || temperaturaCelsius > TEMPERATURA_MAXIMA_SENSOR)
+        {
+            problemas.add("A temperatura (" + temperaturaCelsius + " °C) está fora do que o sensor mede ("
+                    + TEMPERATURA_MINIMA_SENSOR + " °C a " + TEMPERATURA_MAXIMA_SENSOR + " °C).");
+        }
+    }
+
+    /**
+     * Confere uma alteração de bolsa (PI3-190) antes de aplicá-la. Corpo sem nenhum campo ou volume
+     * menor ou igual a zero lança DadosInvalidosException (400). Bolsa que não está DISPONIVEL nem
+     * RESERVADA, status que não pode ser escolhido aqui ou validade, volume e temperatura fora das
+     * regras do cadastro lançam RegraDeNegocioException (422), com todos os problemas na mensagem.
+     */
+    public void validarAtualizacao(BolsaHemocomponente bolsa, AtualizarBolsaHemocomponenteRequest dados, LocalDate hoje)
+    {
+        if (dados == null || dados.vazio())
+        {
+            throw new DadosInvalidosException("Informe ao menos um campo para alterar: status, dataValidade, "
+                    + "volumeMl, temperaturaCelsius ou localizacao.");
+        }
+        if (dados.volumeMl() != null && dados.volumeMl() <= 0)
+        {
+            throw new DadosInvalidosException("O campo 'volumeMl' deve ser maior que zero.");
+        }
+
+        // Em trânsito, entregue, utilizada ou descartada, a bolsa já saiu do estoque: o registro vira histórico.
+        if (!STATUS_ALTERAVEIS.contains(bolsa.getStatus()))
+        {
+            throw new RegraDeNegocioException("A bolsa " + bolsa.getId() + " está " + bolsa.getStatus()
+                    + " e não pode mais ser alterada: só bolsas DISPONIVEL ou RESERVADA podem.");
+        }
+
+        List<String> problemas = new ArrayList<>();
+
+        // EM_TRANSITO, ENTREGUE e UTILIZADA vêm do transporte e do procedimento, não de uma edição manual.
+        if (dados.status() != null && !STATUS_ESCOLHIVEIS.contains(dados.status()))
+        {
+            problemas.add("O status " + dados.status() + " não pode ser escolhido aqui: use DISPONIVEL, "
+                    + "RESERVADA ou DESCARTADA.");
+        }
+        if (dados.dataValidade() != null)
+        {
+            conferirValidade(bolsa.getTipoComponente(), bolsa.getDataColeta(), dados.dataValidade(), hoje, problemas);
+        }
+        if (dados.volumeMl() != null)
+        {
+            conferirVolume(dados.volumeMl(), problemas);
+        }
+        if (dados.temperaturaCelsius() != null)
+        {
+            conferirTemperatura(dados.temperaturaCelsius(), problemas);
+        }
+
+        if (!problemas.isEmpty())
+        {
+            throw new RegraDeNegocioException(String.join(" ", problemas));
+        }
+    }
+
+    /**
+     * Altera uma bolsa do estoque (PI3-190): muda o status (reservar, liberar a reserva, descartar) e/ou
+     * corrige validade, volume, temperatura e localização. Campo ausente fica como está; localização em
+     * branco é apagada. Bolsa inexistente → 404; os demais erros são os de validarAtualizacao.
+     */
+    @Transactional
+    public BolsaHemocomponente atualizarBolsa(String id, AtualizarBolsaHemocomponenteRequest dados)
+    {
+        BolsaHemocomponente bolsa = bolsas.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Nenhuma bolsa encontrada com id " + id + "."));
+
+        validarAtualizacao(bolsa, dados, LocalDate.now(relogio));
+
+        if (dados.dataValidade() != null)
+        {
+            bolsa.corrigirValidade(dados.dataValidade());
+        }
+        if (dados.volumeMl() != null)
+        {
+            bolsa.corrigirVolume(dados.volumeMl());
+        }
+        if (dados.temperaturaCelsius() != null)
+        {
+            bolsa.registrarTemperatura(dados.temperaturaCelsius());
+        }
+        if (dados.localizacao() != null)
+        {
+            bolsa.alterarLocalizacao(dados.localizacao().isBlank() ? null : dados.localizacao().strip());
+        }
+        if (dados.status() != null)
+        {
+            mudarStatus(bolsa, dados.status());
+        }
+
+        return bolsas.save(bolsa);
+    }
+
+    private void mudarStatus(BolsaHemocomponente bolsa, StatusBolsa novo)
+    {
+        switch (novo)
+        {
+            case RESERVADA -> bolsa.reservar();
+            case DESCARTADA -> bolsa.descartar();
+            case DISPONIVEL -> bolsa.liberarReserva();
+            default -> throw new IllegalStateException("Status não escolhível: " + novo);
         }
     }
 

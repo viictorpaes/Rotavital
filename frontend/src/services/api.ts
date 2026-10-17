@@ -10,6 +10,7 @@ import type {
   BolsaHemocomponenteDTO,
   FiltrosHemocomponentesDTO,
   NovaBolsaHemocomponenteDTO,
+  AtualizarBolsaHemocomponenteDTO,
   PontoRedeDTO,
   RotaCalculadaDTO,
   DiagnosticoDados,
@@ -58,6 +59,15 @@ export async function listarHemocomponentes(filtros: FiltrosHemocomponentesDTO =
 export async function cadastrarHemocomponente(dados: NovaBolsaHemocomponenteDTO): Promise<BolsaHemocomponenteDTO>
 {
   return clienteHttp.post<BolsaHemocomponenteDTO>("/hemocomponentes", dados, { silencioso: true });
+}
+
+/**
+ * Altera uma bolsa (PI3-190): reservar, liberar a reserva, descartar ou corrigir validade, volume,
+ * temperatura e localização. Devolve a bolsa como ficou. Silencioso: a tela mostra o erro da API.
+ */
+export async function atualizarHemocomponente(id: string, dados: AtualizarBolsaHemocomponenteDTO): Promise<BolsaHemocomponenteDTO>
+{
+  return clienteHttp.patch<BolsaHemocomponenteDTO>(`/hemocomponentes/${encodeURIComponent(id)}`, dados, { silencioso: true });
 }
 
 /**

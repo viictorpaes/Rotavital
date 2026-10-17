@@ -410,7 +410,7 @@ no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada
 > e localização de cada lote, para saber quais estão em risco de vencer ou fora da faixa ideal.
 >
 > ✅ Backend — `GET /api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` via [`EstoqueController.java`](./backend/src/main/java/com/rotavital/api/EstoqueController.java) (PR #2, mesclado)
-> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02; hoje lista as bolsas de `GET /api/v1/hemocomponentes`, com filtros de tipo sanguíneo, componente e status e paginação (PI3-180), e o botão **Nova bolsa** cadastra pelo `POST /api/v1/hemocomponentes`, mostrando no formulário os erros 400/422 da API (PI3-179; ver [Figma × Sistema Real](#figma-vs-real))
+> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02; hoje lista as bolsas de `GET /api/v1/hemocomponentes`, com filtros de tipo sanguíneo, componente e status e paginação (PI3-180), e o botão **Nova bolsa** cadastra pelo `POST /api/v1/hemocomponentes`, mostrando no formulário os erros 400/422 da API (PI3-179); cada bolsa disponível ou reservada tem **Editar**, **Reservar/Liberar reserva** e **Descartar**, pelo `PATCH /api/v1/hemocomponentes/{id}` (PI3-190; ver [Figma × Sistema Real](#figma-vs-real))
 
 > 🟨 **HU‑09** — Como **médico ou doador**, preciso visualizar as pessoas que precisam de doação — filtráveis
 > por tipo sanguíneo — e agendar uma doação, para direcionar doadores compatíveis a quem precisa com urgência.
@@ -488,7 +488,7 @@ Rotavital🩸/
 │       │       ├── RotaVitalApplication.java <img src="https://img.shields.io/badge/-Entry_Point_·_carrega_.env-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       ├── api <img src="https://img.shields.io/badge/-REST_Controllers-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
 │       │       │   ├── AcessoController.java <img src="https://img.shields.io/badge/-POST_%2Facessos-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑01-111827?style=flat-square&logoColor=white" height="18"/>
-│       │       │   ├── EstoqueController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Festoque_·_%2Fresumo-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/-GET·POST_%2Fhemocomponentes_·_GET_%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>
+│       │       │   ├── EstoqueController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Festoque_·_%2Fresumo-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/-GET·POST_%2Fhemocomponentes_·_GET·PATCH_%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── RotaController.java <img src="https://img.shields.io/badge/-GET_%2Fpontos_·_%2Fconexoes_·_%2Frotas-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑07-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── TratadorDeErros.java <img src="https://img.shields.io/badge/-Erros_RFC_7807_·_400_·_404_·_422-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       │   └── dto <img src="https://img.shields.io/badge/-DTO-111827?style=flat-square&logo=openapiinitiative&logoColor=6BA539" height="18"/>/
@@ -499,7 +499,7 @@ Rotavital🩸/
 │       │       │       ├── comum <img src="https://img.shields.io/badge/-Comum-111827?style=flat-square&logo=openjdk&logoColor=orange" height="18"/>/
 │       │       │       │   └── ErroDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       ├── estoque <img src="https://img.shields.io/badge/-Estoque-111827?style=flat-square&logo=databricks&logoColor=FF3621" height="18"/>/
-│       │       │       │   ├── AtualizarStatusBolsaRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│       │       │       │   ├── AtualizarBolsaHemocomponenteRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── BolsaHemocomponenteDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── EstoqueDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── NovaBolsaHemocomponenteRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
@@ -574,6 +574,7 @@ Rotavital🩸/
 │       │           └── ResumoEstoqueService.java <img src="https://img.shields.io/badge/-%40Transactional_·_totais_do_estoque-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       └── test/java/com/rotavital <img src="https://img.shields.io/badge/-JUnit_5-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
 │           ├── api <img src="https://img.shields.io/badge/-API_(MockMvc)-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
+│           │   ├── EdicaoDeBolsaApiTest.java <img src="https://img.shields.io/badge/-%40Test_·_PATCH_200_·_400_·_404_·_422-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           │   └── ErrosDoEstoqueTest.java <img src="https://img.shields.io/badge/-%40Test_·_respostas_de_erro_400_·_404_·_422-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           ├── benchmark <img src="https://img.shields.io/badge/-Benchmark-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
 │           │   └── AuditoriaTelemetriaTest.java <img src="https://img.shields.io/badge/-%40Test_·_concorrência-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
@@ -586,6 +587,7 @@ Rotavital🩸/
 │           │   ├── RedeDistribuicaoTest.java <img src="https://img.shields.io/badge/-%40Test_·_grafo_·_Dijkstra-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           │   └── TesteFluxoTest.java <img src="https://img.shields.io/badge/-%40Test_·_fluxo_FEFO_+_ABO%2FRh-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           └── servico <img src="https://img.shields.io/badge/-Service-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
+│               ├── AtualizacaoDeBolsaTest.java <img src="https://img.shields.io/badge/-%40Test_·_edição_reserva_e_descarte-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │               ├── EstoqueServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_estoque_e_busca_de_bolsa-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │               ├── RedeDistribuicaoServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_montagem_da_rede-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │               ├── RepositorioFalso.java <img src="https://img.shields.io/badge/-Repositório_falso_(sem_banco)-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
@@ -639,8 +641,14 @@ Rotavital🩸/
 │       │   │   ├── CaixaAvisos.tsx <img src="https://img.shields.io/badge/-Avisos-111827?style=flat&logo=react&logoColor=F59E0B" height="18"/>
 │       │   │   └── AcoesRapidas.tsx <img src="https://img.shields.io/badge/-Atalhos-111827?style=flat&logo=react&logoColor=F59E0B" height="18"/>
 │       │   ├── estoque <img src="https://img.shields.io/badge/-Estoque-111827?style=flat-square&logo=react&logoColor=FF3621" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>/
+│       │   │   ├── AlertaErroFormulario.tsx <img src="https://img.shields.io/badge/-Erro_da_API-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── BotoesFormulario.tsx <img src="https://img.shields.io/badge/-Cancelar_·_Enviar-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── CampoFormulario.tsx <img src="https://img.shields.io/badge/-Campo-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   │   ├── CartaoLote.tsx <img src="https://img.shields.io/badge/-Card-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   │   ├── FiltroTipoEstoque.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── JanelaModal.tsx <img src="https://img.shields.io/badge/-Moldura_do_modal-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── ModalDescartarBolsa.tsx <img src="https://img.shields.io/badge/-Descarte-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── ModalEditarBolsa.tsx <img src="https://img.shields.io/badge/-Edição-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   │   ├── ModalNovaBolsa.tsx <img src="https://img.shields.io/badge/-Cadastro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   │   ├── PaginacaoEstoque.tsx <img src="https://img.shields.io/badge/-Paginação-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   │   └── SeletorFiltro.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
@@ -693,6 +701,7 @@ Rotavital🩸/
 │       ├── hooks <img src="https://img.shields.io/badge/-Hooks-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
 │       │   └── useRotasDaRede.ts <img src="https://img.shields.io/badge/-Rotas_via_OSRM-111827?style=flat&logo=openstreetmap&logoColor=7EBC6F" height="18"/> <img src="https://img.shields.io/badge/HU‑07-111827?style=flat-square&logoColor=white" height="18"/>
 │       ├── lib <img src="https://img.shields.io/badge/-Regras_de_tela-111827?style=flat-square&logo=typescript&logoColor=3178C6" height="18"/>/
+│       │   ├── erros.ts <img src="https://img.shields.io/badge/-Mensagem_da_API-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │       │   ├── estoque.ts <img src="https://img.shields.io/badge/-Estoque-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │       │   ├── painel.ts <img src="https://img.shields.io/badge/-Painel-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │       │   ├── pacientes.ts <img src="https://img.shields.io/badge/-Pacientes-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
@@ -1188,8 +1197,8 @@ async function aoEnviar(evento: FormEvent<HTMLFormElement>)
       dataColeta: dataColeta || null,              // em branco vai como null: a API diz qual campo falta
       dataValidade: dataValidade || null,
       loteSintetico: lote.trim(),
-      volumeMl: paraNumero(volume),
-      temperaturaCelsius: paraNumero(temperatura),
+      volumeMl: lerNumero(volume),
+      temperaturaCelsius: lerNumero(temperatura),
       localizacao: localizacao.trim() || undefined,
       bancoOrigemId: bancoId,
     });
@@ -1197,7 +1206,7 @@ async function aoEnviar(evento: FormEvent<HTMLFormElement>)
   }
   catch (falha: unknown)
   {
-    setErro(falha instanceof ErroHttp ? falha.detalhe || falha.message : "Não foi possível conectar com o back-end. A bolsa não foi registrada.");
+    setErro(mensagemDoErro(falha, "Não foi possível conectar com o back-end. A bolsa não foi registrada."));
   }
 }
 ```
@@ -1205,6 +1214,26 @@ async function aoEnviar(evento: FormEvent<HTMLFormElement>)
 Trocar o componente refaz as sugestões: a validade vira a coleta + o prazo máximo (hemácias 42 dias, plasma 730,
 plaquetas 7, crioprecipitado 365) e a temperatura, o meio da faixa ideal. Depois do cadastro, a lista passa a filtrar
 pelo tipo e componente da bolsa nova, da primeira página, para ela aparecer na tela.
+</details>
+
+<details>
+<summary>✏️ <a href="./frontend/src/components/estoque/ModalEditarBolsa.tsx"><code>frontend/src/components/estoque/ModalEditarBolsa.tsx</code></a> — edição, reserva e descarte (PI3-190)</summary>
+
+```tsx
+// Campo em branco ou igual ao original não vai no corpo: para o PATCH, ausente quer dizer "não muda".
+const alteracoes: AtualizarBolsaHemocomponenteDTO = {};
+if (dataValidade && dataValidade !== inicial.dataValidade) alteracoes.dataValidade = dataValidade;
+if (volume.trim() && volume !== inicial.volume) alteracoes.volumeMl = lerNumero(volume) ?? undefined;
+// ... temperatura e localização do mesmo jeito
+const nadaMudou = Object.keys(alteracoes).length === 0;   // "Salvar correção" fica desabilitado
+
+onSalva(await atualizarHemocomponente(lote.id, alteracoes)); // PATCH /api/v1/hemocomponentes/{id}
+```
+
+No cartão, **Reservar** e **Liberar reserva** mandam só `{ status: "RESERVADA" }` ou `{ status: "DISPONIVEL" }`,
+sem confirmação (dá para desfazer); **Descartar** abre o `ModalDescartarBolsa`, que pede confirmação porque a bolsa
+descartada não aceita mais alterações. Depois de cada ação, a página avisa e consulta a lista de novo. No backend, o
+`EstoqueService.atualizarBolsa` usa as mesmas regras de validade, volume e temperatura do cadastro.
 </details>
 
 <h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (solicitar)</h4>

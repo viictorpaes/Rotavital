@@ -101,6 +101,19 @@ export interface NovaBolsaHemocomponenteDTO
   bancoOrigemId: string;
 }
 
+/**
+ * Corpo de PATCH /hemocomponentes/{id} (PI3-190): só os campos enviados mudam. status aceita DISPONIVEL
+ * (libera a reserva), RESERVADA e DESCARTADA; localizacao "" apaga a localização.
+ */
+export interface AtualizarBolsaHemocomponenteDTO
+{
+  status?: StatusBolsaBackend;
+  dataValidade?: string;
+  volumeMl?: number;
+  temperaturaCelsius?: number;
+  localizacao?: string;
+}
+
 export interface EstoqueDTO
 {
   bancoDeSangueId: string;
