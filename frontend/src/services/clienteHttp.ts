@@ -326,6 +326,16 @@ class ClienteHttp
     });
   }
 
+  /** Atualização parcial: só os campos enviados mudam (ex.: PATCH /hemocomponentes/{id}). */
+  public patch<T>(caminho: string, dados?: unknown, config?: ConfiguracaoRequisicao): Promise<T>
+  {
+    return this.requisitar<T>(caminho, {
+      ...config,
+      method: "PATCH",
+      body: dados !== undefined ? JSON.stringify(dados) : undefined,
+    });
+  }
+
   public delete<T>(caminho: string, config?: ConfiguracaoRequisicao): Promise<T>
   {
     return this.requisitar<T>(caminho, { ...config, method: "DELETE" });

@@ -45,7 +45,7 @@ flowchart LR
 
 | Módulo | Recursos | Espelha no domínio | Tabelas no banco ([DER](DER.md)) | Status |
 | :--- | :--- | :--- | :--- | :---: |
-| 📦 Estoque e Hemocomponentes | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | `bolsa_hemocomponente`, `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ⚠️ Domínio + contrato prontos; implementados `GET /api/v1/bancos/{bancoId}/estoque`, `GET /api/v1/hemocomponentes` e `POST /api/v1/hemocomponentes` |
+| 📦 Estoque e Hemocomponentes | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | `bolsa_hemocomponente`, `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ⚠️ Domínio + contrato prontos; implementados `GET /api/v1/bancos/{bancoId}/estoque`, `GET /api/v1/hemocomponentes`, `POST /api/v1/hemocomponentes` e `PATCH /api/v1/hemocomponentes/{id}` |
 | 🏥 Requisições e Alocação | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | `requisicao_hospitalar`, `alocacao` | ⚠️ Domínio + contrato prontos; nenhum controller ainda |
 | 🚚 Roteirização e Logística | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | `ponto_rede`, `conexao`, `entrega` | ✅ Implementado (`RotaController`, grafo + Dijkstra) |
 | 🌡️ Telemetria e Cadeia Fria | `/entregas/{id}/leituras` | *(nenhuma)* | `entrega`, `leitura_telemetria` | ⚠️ Contrato + tabelas; sem domínio nem controller |
@@ -70,7 +70,7 @@ Controla o cadastro e o ciclo de vida das bolsas de hemocomponentes de um banco 
 | `GET` | `/api/v1/bancos/{bancoId}/estoque` | Estoque consolidado de um banco de sangue | `BancoDeSangue.getEstoque()` |
 | `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `BolsaHemocomponenteRepository.buscarComFiltros(...)` |
 | `POST` | `/api/v1/hemocomponentes` | Cadastra uma nova bolsa (`status` inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
-| `PATCH` | `/api/v1/hemocomponentes/{id}` | Transição de status (`reservar`, `descartar`) | `reservar()` / `descartar()` |
+| `PATCH` | `/api/v1/hemocomponentes/{id}` | Reserva, libera a reserva, descarta e corrige validade, volume, temperatura e localização | `reservar()` / `liberarReserva()` / `descartar()` / `corrigirValidade()`… |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | Remove o cadastro (erro de lançamento) | — |
 
 ```mermaid

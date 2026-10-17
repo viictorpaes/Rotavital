@@ -117,6 +117,34 @@ public class BolsaHemocomponente implements Persistable<String>
         this.status = StatusBolsa.DESCARTADA;
     }
 
+    // Desfaz a reserva: a bolsa volta a ficar disponível para o FEFO.
+    public void liberarReserva()
+    {
+        this.status = StatusBolsa.DISPONIVEL;
+    }
+
+    // Correções de cadastro (PI3-190). As regras (prazo do componente, volume e faixa do sensor) ficam no
+    // EstoqueService, as mesmas do cadastro.
+    public void corrigirValidade(LocalDate novaValidade)
+    {
+        this.dataValidade = novaValidade;
+    }
+
+    public void corrigirVolume(double novoVolumeMl)
+    {
+        this.volumeMl = novoVolumeMl;
+    }
+
+    public void registrarTemperatura(double temperaturaLida)
+    {
+        this.temperaturaCelsius = temperaturaLida;
+    }
+
+    public void alterarLocalizacao(String novaLocalizacao)
+    {
+        this.localizacao = novaLocalizacao;
+    }
+
     @PostLoad
     @PostPersist
     void marcarComoGravada()

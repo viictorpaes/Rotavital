@@ -322,7 +322,7 @@ paths:
           description: Bolsa criada com status inicial DISPONIVEL.
           headers:
             Location:
-              description: Endereço da bolsa criada (ex.: /api/v1/hemocomponentes/CH-1091).
+              description: 'Endereço da bolsa criada (ex.: /api/v1/hemocomponentes/CH-1091).'
               schema: { type: string }
           content:
             application/json:
@@ -355,23 +355,30 @@ paths:
 
     patch:
       tags: [Hemocomponentes]
-      summary: Atualiza o status de uma bolsa (reservar, descartar, etc.)
-      description: Aplica uma transição de status equivalente aos métodos reservar()/descartar() de BolsaHemocomponente no domínio.
-      operationId: atualizarStatusHemocomponente
+      summary: Altera uma bolsa (reservar, liberar a reserva, descartar ou corrigir dados)
+      description: >-
+        Atualização parcial: só os campos enviados mudam. status aceita RESERVADA, DISPONIVEL (libera a reserva)
+        e DESCARTADA, equivalentes a reservar()/liberarReserva()/descartar() de BolsaHemocomponente. Validade,
+        volume e temperatura seguem as regras do cadastro. Só bolsa DISPONIVEL ou RESERVADA pode ser alterada.
+      operationId: atualizarHemocomponente
       parameters:
         - $ref: '#/components/parameters/BolsaIdPath'
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/AtualizarStatusBolsaRequest' }
-            example: { status: RESERVADA }
+            schema: { $ref: '#/components/schemas/AtualizarBolsaHemocomponenteRequest' }
+            examples:
+              reservar: { value: { status: RESERVADA } }
+              corrigir: { value: { dataValidade: '2026-11-20', volumeMl: 320, localizacao: 'R3 · P1 · N1' } }
       responses:
         '200':
           description: Bolsa atualizada.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/BolsaHemocomponente' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
         '422':
@@ -914,11 +921,18 @@ components:
         bancoOrigemId: { type: string }
       required: [tipoComponente, tipoSanguineo, dataColeta, dataValidade, loteSintetico, volumeMl, temperaturaCelsius, bancoOrigemId]
 
-    AtualizarStatusBolsaRequest:
+    AtualizarBolsaHemocomponenteRequest:
       type: object
+      description: Todos os campos são opcionais, mas ao menos um precisa vir. localizacao "" apaga a localização.
       properties:
-        status: { $ref: '#/components/schemas/StatusBolsa' }
-      required: [status]
+        status:
+          type: string
+          enum: [DISPONIVEL, RESERVADA, DESCARTADA]
+        dataValidade: { type: string, format: date }
+        volumeMl: { type: number, exclusiveMinimum: 0, maximum: 700 }
+        temperaturaCelsius: { type: number, minimum: -80, maximum: 60 }
+        localizacao: { type: string }
+      minProperties: 1
 
     Estoque:
       type: object

@@ -61,7 +61,7 @@ flowchart LR
 | Módulo | Subtask | Recursos | Espelha no domínio | Implementado? |
 |---|---|---|---|:---:|
 | 🔑 Acesso | HU-01 | `/acessos` | `Usuario` (senha conferida pelo Supabase Auth) | ✅ |
-| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque`, `GET /bancos/{bancoId}/estoque/resumo`, `GET /hemocomponentes`, `POST /hemocomponentes` e `GET /hemocomponentes/{id}`) |
+| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque`, `GET /bancos/{bancoId}/estoque/resumo`, `GET /hemocomponentes`, `POST /hemocomponentes`, `GET /hemocomponentes/{id}` e `PATCH /hemocomponentes/{id}`) |
 | 🏥 Requisições e Alocação | PI3-47 | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ❌ sem controller |
 | 🚚 Roteirização e Logística | PI3-48 | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ |
 | 🌡️ Telemetria e Cadeia Fria | PI3-49 | `/entregas/{id}/leituras` | *(gap — sem classe de domínio)* | ❌ sem controller |
@@ -166,7 +166,7 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | `GET` | `/api/v1/hemocomponentes?bancoId=&tipoComponente=&tipoSanguineo=&status=&page=0&size=20` | ✅ Lista bolsas com filtros e paginação, da que vence primeiro para a última (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente[]` | `200` · `400` |
 | `POST` | `/api/v1/hemocomponentes` | ✅ Cadastra uma bolsa (status inicial `DISPONIVEL`; por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `201` · `400` · `422` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | ✅ Detalhe de uma bolsa (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` |
-| `PATCH` | `/api/v1/hemocomponentes/{id}` | 🕓 Transição de status (reservar, descartar…) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` · `422` |
+| `PATCH` | `/api/v1/hemocomponentes/{id}` | ✅ Reserva, libera a reserva, descarta e corrige validade/volume/temperatura/localização (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `400` · `404` · `422` |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | 🕓 Remove um cadastro feito por engano | Nenhuma no MVP (alvo: médico) | *(sem corpo)* | `204` · `404` |
 | **🏥 Requisições** | *`RequisicaoController` (planejado)* | | | | |
 | `POST` | `/api/v1/requisicoes` | 🕓 Registra o pedido de um hospital (status `PENDENTE`) | Nenhuma no MVP (alvo: médico) | `RequisicaoHospitalar` | `201` · `400` |
@@ -314,7 +314,7 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 | `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `BolsaHemocomponenteRepository.buscarComFiltros(...)` |
 | `POST` | `/api/v1/hemocomponentes` | Cadastra uma nova bolsa (status inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | Detalhe de uma bolsa | — |
-| `PATCH` | `/api/v1/hemocomponentes/{id}` | Transição de status (`reservar`, `descartar`, etc.) | `reservar()` / `descartar()` |
+| `PATCH` | `/api/v1/hemocomponentes/{id}` | Transição de status (`reservar`, liberar a reserva, `descartar`) e correção de dados | `reservar()` / `liberarReserva()` / `descartar()` / `corrigirValidade()`… |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | Remove o cadastro (erro de lançamento) | — |
 
 **Schema `BolsaHemocomponente`**:
@@ -342,7 +342,7 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 >
 > `GET /api/v1/hemocomponentes/{id}` também roda (PI3-181): o `EstoqueService.buscarBolsa` lê a bolsa da tabela
 > `bolsa_hemocomponente`; bolsa inexistente → `404` com `"Nenhuma bolsa encontrada com id BOLSA-999."`. A edição e o
-> descarte (PI3-190) devem usar o mesmo método, para responder a mesma mensagem. `tipoSanguineo` fora da lista no
+> descarte (PI3-190) respondem a mesma mensagem. `tipoSanguineo` fora da lista no
 > `GET /bancos/{bancoId}/estoque` → `400` com os valores aceitos.
 >
 > `POST /api/v1/hemocomponentes` também roda (PI3-179): o `EstoqueService.cadastrarBolsa` valida os dados com
@@ -355,13 +355,24 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 > dia, validade além do prazo do componente (hemácias 42 dias, plaquetas 7, crioprecipitado 365, plasma 730),
 > bolsa já vencida, volume acima de 700 ml, temperatura fora de -80 a 60 °C, lote já usado no mesmo componente ou
 > banco de origem inexistente → `422`. São as mesmas regras das constraints da tabela, conferidas antes de gravar
-> para a resposta não virar `500`. A mensagem junta todos os problemas encontrados. Os demais endpoints de
-> `/hemocomponentes` continuam só no contrato.
+> para a resposta não virar `500`. A mensagem junta todos os problemas encontrados.
+>
+> `PATCH /api/v1/hemocomponentes/{id}` também roda (PI3-190): o `EstoqueService.atualizarBolsa` faz uma atualização
+> parcial. O corpo aceita `status`, `dataValidade`, `volumeMl`, `temperaturaCelsius` e `localizacao`, todos opcionais:
+> o que não vier fica como está, e `localizacao` em branco apaga a localização. `status` aceita `RESERVADA` (reservar),
+> `DISPONIVEL` (liberar a reserva) e `DESCARTADA` (descartar). Componente, tipo sanguíneo, coleta, lote e banco não
+> mudam: com um desses errados, a bolsa é descartada e cadastrada de novo. Responde `200` com a bolsa como ficou.
+>
+> Bolsa inexistente → `404`. Corpo sem nenhum campo, `volumeMl` ≤ 0 ou valor fora do tipo (ex.: status que não existe)
+> → `400`. Bolsa que não está `DISPONIVEL` nem `RESERVADA` (descartada, em trânsito, entregue ou utilizada),
+> `status` `EM_TRANSITO`, `ENTREGUE` ou `UTILIZADA` (vêm do transporte e do procedimento) e validade, volume ou
+> temperatura fora das regras do cadastro → `422`, com todos os problemas na mesma mensagem. O `DELETE` continua só
+> no contrato.
 
 **DTOs Java equivalentes** (`backend/src/main/java/com/rotavital/api/dto/estoque/`):
 [`BolsaHemocomponenteDTO`](../backend/src/main/java/com/rotavital/api/dto/estoque/BolsaHemocomponenteDTO.java) ·
 [`NovaBolsaHemocomponenteRequest`](../backend/src/main/java/com/rotavital/api/dto/estoque/NovaBolsaHemocomponenteRequest.java) ·
-[`AtualizarStatusBolsaRequest`](../backend/src/main/java/com/rotavital/api/dto/estoque/AtualizarStatusBolsaRequest.java) ·
+[`AtualizarBolsaHemocomponenteRequest`](../backend/src/main/java/com/rotavital/api/dto/estoque/AtualizarBolsaHemocomponenteRequest.java) ·
 [`EstoqueDTO`](../backend/src/main/java/com/rotavital/api/dto/estoque/EstoqueDTO.java).
 
 <h2 align="left" id="5-requisicoes">🏥 5. Módulo de Requisições Hospitalares e Alocação (PI3-47)</h2>

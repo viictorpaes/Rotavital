@@ -1,7 +1,8 @@
-import { MapPin, Thermometer } from "lucide-react";
+import { Lock, LockOpen, MapPin, Pencil, Thermometer, Trash2 } from "lucide-react";
 import type { LoteHemocomponente } from "@/types";
 import { cn } from "@/lib/utilitarios";
 import {
+  bolsaEditavel,
   diasAteVencer,
   formatarData,
   formatarTemperatura,
@@ -29,7 +30,20 @@ function Campo({ rotulo, children }: Readonly<{ rotulo: string; children: React.
   );
 }
 
-export function CartaoLote({ lote }: Readonly<{ lote: LoteHemocomponente }>)
+/** Ações da bolsa (PI3-190). Sem elas, o cartão só mostra os dados (ex.: dados de exemplo). */
+export interface AcoesBolsa
+{
+  onEditar: (lote: LoteHemocomponente) => void;
+  onAlternarReserva: (lote: LoteHemocomponente) => void;
+  onDescartar: (lote: LoteHemocomponente) => void;
+  /** true enquanto a reserva desta bolsa está sendo enviada. */
+  ocupada?: boolean;
+}
+
+const CLASSE_ACAO =
+  "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50";
+
+export function CartaoLote({ lote, acoes }: Readonly<{ lote: LoteHemocomponente; acoes?: AcoesBolsa }>)
 {
   const status = statusLote(lote);
   const dias = diasAteVencer(lote);
@@ -92,6 +106,42 @@ export function CartaoLote({ lote }: Readonly<{ lote: LoteHemocomponente }>)
           </span>
         )}
       </div>
+
+      {acoes && bolsaEditavel(lote) && (
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-rota-border pt-4">
+          <button
+            type="button"
+            onClick={() => acoes.onEditar(lote)}
+            disabled={acoes.ocupada}
+            className={cn(CLASSE_ACAO, "border-rota-border text-gray-700 hover:bg-gray-50")}
+            aria-label={`Editar bolsa ${lote.id}`}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Editar
+          </button>
+          <button
+            type="button"
+            onClick={() => acoes.onAlternarReserva(lote)}
+            disabled={acoes.ocupada}
+            className={cn(CLASSE_ACAO, "border-rota-border text-gray-700 hover:bg-gray-50")}
+            aria-label={`${lote.statusBolsa === "RESERVADA" ? "Liberar reserva da" : "Reservar"} bolsa ${lote.id}`}
+          >
+            {lote.statusBolsa === "RESERVADA"
+              ? <><LockOpen className="h-3.5 w-3.5" />Liberar reserva</>
+              : <><Lock className="h-3.5 w-3.5" />Reservar</>}
+          </button>
+          <button
+            type="button"
+            onClick={() => acoes.onDescartar(lote)}
+            disabled={acoes.ocupada}
+            className={cn(CLASSE_ACAO, "ml-auto border-rose-200 text-rose-700 hover:bg-rose-50")}
+            aria-label={`Descartar bolsa ${lote.id}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Descartar
+          </button>
+        </div>
+      )}
     </div>
   );
 }

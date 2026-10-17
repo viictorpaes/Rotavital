@@ -88,6 +88,8 @@ export interface LoteHemocomponente
   localizacao: string;
   /** Status da bolsa no backend (DISPONIVEL, RESERVADA…); ausente nos dados de exemplo. */
   statusBolsa?: string;
+  /** Data de coleta (AAAA-MM-DD), base do prazo máximo de validade; ausente nos dados de exemplo. */
+  dataColeta?: string;
 }
 
 /** Origem de um aviso do painel operacional (HU-02). */

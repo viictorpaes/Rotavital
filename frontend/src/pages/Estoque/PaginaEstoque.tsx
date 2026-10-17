@@ -12,12 +12,15 @@ import {
   paraTipoSanguineoBackend,
   statusGrupo,
 } from "@/lib/estoque";
-import { listarHemocomponentes } from "@/services/api";
+import { atualizarHemocomponente, listarHemocomponentes } from "@/services/api";
+import { mensagemDoErro } from "@/lib/erros";
 import { FiltroTipoEstoque } from "@/components/estoque/FiltroTipoEstoque";
 import { SeletorFiltro } from "@/components/estoque/SeletorFiltro";
 import { PaginacaoEstoque } from "@/components/estoque/PaginacaoEstoque";
 import { CartaoLote } from "@/components/estoque/CartaoLote";
 import { ModalNovaBolsa } from "@/components/estoque/ModalNovaBolsa";
+import { ModalEditarBolsa } from "@/components/estoque/ModalEditarBolsa";
+import { ModalDescartarBolsa } from "@/components/estoque/ModalDescartarBolsa";
 import { PontoStatus } from "@/components/ui/PontoStatus";
 import { useNotificacao } from "@/context/ContextoNotificacao";
 
@@ -37,7 +40,9 @@ interface GrupoEstoque
  * HU-03 — Estoque do banco BS-01, lido de GET /api/v1/hemocomponentes (PI3-180). Filtros e paginação
  * rodam no backend; a página mostra as bolsas que vieram, agrupadas por tipo sanguíneo e na ordem
  * FEFO da API. Se a consulta falhar, a tela mostra o erro: não troca por dados de exemplo.
- * "Nova bolsa" abre o cadastro (PI3-179), que grava por POST /api/v1/hemocomponentes.
+ * "Nova bolsa" abre o cadastro (PI3-179), que grava por POST /api/v1/hemocomponentes. Cada bolsa
+ * disponível ou reservada pode ser corrigida, reservada/liberada e descartada (PI3-190), por
+ * PATCH /api/v1/hemocomponentes/{id}; depois de cada alteração, a página consulta a lista de novo.
  */
 export default function PaginaEstoque()
 {
@@ -52,7 +57,10 @@ export default function PaginaEstoque()
   // Só a resposta da consulta mais recente atualiza a tela (filtros trocados rápido não embaralham a lista).
   const ultimaConsulta = useRef(0);
   const [cadastroAberto, setCadastroAberto] = useState(false);
-  const { notificarSucesso } = useNotificacao();
+  const [bolsaEmEdicao, setBolsaEmEdicao] = useState<LoteHemocomponente | null>(null);
+  const [bolsaADescartar, setBolsaADescartar] = useState<LoteHemocomponente | null>(null);
+  const [reservaEmAndamento, setReservaEmAndamento] = useState<string | null>(null);
+  const { notificarSucesso, notificarErro } = useNotificacao();
 
   useEffect(() =>
   {
@@ -106,6 +114,44 @@ export default function PaginaEstoque()
     setFiltroComponente(bolsa.tipoComponente as TipoComponenteBackend);
     setFiltroStatus("todos");
     setPagina(0);
+    setRecarga((valor) => valor + 1);
+  }
+
+  // Reserva e liberação não pedem confirmação (dá para desfazer); o resultado vem em um aviso.
+  async function alternarReserva(lote: LoteHemocomponente)
+  {
+    const reservar = lote.statusBolsa !== "RESERVADA";
+    setReservaEmAndamento(lote.id);
+
+    try
+    {
+      await atualizarHemocomponente(lote.id, { status: reservar ? "RESERVADA" : "DISPONIVEL" });
+      notificarSucesso(reservar ? "Bolsa reservada" : "Reserva liberada",
+        `${lote.id} · ${lote.tipoSanguineo} · ${reservar ? "fora do FEFO até ser liberada" : "disponível de novo"}`);
+      setRecarga((valor) => valor + 1);
+    }
+    catch (falha: unknown)
+    {
+      notificarErro(reservar ? "Não foi possível reservar" : "Não foi possível liberar a reserva",
+        mensagemDoErro(falha, "Não foi possível conectar com o back-end."));
+    }
+    finally
+    {
+      setReservaEmAndamento(null);
+    }
+  }
+
+  function aoSalvarCorrecao(bolsa: BolsaHemocomponenteDTO)
+  {
+    setBolsaEmEdicao(null);
+    notificarSucesso("Bolsa corrigida", `${bolsa.id} · validade ${formatarData(bolsa.dataValidade)} · ${bolsa.volumeMl} mL`);
+    setRecarga((valor) => valor + 1);
+  }
+
+  function aoDescartar(bolsa: BolsaHemocomponenteDTO)
+  {
+    setBolsaADescartar(null);
+    notificarSucesso("Bolsa descartada", `${bolsa.id} saiu do estoque.`);
     setRecarga((valor) => valor + 1);
   }
 
@@ -228,7 +274,16 @@ export default function PaginaEstoque()
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {grupo.lotes.map((lote) => (
-                  <CartaoLote key={lote.id} lote={lote} />
+                  <CartaoLote
+                    key={lote.id}
+                    lote={lote}
+                    acoes={{
+                      onEditar: setBolsaEmEdicao,
+                      onAlternarReserva: alternarReserva,
+                      onDescartar: setBolsaADescartar,
+                      ocupada: reservaEmAndamento === lote.id,
+                    }}
+                  />
                 ))}
               </div>
             </section>
@@ -246,6 +301,14 @@ export default function PaginaEstoque()
           onClose={() => setCadastroAberto(false)}
           onCadastrada={aoCadastrarBolsa}
         />
+      )}
+
+      {bolsaEmEdicao && (
+        <ModalEditarBolsa lote={bolsaEmEdicao} onClose={() => setBolsaEmEdicao(null)} onSalva={aoSalvarCorrecao} />
+      )}
+
+      {bolsaADescartar && (
+        <ModalDescartarBolsa lote={bolsaADescartar} onClose={() => setBolsaADescartar(null)} onDescartada={aoDescartar} />
       )}
     </div>
   );
