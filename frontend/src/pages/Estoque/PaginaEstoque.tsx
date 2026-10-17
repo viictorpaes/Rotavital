@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, Database, RefreshCw } from "lucide-react";
+import { AlertCircle, CheckCircle2, Database, Plus, RefreshCw } from "lucide-react";
 import type { LoteHemocomponente, TipoSanguineo } from "@/types";
-import type { StatusBolsaBackend, TipoComponenteBackend } from "@/types/dtos";
+import type { BolsaHemocomponenteDTO, StatusBolsaBackend, TipoComponenteBackend } from "@/types/dtos";
 import {
   COMPONENTES_FILTRO,
   STATUS_FILTRO,
   TIPOS_SANGUINEOS,
   converterBolsaParaLote,
+  converterTipoSanguineo,
+  formatarData,
   paraTipoSanguineoBackend,
   statusGrupo,
 } from "@/lib/estoque";
@@ -15,7 +17,9 @@ import { FiltroTipoEstoque } from "@/components/estoque/FiltroTipoEstoque";
 import { SeletorFiltro } from "@/components/estoque/SeletorFiltro";
 import { PaginacaoEstoque } from "@/components/estoque/PaginacaoEstoque";
 import { CartaoLote } from "@/components/estoque/CartaoLote";
+import { ModalNovaBolsa } from "@/components/estoque/ModalNovaBolsa";
 import { PontoStatus } from "@/components/ui/PontoStatus";
+import { useNotificacao } from "@/context/ContextoNotificacao";
 
 const BANCO_ID = "BS-01";
 
@@ -33,6 +37,7 @@ interface GrupoEstoque
  * HU-03 — Estoque do banco BS-01, lido de GET /api/v1/hemocomponentes (PI3-180). Filtros e paginação
  * rodam no backend; a página mostra as bolsas que vieram, agrupadas por tipo sanguíneo e na ordem
  * FEFO da API. Se a consulta falhar, a tela mostra o erro: não troca por dados de exemplo.
+ * "Nova bolsa" abre o cadastro (PI3-179), que grava por POST /api/v1/hemocomponentes.
  */
 export default function PaginaEstoque()
 {
@@ -46,6 +51,8 @@ export default function PaginaEstoque()
   const [recarga, setRecarga] = useState(0);
   // Só a resposta da consulta mais recente atualiza a tela (filtros trocados rápido não embaralham a lista).
   const ultimaConsulta = useRef(0);
+  const [cadastroAberto, setCadastroAberto] = useState(false);
+  const { notificarSucesso } = useNotificacao();
 
   useEffect(() =>
   {
@@ -86,6 +93,20 @@ export default function PaginaEstoque()
       definir(valor);
       setPagina(0);
     };
+  }
+
+  // Depois do cadastro, a lista passa a mostrar o tipo e o componente da bolsa nova, desde a primeira
+  // página: assim ela aparece na tela, mesmo que antes os filtros estivessem em outro tipo.
+  function aoCadastrarBolsa(bolsa: BolsaHemocomponenteDTO)
+  {
+    const tipo = converterTipoSanguineo(bolsa.tipoSanguineo);
+    setCadastroAberto(false);
+    notificarSucesso("Bolsa registrada", `${bolsa.id} · ${tipo} · validade ${formatarData(bolsa.dataValidade)}`);
+    setFiltroTipo(tipo);
+    setFiltroComponente(bolsa.tipoComponente as TipoComponenteBackend);
+    setFiltroStatus("todos");
+    setPagina(0);
+    setRecarga((valor) => valor + 1);
   }
 
   const grupos = useMemo<GrupoEstoque[]>(() =>
@@ -135,6 +156,15 @@ export default function PaginaEstoque()
           >
             <RefreshCw className={`h-3.5 w-3.5 ${carregando ? "animate-spin text-rota-red" : ""}`} />
             {carregando ? "Sincronizando..." : "Sincronizar Banco"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setCadastroAberto(true)}
+            className="flex items-center gap-2 rounded-lg bg-rota-red px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-rota-redDark active:scale-95"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Nova bolsa
           </button>
         </div>
       </div>
@@ -208,6 +238,14 @@ export default function PaginaEstoque()
 
       {!erro && (pagina > 0 || temProxima) && (
         <PaginacaoEstoque pagina={pagina} temProxima={temProxima} carregando={carregando} onMudar={setPagina} />
+      )}
+
+      {cadastroAberto && (
+        <ModalNovaBolsa
+          bancoId={BANCO_ID}
+          onClose={() => setCadastroAberto(false)}
+          onCadastrada={aoCadastrarBolsa}
+        />
       )}
     </div>
   );

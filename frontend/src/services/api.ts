@@ -9,6 +9,7 @@ import type {
   EstoqueDTO,
   BolsaHemocomponenteDTO,
   FiltrosHemocomponentesDTO,
+  NovaBolsaHemocomponenteDTO,
   PontoRedeDTO,
   RotaCalculadaDTO,
   DiagnosticoDados,
@@ -48,6 +49,15 @@ export async function listarHemocomponentes(filtros: FiltrosHemocomponentesDTO =
     params: { ...filtros },
     silencioso: true,
   });
+}
+
+/**
+ * Registra uma bolsa nova no estoque (PI3-179) e devolve a bolsa criada, com o id gerado pelo backend.
+ * Silencioso: o formulário mostra a mensagem de erro da API dentro dele, sem o toast global.
+ */
+export async function cadastrarHemocomponente(dados: NovaBolsaHemocomponenteDTO): Promise<BolsaHemocomponenteDTO>
+{
+  return clienteHttp.post<BolsaHemocomponenteDTO>("/hemocomponentes", dados, { silencioso: true });
 }
 
 /**

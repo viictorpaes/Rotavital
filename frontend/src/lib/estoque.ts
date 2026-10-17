@@ -190,3 +190,41 @@ export function rotuloStatusBolsa(status: string): string
 {
   return ROTULOS_STATUS_BOLSA[status as StatusBolsaBackend] ?? status;
 }
+/** Validade máxima de cada componente, em dias depois da coleta (TipoComponente no backend). */
+export const PRAZO_MAXIMO_DIAS: Record<TipoComponenteBackend, number> =
+{
+  HEMACIAS: 42,
+  PLASMA: 730,
+  PLAQUETAS: 7,
+  CRIOPRECIPITADO: 365,
+};
+
+/** Data de hoje no fuso do navegador, no formato do input date (AAAA-MM-DD). */
+export function hojeIso(): string
+{
+  const hoje = new Date();
+  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoje.getDate()).padStart(2, "0");
+  return `${hoje.getFullYear()}-${mes}-${dia}`;
+}
+
+/** "2026-10-16" + 42 → "2026-11-27". Feito em UTC para o horário de verão não pular um dia. */
+export function somarDias(iso: string, dias: number): string
+{
+  const data = new Date(`${iso}T00:00:00Z`);
+  data.setUTCDate(data.getUTCDate() + dias);
+  return data.toISOString().slice(0, 10);
+}
+
+/** Validade sugerida para uma bolsa nova: o prazo máximo do componente, contado da coleta. */
+export function sugerirValidade(componente: TipoComponenteBackend, dataColeta: string): string
+{
+  return dataColeta ? somarDias(dataColeta, PRAZO_MAXIMO_DIAS[componente]) : "";
+}
+
+/** Temperatura inicial do formulário: o meio da faixa ideal do componente (hemácias → 4 °C). */
+export function temperaturaSugerida(componente: TipoComponenteBackend): number
+{
+  const { minima, maxima } = obterFaixaTemperatura(componente);
+  return (minima + maxima) / 2;
+}
