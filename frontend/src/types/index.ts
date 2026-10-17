@@ -86,6 +86,8 @@ export interface LoteHemocomponente
   temperaturaIdeal: FaixaTemperatura;
   /** Localização física: refrigerador/prateleira/nível. */
   localizacao: string;
+  /** Status da bolsa no backend (DISPONIVEL, RESERVADA…); ausente nos dados de exemplo. */
+  statusBolsa?: string;
 }
 
 /** Origem de um aviso do painel operacional (HU-02). */

@@ -72,6 +72,17 @@ export interface BolsaHemocomponenteDTO
   bancoOrigemId?: string;
 }
 
+/** Filtros opcionais e combináveis de GET /hemocomponentes; page começa em 0 e size vai de 1 a 100. */
+export interface FiltrosHemocomponentesDTO
+{
+  bancoId?: string;
+  tipoComponente?: TipoComponenteBackend;
+  tipoSanguineo?: TipoSanguineoBackend;
+  status?: StatusBolsaBackend;
+  page?: number;
+  size?: number;
+}
+
 export interface EstoqueDTO
 {
   bancoDeSangueId: string;

@@ -410,7 +410,7 @@ no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada
 > e localização de cada lote, para saber quais estão em risco de vencer ou fora da faixa ideal.
 >
 > ✅ Backend — `GET /api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` via [`EstoqueController.java`](./backend/src/main/java/com/rotavital/api/EstoqueController.java) (PR #2, mesclado)
-> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02 com dados mockados (ver [Figma × Sistema Real](#figma-vs-real))
+> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02; hoje lista as bolsas de `GET /api/v1/hemocomponentes`, com filtros de tipo sanguíneo, componente e status e paginação (PI3-180; ver [Figma × Sistema Real](#figma-vs-real))
 
 > 🟨 **HU‑09** — Como **médico ou doador**, preciso visualizar as pessoas que precisam de doação — filtráveis
 > por tipo sanguíneo — e agendar uma doação, para direcionar doadores compatíveis a quem precisa com urgência.
@@ -640,7 +640,9 @@ Rotavital🩸/
 │       │   │   └── AcoesRapidas.tsx <img src="https://img.shields.io/badge/-Atalhos-111827?style=flat&logo=react&logoColor=F59E0B" height="18"/>
 │       │   ├── estoque <img src="https://img.shields.io/badge/-Estoque-111827?style=flat-square&logo=react&logoColor=FF3621" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>/
 │       │   │   ├── CartaoLote.tsx <img src="https://img.shields.io/badge/-Card-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
-│       │   │   └── FiltroTipoEstoque.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── FiltroTipoEstoque.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── PaginacaoEstoque.tsx <img src="https://img.shields.io/badge/-Paginação-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   └── SeletorFiltro.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   ├── requisicao <img src="https://img.shields.io/badge/-Requisição-111827?style=flat-square&logo=react&logoColor=E0234E" height="18"/> <img src="https://img.shields.io/badge/HU‑04_·_05_·_06-111827?style=flat-square&logoColor=white" height="18"/>/
 │       │   │   ├── FormularioRequisicao.tsx <img src="https://img.shields.io/badge/-Formulário-111827?style=flat&logo=react&logoColor=E0234E" height="18"/>
 │       │   │   ├── ListaRecebimentos.tsx <img src="https://img.shields.io/badge/-Lista-111827?style=flat&logo=react&logoColor=E0234E" height="18"/>
@@ -763,8 +765,8 @@ Rotavital🩸/
 > contrato em `openapi.yaml`, mas nenhum controller. O domínio também tem `FilaRequisicoesHospitalares` (FIFO)
 > e `PilhaOperacoes` (LIFO), as versões Java das estruturas do módulo em C.
 >
-> **Frontend:** as 10 histórias da Entrega 01 (**HU‑01** a **HU‑10**) têm tela em React. O **Estoque (HU‑03)** e a
-> tela de **Admin** já consomem a API `/api/v1` por `src/services/api.ts` (cliente em `clienteHttp.ts`, erros
+> **Frontend:** as 10 histórias da Entrega 01 (**HU‑01** a **HU‑10**) têm tela em React. O **Estoque (HU‑03)**, com filtros e
+> paginação em `GET /hemocomponentes`, e a tela de **Admin** já consomem a API `/api/v1` por `src/services/api.ts` (cliente em `clienteHttp.ts`, erros
 > exibidos pelo `ContextoNotificacao`); as demais telas e o login continuam sobre dados **mockados**
 > (`src/data/*Mock.ts` + `ContextoDados`). A roteirização da HU‑07 consulta o OSRM público e cai nos valores
 > mockados se ele não responder. O restante da integração segue na Issue #4.
@@ -1145,34 +1147,25 @@ export default function PaginaPainel()
 ```tsx
 export default function PaginaEstoque()
 {
-  const { lotes: lotesMock } = useDados();
-  const [lotes, setLotes] = useState<LoteHemocomponente[]>([]);
-  const [fonte, setFonte] = useState<"banco" | "mock">("banco");
+  const [filtroTipo, setFiltroTipo] = useState<TipoSanguineo | "todos">("todos");
+  const [filtroComponente, setFiltroComponente] = useState<TipoComponenteBackend | "todos">("todos");
+  const [filtroStatus, setFiltroStatus] = useState<StatusBolsaBackend | "todos">("todos");
+  const [pagina, setPagina] = useState(0);
   // ...
 
-  async function carregarEstoqueDoBanco()
+  useEffect(() =>
   {
-    try
-    {
-      setCarregando(true);
-      const res = await buscarEstoque("BS-01");
-      if (res && res.bolsas && res.bolsas.length > 0)
-      {
-        const convertidos = res.bolsas.map(converterBolsaParaLote);
-        setLotes(convertidos);
-        setFonte("banco");
-        setErro(null);
-      }
-      // ...
-    }
-    catch (err: any)
-    {
-      console.warn("Falha ao carregar estoque do Supabase, usando mocks locais:", err);
-      setLotes(lotesMock);
-      setFonte("mock");
-      // ...
-    }
-  }
+    listarHemocomponentes({                       // GET /api/v1/hemocomponentes
+      bancoId: BANCO_ID,
+      tipoSanguineo: filtroTipo === "todos" ? undefined : paraTipoSanguineoBackend(filtroTipo),
+      tipoComponente: filtroComponente === "todos" ? undefined : filtroComponente,
+      status: filtroStatus === "todos" ? undefined : filtroStatus,
+      page: pagina,
+      size: TAMANHO_PAGINA,
+    })
+      .then((bolsas) => setLotes(bolsas.map(converterBolsaParaLote)))
+      .catch((falha) => setErro(falha.message));  // mostra o erro; não troca por dados de exemplo
+  }, [filtroTipo, filtroComponente, filtroStatus, pagina, recarga]);
   // ...
 }
 ```
