@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import com.rotavital.api.dto.estoque.NovaBolsaHemocomponenteRequest;
 import com.rotavital.dominio.BancoDeSangue;
 import com.rotavital.dominio.BolsaHemocomponente;
 import com.rotavital.dominio.Estoque;
+import com.rotavital.dominio.StatusBolsa;
 import com.rotavital.dominio.TipoComponente;
 import com.rotavital.dominio.TipoSanguineo;
 import com.rotavital.repositorio.BancoDeSangueRepository;
@@ -26,6 +28,7 @@ import com.rotavital.repositorio.BolsaHemocomponenteRepository;
 public class EstoqueService
 {
     private static final DateTimeFormatter DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final int TAMANHO_MAXIMO_PAGINA = 100;
 
     // Limites das constraints ck_bolsa_volume_ml e ck_bolsa_temperatura_sensor. A temperatura é a faixa
     // física do sensor: fora da faixa ideal do componente é só alerta (BolsaHemocomponente.estaForaDaFaixa).
@@ -83,6 +86,43 @@ public class EstoqueService
     {
         return bolsas.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Nenhuma bolsa encontrada com id " + id + "."));
+    }
+
+    /**
+     * Bolsas de todos os bancos, com filtros opcionais e combináveis, da que vence primeiro para a
+     * que vence por último (FEFO). Filtro nulo (ou bancoId em branco) não restringe; nada batendo
+     * devolve lista vazia. Página negativa, tamanho fora de 1 a 100 ou página tão alta que
+     * page × size passa de Integer.MAX_VALUE lança DadosInvalidosException (400).
+     */
+    @Transactional(readOnly = true)
+    public List<BolsaHemocomponente> listarBolsas(String bancoId, TipoComponente tipoComponente,
+            TipoSanguineo tipoSanguineo, StatusBolsa status, int pagina, int tamanho)
+    {
+        List<String> problemas = new ArrayList<>();
+
+        if (pagina < 0)
+        {
+            problemas.add("O parâmetro 'page' deve ser maior ou igual a 0.");
+        }
+        if (tamanho < 1 || tamanho > TAMANHO_MAXIMO_PAGINA)
+        {
+            problemas.add("O parâmetro 'size' deve estar entre 1 e " + TAMANHO_MAXIMO_PAGINA + ".");
+        }
+        // O deslocamento (page × size) vai para a consulta como int: acima de Integer.MAX_VALUE o
+        // Spring Data recusa a consulta, e a API responderia 500 em vez de 400.
+        if (problemas.isEmpty() && (long) pagina * tamanho > Integer.MAX_VALUE)
+        {
+            problemas.add("O parâmetro 'page' é alto demais: page × size deve ser no máximo " + Integer.MAX_VALUE + ".");
+        }
+
+        if (!problemas.isEmpty())
+        {
+            throw new DadosInvalidosException(String.join(" ", problemas));
+        }
+
+        String banco = bancoId == null || bancoId.isBlank() ? null : bancoId;
+
+        return bolsas.buscarComFiltros(banco, tipoComponente, tipoSanguineo, status, PageRequest.of(pagina, tamanho));
     }
 
     /**

@@ -21,6 +21,8 @@ import com.rotavital.api.dto.estoque.EstoqueDTO;
 import com.rotavital.api.dto.estoque.NovaBolsaHemocomponenteRequest;
 import com.rotavital.api.dto.estoque.ResumoEstoqueDTO;
 import com.rotavital.dominio.BolsaHemocomponente;
+import com.rotavital.dominio.StatusBolsa;
+import com.rotavital.dominio.TipoComponente;
 import com.rotavital.dominio.TipoSanguineo;
 import com.rotavital.servico.EstoqueService;
 import com.rotavital.servico.ResumoEstoqueService;
@@ -73,6 +75,27 @@ public class EstoqueController
 
         EstoqueDTO estoque = new EstoqueDTO(bancoId, bolsasDTO.size(), bolsasDTO);
         return ResponseEntity.ok(estoque);
+    }
+
+    // Filtros opcionais e combináveis; sempre 200, com lista vazia quando nada bate.
+    // Página ou tamanho fora da faixa: o EstoqueService lança DadosInvalidosException e o TratadorDeErros responde 400.
+    @GetMapping("/hemocomponentes")
+    public ResponseEntity<List<BolsaHemocomponenteDTO>> listarBolsas(
+    @RequestParam(name = "bancoId", required = false) String bancoId,
+    @RequestParam(name = "tipoComponente", required = false) TipoComponente tipoComponente,
+    @RequestParam(name = "tipoSanguineo", required = false) TipoSanguineo tipoSanguineo,
+    @RequestParam(name = "status", required = false) StatusBolsa status,
+    @RequestParam(name = "page", defaultValue = "0") int page,
+    @RequestParam(name = "size", defaultValue = "20") int size)
+    {
+        List<BolsaHemocomponenteDTO> bolsasDTO = new ArrayList<>();
+
+        for (BolsaHemocomponente bolsa : estoqueService.listarBolsas(bancoId, tipoComponente, tipoSanguineo, status, page, size))
+        {
+            bolsasDTO.add(paraBolsaDTO(bolsa));
+        }
+
+        return ResponseEntity.ok(bolsasDTO);
     }
 
     // Bolsa inexistente: o EstoqueService lança RecursoNaoEncontradoException e o TratadorDeErros responde 404.
