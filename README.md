@@ -410,7 +410,7 @@ no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada
 > e localização de cada lote, para saber quais estão em risco de vencer ou fora da faixa ideal.
 >
 > ✅ Backend — `GET /api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` via [`EstoqueController.java`](./backend/src/main/java/com/rotavital/api/EstoqueController.java) (PR #2, mesclado)
-> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02; hoje lista as bolsas de `GET /api/v1/hemocomponentes`, com filtros de tipo sanguíneo, componente e status e paginação (PI3-180; ver [Figma × Sistema Real](#figma-vs-real))
+> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02; hoje lista as bolsas de `GET /api/v1/hemocomponentes`, com filtros de tipo sanguíneo, componente e status e paginação (PI3-180), e o botão **Nova bolsa** cadastra pelo `POST /api/v1/hemocomponentes`, mostrando no formulário os erros 400/422 da API (PI3-179; ver [Figma × Sistema Real](#figma-vs-real))
 
 > 🟨 **HU‑09** — Como **médico ou doador**, preciso visualizar as pessoas que precisam de doação — filtráveis
 > por tipo sanguíneo — e agendar uma doação, para direcionar doadores compatíveis a quem precisa com urgência.
@@ -641,6 +641,7 @@ Rotavital🩸/
 │       │   ├── estoque <img src="https://img.shields.io/badge/-Estoque-111827?style=flat-square&logo=react&logoColor=FF3621" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>/
 │       │   │   ├── CartaoLote.tsx <img src="https://img.shields.io/badge/-Card-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   │   ├── FiltroTipoEstoque.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── ModalNovaBolsa.tsx <img src="https://img.shields.io/badge/-Cadastro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   │   ├── PaginacaoEstoque.tsx <img src="https://img.shields.io/badge/-Paginação-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   │   └── SeletorFiltro.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   ├── requisicao <img src="https://img.shields.io/badge/-Requisição-111827?style=flat-square&logo=react&logoColor=E0234E" height="18"/> <img src="https://img.shields.io/badge/HU‑04_·_05_·_06-111827?style=flat-square&logoColor=white" height="18"/>/
@@ -766,7 +767,7 @@ Rotavital🩸/
 > e `PilhaOperacoes` (LIFO), as versões Java das estruturas do módulo em C.
 >
 > **Frontend:** as 10 histórias da Entrega 01 (**HU‑01** a **HU‑10**) têm tela em React. O **Estoque (HU‑03)**, com filtros e
-> paginação em `GET /hemocomponentes`, e a tela de **Admin** já consomem a API `/api/v1` por `src/services/api.ts` (cliente em `clienteHttp.ts`, erros
+> paginação em `GET /hemocomponentes` e cadastro de bolsa em `POST /hemocomponentes`, e a tela de **Admin** já consomem a API `/api/v1` por `src/services/api.ts` (cliente em `clienteHttp.ts`, erros
 > exibidos pelo `ContextoNotificacao`); as demais telas e o login continuam sobre dados **mockados**
 > (`src/data/*Mock.ts` + `ContextoDados`). A roteirização da HU‑07 consulta o OSRM público e cai nos valores
 > mockados se ele não responder. O restante da integração segue na Issue #4.
@@ -1169,6 +1170,41 @@ export default function PaginaEstoque()
   // ...
 }
 ```
+</details>
+
+<details>
+<summary>➕ <a href="./frontend/src/components/estoque/ModalNovaBolsa.tsx"><code>frontend/src/components/estoque/ModalNovaBolsa.tsx</code></a> — cadastro de bolsa (PI3-179)</summary>
+
+```tsx
+// noValidate no <form>: quem valida é a API, e o formulário mostra a mensagem que ela devolveu.
+async function aoEnviar(evento: FormEvent<HTMLFormElement>)
+{
+  evento.preventDefault();
+  try
+  {
+    const bolsa = await cadastrarHemocomponente({   // POST /api/v1/hemocomponentes
+      tipoComponente: componente,
+      tipoSanguineo: paraTipoSanguineoBackend(tipoSanguineo),
+      dataColeta: dataColeta || null,              // em branco vai como null: a API diz qual campo falta
+      dataValidade: dataValidade || null,
+      loteSintetico: lote.trim(),
+      volumeMl: paraNumero(volume),
+      temperaturaCelsius: paraNumero(temperatura),
+      localizacao: localizacao.trim() || undefined,
+      bancoOrigemId: bancoId,
+    });
+    onCadastrada(bolsa);                           // a página fecha o modal, avisa e recarrega a lista
+  }
+  catch (falha: unknown)
+  {
+    setErro(falha instanceof ErroHttp ? falha.detalhe || falha.message : "Não foi possível conectar com o back-end. A bolsa não foi registrada.");
+  }
+}
+```
+
+Trocar o componente refaz as sugestões: a validade vira a coleta + o prazo máximo (hemácias 42 dias, plasma 730,
+plaquetas 7, crioprecipitado 365) e a temperatura, o meio da faixa ideal. Depois do cadastro, a lista passa a filtrar
+pelo tipo e componente da bolsa nova, da primeira página, para ela aparecer na tela.
 </details>
 
 <h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (solicitar)</h4>

@@ -83,6 +83,24 @@ export interface FiltrosHemocomponentesDTO
   size?: number;
 }
 
+/**
+ * Corpo de POST /hemocomponentes (PI3-179). Os campos que o formulário pode deixar em branco aceitam
+ * null: quem valida é a API, que devolve todos os problemas de uma vez (400 ou 422).
+ */
+export interface NovaBolsaHemocomponenteDTO
+{
+  tipoComponente: TipoComponenteBackend;
+  tipoSanguineo: TipoSanguineoBackend;
+  dataColeta: string | null;
+  dataValidade: string | null;
+  loteSintetico: string;
+  volumeMl: number | null;
+  temperaturaCelsius: number | null;
+  /** Opcional: refrigerador/prateleira/nível. */
+  localizacao?: string;
+  bancoOrigemId: string;
+}
+
 export interface EstoqueDTO
 {
   bancoDeSangueId: string;
