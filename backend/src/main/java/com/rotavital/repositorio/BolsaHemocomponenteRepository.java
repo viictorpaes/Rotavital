@@ -15,6 +15,13 @@ import com.rotavital.dominio.TipoSanguineo;
 // Consultas de bolsa na tabela bolsa_hemocomponente, pelo id (ex.: CH-1042).
 public interface BolsaHemocomponenteRepository extends JpaRepository<BolsaHemocomponente, String>
 {
+    // Uma doação gera no máximo uma bolsa de cada componente (constraint uq_bolsa_lote_componente).
+    boolean existsByLoteSinteticoAndTipoComponente(String loteSintetico, TipoComponente tipoComponente);
+
+    // Ids que começam com a sigla do componente (ex.: "CH" → CH-1042, CH-1043…), para gerar o próximo.
+    @Query("select b.id from BolsaHemocomponente b where b.id like concat(:sigla, '-%')")
+    List<String> buscarIdsComSigla(@Param("sigla") String sigla);
+
     // Listagem com filtros opcionais: filtro nulo não restringe nada. A página vem do Pageable
     // (limit/offset no banco de dados) e a ordem é FEFO, a mesma do estoque de um banco.
     @Query("""

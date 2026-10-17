@@ -45,7 +45,7 @@ flowchart LR
 
 | Módulo | Recursos | Espelha no domínio | Tabelas no banco ([DER](DER.md)) | Status |
 | :--- | :--- | :--- | :--- | :---: |
-| 📦 Estoque e Hemocomponentes | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | `bolsa_hemocomponente`, `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ⚠️ Domínio + contrato prontos; implementados `GET /api/v1/bancos/{bancoId}/estoque` e `GET /api/v1/hemocomponentes` |
+| 📦 Estoque e Hemocomponentes | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | `bolsa_hemocomponente`, `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ⚠️ Domínio + contrato prontos; implementados `GET /api/v1/bancos/{bancoId}/estoque`, `GET /api/v1/hemocomponentes` e `POST /api/v1/hemocomponentes` |
 | 🏥 Requisições e Alocação | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | `requisicao_hospitalar`, `alocacao` | ⚠️ Domínio + contrato prontos; nenhum controller ainda |
 | 🚚 Roteirização e Logística | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | `ponto_rede`, `conexao`, `entrega` | ✅ Implementado (`RotaController`, grafo + Dijkstra) |
 | 🌡️ Telemetria e Cadeia Fria | `/entregas/{id}/leituras` | *(nenhuma)* | `entrega`, `leitura_telemetria` | ⚠️ Contrato + tabelas; sem domínio nem controller |

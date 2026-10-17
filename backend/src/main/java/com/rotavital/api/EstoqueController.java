@@ -1,5 +1,6 @@
 package com.rotavital.api;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rotavital.api.dto.comum.ErroDTO;
 import com.rotavital.api.dto.estoque.BolsaHemocomponenteDTO;
 import com.rotavital.api.dto.estoque.EstoqueDTO;
+import com.rotavital.api.dto.estoque.NovaBolsaHemocomponenteRequest;
 import com.rotavital.api.dto.estoque.ResumoEstoqueDTO;
 import com.rotavital.dominio.BolsaHemocomponente;
 import com.rotavital.dominio.StatusBolsa;
@@ -99,6 +103,17 @@ public class EstoqueController
     public ResponseEntity<BolsaHemocomponenteDTO> consultarBolsa(@PathVariable("id") String id)
     {
         return ResponseEntity.ok(paraBolsaDTO(estoqueService.buscarBolsa(id)));
+    }
+
+    // Dados inválidos: o EstoqueService lança DadosInvalidosException (400) ou RegraDeNegocioException (422),
+    // e o TratadorDeErros monta a resposta. Deu certo: 201, com o endereço da bolsa nova em Location.
+    @PostMapping("/hemocomponentes")
+    public ResponseEntity<BolsaHemocomponenteDTO> cadastrarBolsa(@RequestBody NovaBolsaHemocomponenteRequest dados)
+    {
+        BolsaHemocomponente bolsa = estoqueService.cadastrarBolsa(dados);
+
+        return ResponseEntity.created(URI.create("/api/v1/hemocomponentes/" + bolsa.getId()))
+                .body(paraBolsaDTO(bolsa));
     }
 
     private BolsaHemocomponenteDTO paraBolsaDTO(BolsaHemocomponente bolsa)
