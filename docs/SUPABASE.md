@@ -87,7 +87,7 @@ spring.jpa.hibernate.ddl-auto=validate
 | :--- | :--- | :--- | :---: |
 | `SUPABASE_DB_PASSWORD` | Backend (JDBC) e `docker-compose.yml` | `backend/.env` | ❌ |
 | `SUPABASE_URL` | Clientes da API REST/Auth do Supabase | `backend/.env` | ✅ (é pública) |
-| `SUPABASE_KEY` | Chave `anon` para a API do Supabase | `backend/.env` | ⚠️ só a `anon`, nunca a `service_role` |
+| `SUPABASE_KEY` | Chave publicável (`sb_publishable_…` ou a `anon` antiga): login no Supabase Auth (`POST /acessos`, PI3-183) | `backend/.env` | ⚠️ só a publicável/`anon`, nunca a `service_role` |
 
 O modelo fica em [`backend/.env.example`](../backend/.env.example): copie para `backend/.env` e preencha.
 O `.env` está no `.gitignore`.

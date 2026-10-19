@@ -5,6 +5,7 @@ import {
   diasAteVencer,
   formatarData,
   formatarTemperatura,
+  rotuloStatusBolsa,
   statusLote,
   temperaturaForaDaFaixa,
 } from "@/lib/estoque";
@@ -79,6 +80,11 @@ export function CartaoLote({ lote }: Readonly<{ lote: LoteHemocomponente }>)
           <MapPin className="h-3.5 w-3.5 text-rota-red" />
           {lote.localizacao}
         </p>
+        {lote.statusBolsa && lote.statusBolsa !== "DISPONIVEL" && (
+          <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide text-gray-600">
+            {rotuloStatusBolsa(lote.statusBolsa)}
+          </span>
+        )}
         {foraDaFaixa && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide text-red-600">
             <Thermometer className="h-3 w-3" />

@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.rotavital.api.dto.comum.ErroDTO;
+import com.rotavital.servico.AutenticacaoIndisponivelException;
+import com.rotavital.servico.CredenciaisInvalidasException;
 import com.rotavital.servico.DadosInvalidosException;
 import com.rotavital.servico.RecursoNaoEncontradoException;
 import com.rotavital.servico.RegraDeNegocioException;
@@ -47,6 +49,18 @@ public class TratadorDeErros
     public ResponseEntity<ErroDTO> regraDeNegocio(RegraDeNegocioException e, HttpServletRequest request)
     {
         return erro(422, "Regra de negócio violada", e.getMessage(), request);
+    }
+
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    public ResponseEntity<ErroDTO> credenciaisInvalidas(CredenciaisInvalidasException e, HttpServletRequest request)
+    {
+        return erro(401, "Não autorizado", e.getMessage(), request);
+    }
+
+    @ExceptionHandler(AutenticacaoIndisponivelException.class)
+    public ResponseEntity<ErroDTO> autenticacaoIndisponivel(AutenticacaoIndisponivelException e, HttpServletRequest request)
+    {
+        return erro(503, "Serviço indisponível", e.getMessage(), request);
     }
 
     // Valor de query string ou de caminho que não converte para o tipo esperado (ex.: ?tipoSanguineo=XYZ).

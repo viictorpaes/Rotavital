@@ -4,8 +4,12 @@ export { clienteHttp, ErroHttp };
 
 export * from "@/types/dtos";
 import type {
+  LoginPayloadDTO,
   RespostaAcesso,
   EstoqueDTO,
+  BolsaHemocomponenteDTO,
+  FiltrosHemocomponentesDTO,
+  NovaBolsaHemocomponenteDTO,
   PontoRedeDTO,
   RotaCalculadaDTO,
   DiagnosticoDados,
@@ -16,18 +20,13 @@ import type {
 // ----------------------------------------------------------------------
 
 /**
- * Autentica o usuário e obtém os módulos permitidos no back-end.
+ * Login com e-mail e senha (Supabase Auth, conferido no backend). Devolve o perfil e a tela inicial.
+ * Silencioso: a tela de login mostra o aviso no próprio formulário, sem o toast global.
  */
-export async function autenticarUsuario(nome: string, papel: "medico" | "doador" | "admin"): Promise<RespostaAcesso>
+export async function autenticarUsuario(email: string, senha: string): Promise<RespostaAcesso>
 {
-  let tipoAcessoBackend: "MEDICO" | "DOADOR" | "ADMIN" = "MEDICO";
-  if (papel === "doador") tipoAcessoBackend = "DOADOR";
-  if (papel === "admin") tipoAcessoBackend = "ADMIN";
-
-  return clienteHttp.post<RespostaAcesso>("/acessos", {
-    nome,
-    tipoAcesso: tipoAcessoBackend,
-  });
+  const payload: LoginPayloadDTO = { email, senha };
+  return clienteHttp.post<RespostaAcesso>("/acessos", payload, { silencioso: true });
 }
 
 /**
@@ -38,6 +37,27 @@ export async function buscarEstoque(bancoId: string = "BS-01", tipoSanguineo?: s
   return clienteHttp.get<EstoqueDTO>(`/bancos/${bancoId}/estoque`, {
     params: { tipoSanguineo },
   });
+}
+
+/**
+ * Lista bolsas com filtros e paginação, da que vence primeiro para a última (FEFO). Filtro ausente
+ * não restringe. Silencioso: a tela de Estoque mostra o erro no próprio corpo, sem o toast global.
+ */
+export async function listarHemocomponentes(filtros: FiltrosHemocomponentesDTO = {}): Promise<BolsaHemocomponenteDTO[]>
+{
+  return clienteHttp.get<BolsaHemocomponenteDTO[]>("/hemocomponentes", {
+    params: { ...filtros },
+    silencioso: true,
+  });
+}
+
+/**
+ * Registra uma bolsa nova no estoque (PI3-179) e devolve a bolsa criada, com o id gerado pelo backend.
+ * Silencioso: o formulário mostra a mensagem de erro da API dentro dele, sem o toast global.
+ */
+export async function cadastrarHemocomponente(dados: NovaBolsaHemocomponenteDTO): Promise<BolsaHemocomponenteDTO>
+{
+  return clienteHttp.post<BolsaHemocomponenteDTO>("/hemocomponentes", dados, { silencioso: true });
 }
 
 /**

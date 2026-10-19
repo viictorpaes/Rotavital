@@ -200,7 +200,7 @@ dados reais vistos no protótipo. Clique em <b>▶️</b> + no emoji da tela par
 | **Quero** | Escolher meu tipo de acesso ("Médico — acesso hospitalar completo" ou "Doador — portal de doações") e informar meu nome |
 | **Para que** | Eu veja a tela adequada ao meu papel sem precisar de um cadastro completo |
 | **Tela do Figma** | Tela inicial "Cesar Life · Estoque Inteligente" — cartões `Médico`/`Doador`, campo `Nome`, botão `Entrar` |
-| **Nível de código** | `POST /api/v1/acessos` (`AcessoController`) devolve a tela inicial e o menu do papel escolhido — é só identificação, como no protótipo: sem senha nem sessão real |
+| **Nível de código** | Desde a PI3-183/184, a entrada é por **e-mail e senha**: `POST /api/v1/acessos` confere as credenciais no Supabase Auth e devolve o perfil (médico, doador ou admin) e a tela inicial. Os cards do protótipo saíram da tela; ver [`PERFIS_DE_ACESSO.md`](./docs/PERFIS_DE_ACESSO.md) |
 
 | Cenário | Dado | Quando | Então |
 | :--- | :--- | :--- | :--- |
@@ -415,7 +415,7 @@ no backend, React no frontend. O detalhamento completo (ator, tela, BDD) de cada
 > e localização de cada lote, para saber quais estão em risco de vencer ou fora da faixa ideal.
 >
 > ✅ Backend — `GET /api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` via [`EstoqueController.java`](./backend/src/main/java/com/rotavital/api/EstoqueController.java) (PR #2, mesclado)
-> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02 com dados mockados (ver [Figma × Sistema Real](#figma-vs-real))
+> ✅ Frontend — [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx), entregue depois da Entrega 02; hoje lista as bolsas de `GET /api/v1/hemocomponentes`, com filtros de tipo sanguíneo, componente e status e paginação (PI3-180), e o botão **Nova bolsa** cadastra pelo `POST /api/v1/hemocomponentes`, mostrando no formulário os erros 400/422 da API (PI3-179; ver [Figma × Sistema Real](#figma-vs-real))
 
 > 🟨 **HU‑09** — Como **médico ou doador**, preciso visualizar as pessoas que precisam de doação — filtráveis
 > por tipo sanguíneo — e agendar uma doação, para direcionar doadores compatíveis a quem precisa com urgência.
@@ -494,7 +494,7 @@ Rotavital🩸/
 │       │       ├── api <img src="https://img.shields.io/badge/-REST_Controllers-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
 │       │       │   ├── AlertasDoEstoqueController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Falertas-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑02-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── AcessoController.java <img src="https://img.shields.io/badge/-POST_%2Facessos-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑01-111827?style=flat-square&logoColor=white" height="18"/>
-│       │       │   ├── EstoqueController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Festoque_·_%2Fresumo-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/-GET_%2Fhemocomponentes%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>
+│       │       │   ├── EstoqueController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Festoque_·_%2Fresumo-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/-GET·POST_%2Fhemocomponentes_·_GET_%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── MovimentacaoDeBolsaController.java <img src="https://img.shields.io/badge/-PATCH_%2Fhemocomponentes%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑08-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── RotaController.java <img src="https://img.shields.io/badge/-GET_%2Fpontos_·_%2Fconexoes_·_%2Frotas-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑07-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── SugestaoDeLoteController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Fsugestao--lote-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑04-111827?style=flat-square&logoColor=white" height="18"/>
@@ -675,7 +675,10 @@ Rotavital🩸/
 │       │   │   └── AcoesRapidas.tsx <img src="https://img.shields.io/badge/-Atalhos-111827?style=flat&logo=react&logoColor=F59E0B" height="18"/>
 │       │   ├── estoque <img src="https://img.shields.io/badge/-Estoque-111827?style=flat-square&logo=react&logoColor=FF3621" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>/
 │       │   │   ├── CartaoLote.tsx <img src="https://img.shields.io/badge/-Card-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
-│       │   │   └── FiltroTipoEstoque.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── FiltroTipoEstoque.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── ModalNovaBolsa.tsx <img src="https://img.shields.io/badge/-Cadastro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   ├── PaginacaoEstoque.tsx <img src="https://img.shields.io/badge/-Paginação-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
+│       │   │   └── SeletorFiltro.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=FF3621" height="18"/>
 │       │   ├── requisicao <img src="https://img.shields.io/badge/-Requisição-111827?style=flat-square&logo=react&logoColor=E0234E" height="18"/> <img src="https://img.shields.io/badge/HU‑04_·_05_·_06-111827?style=flat-square&logoColor=white" height="18"/>/
 │       │   │   ├── FormularioRequisicao.tsx <img src="https://img.shields.io/badge/-Formulário-111827?style=flat&logo=react&logoColor=E0234E" height="18"/>
 │       │   │   ├── ListaRecebimentos.tsx <img src="https://img.shields.io/badge/-Lista-111827?style=flat&logo=react&logoColor=E0234E" height="18"/>
@@ -809,8 +812,8 @@ Rotavital🩸/
 > contrato em `openapi.yaml`, mas nenhum controller. O domínio também tem `FilaRequisicoesHospitalares` (FIFO)
 > e `PilhaOperacoes` (LIFO), as versões Java das estruturas do módulo em C.
 >
-> **Frontend:** as 10 histórias da Entrega 01 (**HU‑01** a **HU‑10**) têm tela em React. O **Estoque (HU‑03)** e a
-> tela de **Admin** já consomem a API `/api/v1` por `src/services/api.ts` (cliente em `clienteHttp.ts`, erros
+> **Frontend:** as 10 histórias da Entrega 01 (**HU‑01** a **HU‑10**) têm tela em React. O **Estoque (HU‑03)**, com filtros e
+> paginação em `GET /hemocomponentes` e cadastro de bolsa em `POST /hemocomponentes`, e a tela de **Admin** já consomem a API `/api/v1` por `src/services/api.ts` (cliente em `clienteHttp.ts`, erros
 > exibidos pelo `ContextoNotificacao`); as demais telas e o login continuam sobre dados **mockados**
 > (`src/data/*Mock.ts` + `ContextoDados`). A roteirização da HU‑07 consulta o OSRM público e cai nos valores
 > mockados se ele não responder. O restante da integração segue na Issue #4.
@@ -884,8 +887,8 @@ Copie [`backend/.env.example`](./backend/.env.example) para `backend/.env` (já 
 | Variável | Uso | Pode ir para o Git? |
 | :--- | :--- | :---: |
 | `SUPABASE_DB_PASSWORD` | Senha do banco (JDBC; no Render, variável secreta do serviço) | ❌ |
-| `SUPABASE_URL` | URL pública do projeto (API REST/Auth) | ✅ |
-| `SUPABASE_KEY` | Chave `anon` da API do Supabase | ⚠️ só a `anon` |
+| `SUPABASE_URL` | URL pública do projeto (API REST/Auth); opcional, já tem o valor do projeto como padrão | ✅ |
+| `SUPABASE_KEY` | Chave publicável (`sb_publishable_…` ou a `anon` antiga), usada pelo login no Supabase Auth (PI3-183). Sem ela, `POST /acessos` responde `503` | ⚠️ só a publicável/`anon` |
 
 > [!WARNING]
 > A chave **`service_role`** ignora o RLS e dá acesso total ao banco — nunca vai para `.env.example`, commit ou frontend.
@@ -1115,37 +1118,42 @@ Admin vêm das <a href="./docs/evidencias/PI3-182_perfis_de_acesso.md">evidênci
 exemplo do frontend (ver a nota da <a href="#arquitetura">Arquitetura</a>).</sub>
 </p>
 
-<h4 align="left">🔐 HU‑01 — Login (seleção Médico / Doador)</h4>
+<h4 align="left">🔐 HU‑01 — Login (e-mail e senha)</h4>
 
 | Figma | Sistema real |
 | :---: | :---: |
-| <img src="./img/FIGMA_Login_Medico.png" width="420"/> | <img src="./img/real-login_medico.png" width="420"/> |
-| <img src="./img/FIGMA_Login_Doador.png" width="420"/> | <img src="./img/real-login_doador.png" width="420"/> |
+| <img src="./img/FIGMA_Login_Medico.png" width="420"/> | <img src="./docs/evidencias/PI3-184/01_login_senha_errada.png" width="320"/> |
+
+<sub>O Figma escolhe o perfil por cards; o sistema real pede e-mail e senha e descobre o perfil pela API
+(PI3-183/184). O print mostra o aviso de senha errada (PI3-196); os cenários estão nas
+<a href="./docs/evidencias/PI3-184_PI3-196_login.md">evidências da PI3-184/196</a>.</sub>
 
 <details>
 <summary>🩸 <a href="./frontend/src/pages/Login/PaginaLogin.tsx"><code>frontend/src/pages/Login/PaginaLogin.tsx</code></a></summary>
 
 ```tsx
-export default function PaginaLogin()
+async function handleEntrar(evento: FormEvent<HTMLFormElement>)
 {
-  const [papel, setPapel] = useState<PapelUsuario | null>(null);
-  const [nome, setNome] = useState("");
-  const { login } = useAutenticacao();
-  const navigate = useNavigate();
-
-  const podeEntrar = papel !== null && nome.trim().length > 0;
-
-  function handleEntrar()
+  evento.preventDefault();
+  if (!email.trim() || !senha)
   {
-    if (!podeEntrar || !papel) 
-    {
-      return;
-    }
-    
-    login(nome, papel);
-    navigate(papel === "medico" ? "/painel" : "/portal-doador", { replace: true });
+    setAviso(AVISO_CAMPOS_VAZIOS);
+    return;
   }
-  // ...
+
+  setEntrando(true);
+  try
+  {
+    const acesso = await autenticarUsuario(email.trim(), senha); // POST /api/v1/acessos
+    const logado = login(acesso);
+    navigate(logado.telaInicial, { replace: true });             // /painel, /portal-doador ou /admin
+  }
+  catch (erro)
+  {
+    setAviso(avisoDoErro(erro)); // 401: "E-mail ou senha incorretos." — o mesmo para senha errada e e-mail sem cadastro
+    setSenha("");
+    setEntrando(false);
+  }
 }
 ```
 </details>
@@ -1192,37 +1200,63 @@ export default function PaginaPainel()
 ```tsx
 export default function PaginaEstoque()
 {
-  const { lotes: lotesMock } = useDados();
-  const [lotes, setLotes] = useState<LoteHemocomponente[]>([]);
-  const [fonte, setFonte] = useState<"banco" | "mock">("banco");
+  const [filtroTipo, setFiltroTipo] = useState<TipoSanguineo | "todos">("todos");
+  const [filtroComponente, setFiltroComponente] = useState<TipoComponenteBackend | "todos">("todos");
+  const [filtroStatus, setFiltroStatus] = useState<StatusBolsaBackend | "todos">("todos");
+  const [pagina, setPagina] = useState(0);
   // ...
 
-  async function carregarEstoqueDoBanco()
+  useEffect(() =>
   {
-    try
-    {
-      setCarregando(true);
-      const res = await buscarEstoque("BS-01");
-      if (res && res.bolsas && res.bolsas.length > 0)
-      {
-        const convertidos = res.bolsas.map(converterBolsaParaLote);
-        setLotes(convertidos);
-        setFonte("banco");
-        setErro(null);
-      }
-      // ...
-    }
-    catch (err: any)
-    {
-      console.warn("Falha ao carregar estoque do Supabase, usando mocks locais:", err);
-      setLotes(lotesMock);
-      setFonte("mock");
-      // ...
-    }
-  }
+    listarHemocomponentes({                       // GET /api/v1/hemocomponentes
+      bancoId: BANCO_ID,
+      tipoSanguineo: filtroTipo === "todos" ? undefined : paraTipoSanguineoBackend(filtroTipo),
+      tipoComponente: filtroComponente === "todos" ? undefined : filtroComponente,
+      status: filtroStatus === "todos" ? undefined : filtroStatus,
+      page: pagina,
+      size: TAMANHO_PAGINA,
+    })
+      .then((bolsas) => setLotes(bolsas.map(converterBolsaParaLote)))
+      .catch((falha) => setErro(falha.message));  // mostra o erro; não troca por dados de exemplo
+  }, [filtroTipo, filtroComponente, filtroStatus, pagina, recarga]);
   // ...
 }
 ```
+</details>
+
+<details>
+<summary>➕ <a href="./frontend/src/components/estoque/ModalNovaBolsa.tsx"><code>frontend/src/components/estoque/ModalNovaBolsa.tsx</code></a> — cadastro de bolsa (PI3-179)</summary>
+
+```tsx
+// noValidate no <form>: quem valida é a API, e o formulário mostra a mensagem que ela devolveu.
+async function aoEnviar(evento: FormEvent<HTMLFormElement>)
+{
+  evento.preventDefault();
+  try
+  {
+    const bolsa = await cadastrarHemocomponente({   // POST /api/v1/hemocomponentes
+      tipoComponente: componente,
+      tipoSanguineo: paraTipoSanguineoBackend(tipoSanguineo),
+      dataColeta: dataColeta || null,              // em branco vai como null: a API diz qual campo falta
+      dataValidade: dataValidade || null,
+      loteSintetico: lote.trim(),
+      volumeMl: paraNumero(volume),
+      temperaturaCelsius: paraNumero(temperatura),
+      localizacao: localizacao.trim() || undefined,
+      bancoOrigemId: bancoId,
+    });
+    onCadastrada(bolsa);                           // a página fecha o modal, avisa e recarrega a lista
+  }
+  catch (falha: unknown)
+  {
+    setErro(falha instanceof ErroHttp ? falha.detalhe || falha.message : "Não foi possível conectar com o back-end. A bolsa não foi registrada.");
+  }
+}
+```
+
+Trocar o componente refaz as sugestões: a validade vira a coleta + o prazo máximo (hemácias 42 dias, plasma 730,
+plaquetas 7, crioprecipitado 365) e a temperatura, o meio da faixa ideal. Depois do cadastro, a lista passa a filtrar
+pelo tipo e componente da bolsa nova, da primeira página, para ela aparecer na tela.
 </details>
 
 <h4 align="left">📋 HU‑04/05/06 — Requisição de hemocomponente (solicitar)</h4>

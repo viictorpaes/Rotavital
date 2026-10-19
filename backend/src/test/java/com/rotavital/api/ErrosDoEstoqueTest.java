@@ -1,8 +1,12 @@
 package com.rotavital.api;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -10,19 +14,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rotavital.api.dto.comum.ErroDTO;
-import com.rotavital.api.dto.estoque.NovaBolsaHemocomponenteRequest;
 import com.rotavital.dominio.BancoDeSangue;
 import com.rotavital.dominio.BolsaHemocomponente;
 import com.rotavital.dominio.Endereco;
@@ -39,26 +39,6 @@ public class ErrosDoEstoqueTest
 {
     private static final LocalDate HOJE = LocalDate.of(2026, 10, 1);
 
-    // Faz o papel do POST /api/v1/hemocomponentes até o cadastro (PI3-179) entrar: recebe o mesmo corpo
-    // e passa pela mesma validação, então os erros testados aqui são os que o cadastro vai devolver.
-    @RestController
-    public static class CadastroDeBolsaDeTeste
-    {
-        private final EstoqueService estoqueService;
-
-        public CadastroDeBolsaDeTeste(EstoqueService estoqueService)
-        {
-            this.estoqueService = estoqueService;
-        }
-
-        @PostMapping("/api/v1/hemocomponentes")
-        public ResponseEntity<Void> registrar(@RequestBody NovaBolsaHemocomponenteRequest dados)
-        {
-            estoqueService.validarNovaBolsa(dados, HOJE);
-            return ResponseEntity.status(201).build();
-        }
-    }
-
     private final ObjectMapper json = new ObjectMapper();
     private MockMvc api;
 
@@ -70,15 +50,22 @@ public class ErrosDoEstoqueTest
                 HOJE.minusDays(5), HOJE.plusDays(30), "LOTE-SIM-0001", 450.0, 4.0, "R1 · P3 · N2", banco);
         banco.getEstoque().adicionarBolsa(bolsa);
 
-        // Só o BS-01 e a bolsa CH-1042 existem.
+        // Só o BS-01 e a bolsa CH-1042 (lote LOTE-SIM-0001, hemácias) existem. O save devolve a própria bolsa.
         BancoDeSangueRepository bancosFalsos = RepositorioFalso.respondendo(BancoDeSangueRepository.class,
                 "findById", argumentos -> Optional.ofNullable("BS-01".equals(argumentos[0]) ? banco : null));
         BolsaHemocomponenteRepository bolsasFalsas = RepositorioFalso.respondendo(BolsaHemocomponenteRepository.class,
-                "findById", argumentos -> Optional.ofNullable("CH-1042".equals(argumentos[0]) ? bolsa : null));
-        EstoqueService servico = new EstoqueService(bancosFalsos, bolsasFalsas);
+                Map.of(
+                        "findById", argumentos -> Optional.ofNullable("CH-1042".equals(argumentos[0]) ? bolsa : null),
+                        "existsByLoteSinteticoAndTipoComponente", argumentos ->
+                                "LOTE-SIM-0001".equals(argumentos[0]) && argumentos[1] == TipoComponente.HEMACIAS,
+                        "buscarIdsComSigla", argumentos -> "CH".equals(argumentos[0]) ? List.of("CH-1042") : List.of(),
+                        "save", argumentos -> argumentos[0]));
+        // Relógio parado em 01/10/2026, para as datas do corpo não vencerem com o tempo.
+        Clock relogio = Clock.fixed(Instant.parse("2026-10-01T15:00:00Z"), ZoneId.of("America/Recife"));
+        EstoqueService servico = new EstoqueService(bancosFalsos, bolsasFalsas, relogio);
 
         // O resumo do estoque não é chamado nestes testes.
-        api = MockMvcBuilders.standaloneSetup(new EstoqueController(servico, null), new CadastroDeBolsaDeTeste(servico))
+        api = MockMvcBuilders.standaloneSetup(new EstoqueController(servico, null))
                 .setControllerAdvice(new TratadorDeErros())
                 .build();
     }
@@ -182,6 +169,49 @@ public class ErrosDoEstoqueTest
                 erro(cadastro(json.writeValueAsString(corpo))));
     }
 
+    @Test
+    public void temperaturaFaltandoDevolve400() throws Exception
+    {
+        Map<String, Object> corpo = bolsaValida();
+        corpo.remove("temperaturaCelsius");
+
+        Assertions.assertEquals(requisicaoInvalidaNoCadastro("O campo 'temperaturaCelsius' é obrigatório."),
+                erro(cadastro(json.writeValueAsString(corpo))));
+    }
+
+    @Test
+    public void loteJaCadastradoNoMesmoComponenteDevolve422() throws Exception
+    {
+        // LOTE-SIM-0001 já é o lote da CH-1042, também de hemácias.
+        Map<String, Object> corpo = bolsaValida();
+        corpo.put("loteSintetico", "LOTE-SIM-0001");
+
+        Assertions.assertEquals(new ErroDTO(null, "Regra de negócio violada", 422,
+                "Já existe uma bolsa de HEMACIAS do lote LOTE-SIM-0001: "
+                        + "cada doação gera no máximo uma bolsa de cada componente.",
+                "/api/v1/hemocomponentes"),
+                erro(cadastro(json.writeValueAsString(corpo))));
+    }
+
+    @Test
+    public void cadastroValidoDevolve201ComABolsaNova() throws Exception
+    {
+        MockHttpServletResponse resposta = api.perform(cadastro(json.writeValueAsString(bolsaValida())))
+                .andReturn().getResponse();
+
+        Assertions.assertEquals(201, resposta.getStatus());
+        // A próxima depois da CH-1042, e o endereço dela em Location para a tela poder consultá-la.
+        Assertions.assertEquals("/api/v1/hemocomponentes/CH-1043", resposta.getHeader("Location"));
+
+        JsonNode bolsa = json.readTree(resposta.getContentAsString(StandardCharsets.UTF_8));
+        Assertions.assertEquals("CH-1043", bolsa.get("id").asText());
+        Assertions.assertEquals("DISPONIVEL", bolsa.get("status").asText());
+        Assertions.assertEquals("LOTE-SIM-0002", bolsa.get("loteSintetico").asText());
+        Assertions.assertEquals(4.0, bolsa.get("temperaturaCelsius").asDouble());
+        Assertions.assertEquals("R1 · P3 · N3", bolsa.get("localizacao").asText());
+        Assertions.assertEquals("BS-01", bolsa.get("bancoOrigemId").asText());
+    }
+
     // Corpo de uma bolsa que passa em todas as validações; cada teste estraga um campo.
     private Map<String, Object> bolsaValida()
     {
@@ -190,8 +220,10 @@ public class ErrosDoEstoqueTest
         corpo.put("tipoSanguineo", "O_POSITIVO");
         corpo.put("dataColeta", "2026-09-26");
         corpo.put("dataValidade", "2026-10-31");
-        corpo.put("loteSintetico", "LOTE-SIM-0001");
+        corpo.put("loteSintetico", "LOTE-SIM-0002");
         corpo.put("volumeMl", 450.0);
+        corpo.put("temperaturaCelsius", 4.0);
+        corpo.put("localizacao", "R1 · P3 · N3");
         corpo.put("bancoOrigemId", "BS-01");
         return corpo;
     }

@@ -32,9 +32,15 @@ export default function PaginaPortalDoador()
     });
   }, [pessoasNecessitadas, busca, filtroTipo]);
 
-  if (usuario?.papel !== "doador")
+  if (!usuario)
   {
     return <Navigate to="/login" replace />;
+  }
+
+  // Médico e admin logados que abrem o portal voltam para a sua tela inicial (PI3-184).
+  if (usuario.papel !== "doador")
+  {
+    return <Navigate to={usuario.telaInicial} replace />;
   }
 
   function handleSair()

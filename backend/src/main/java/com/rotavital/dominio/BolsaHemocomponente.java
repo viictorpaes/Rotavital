@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.springframework.data.domain.Persistable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,11 +13,14 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "bolsa_hemocomponente")
-public class BolsaHemocomponente
+public class BolsaHemocomponente implements Persistable<String>
 {
     @Id
     @Column(name = "id")
@@ -58,6 +62,12 @@ public class BolsaHemocomponente
     @ManyToOne(optional = false)
     @JoinColumn(name = "banco_origem_id", nullable = false)
     private BancoDeSangue bancoOrigem;
+
+    // O id é preenchido pelo sistema, então o save() não sabe sozinho se a bolsa é nova e faria um merge,
+    // que sobrescreve a bolsa que já tiver esse id. Com isto, bolsa criada com new vira sempre INSERT
+    // (id repetido dá erro), e bolsa lida do banco deixa de ser nova.
+    @Transient
+    private boolean nova = true;
 
     // Exigido pelo Hibernate para criar o objeto ao ler do banco; no código, use o construtor com parâmetros.
     protected BolsaHemocomponente()
@@ -134,6 +144,20 @@ public class BolsaHemocomponente
         this.status = novoStatus;
     }
 
+    @PostLoad
+    @PostPersist
+    void marcarComoGravada()
+    {
+        this.nova = false;
+    }
+
+    @Override
+    public boolean isNew()
+    {
+        return nova;
+    }
+
+    @Override
     public String getId()
     {
         return id;

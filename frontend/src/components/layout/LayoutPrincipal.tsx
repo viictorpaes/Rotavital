@@ -11,9 +11,10 @@ export function LayoutPrincipal()
     return <Navigate to="/login" replace />;
   }
 
+  // O doador só usa o portal, que fica fora deste layout.
   if (usuario.papel === "doador")
   {
-    return <Navigate to="/portal-doador" replace />;
+    return <Navigate to={usuario.telaInicial} replace />;
   }
 
   return (

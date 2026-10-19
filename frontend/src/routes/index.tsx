@@ -21,7 +21,7 @@ function RotaAdmin({ children }: { children: React.ReactNode })
   }
   if (usuario.papel !== "admin")
   {
-    return <Navigate to="/painel" replace />;
+    return <Navigate to={usuario.telaInicial} replace />;
   }
   return <>{children}</>;
 }
@@ -32,25 +32,7 @@ export function AppRoutes()
 
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          usuario ? (
-            <Navigate
-              to={
-                usuario.papel === "admin"
-                  ? "/admin"
-                  : usuario.papel === "doador"
-                  ? "/portal-doador"
-                  : "/painel"
-              }
-              replace
-            />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+      <Route path="/" element={<Navigate to={usuario ? usuario.telaInicial : "/login"} replace />} />
       <Route path="/login" element={<PaginaLogin />} />
 
       <Route path="/portal-doador" element={<PaginaPortalDoador />} />
@@ -72,7 +54,7 @@ export function AppRoutes()
         />
       </Route>
 
-      <Route path="*" element={<Navigate to={usuario ? "/painel" : "/login"} replace />} />
+      <Route path="*" element={<Navigate to={usuario ? usuario.telaInicial : "/login"} replace />} />
     </Routes>
   );
 }

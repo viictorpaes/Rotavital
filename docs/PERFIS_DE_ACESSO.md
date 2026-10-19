@@ -14,6 +14,13 @@
 > [seção 7](#7-impacto). A prova de que as telas por perfil funcionam como descrito está em
 > [`evidencias/PI3-182_perfis_de_acesso.md`](evidencias/PI3-182_perfis_de_acesso.md).
 
+> [!NOTE]
+> **Implementado em 14/10/2026:** PI3-183 (login validado na API com Supabase Auth), PI3-184 (cada perfil vai
+> para a sua tela, inclusive o ajuste do `/portal-doador`) e a tela da PI3-196 (avisos no formulário, com a
+> mesma mensagem para senha errada e e-mail sem cadastro). Evidências:
+> [`evidencias/PI3-184_PI3-196_login.md`](evidencias/PI3-184_PI3-196_login.md). A seção 2 continua mostrando
+> como o sistema estava antes, em 10/10/2026.
+
 <h2 align="left">🧭 Sumário: </h2>
 
 1. [Resumo das decisões](#1-resumo)
