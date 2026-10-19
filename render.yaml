@@ -24,6 +24,10 @@ services:
       # Senha do Supabase: digitada na criação do Blueprint, nunca vai para o Git.
       - key: SUPABASE_DB_PASSWORD
         sync: false
+      # Chave publicável do Supabase, usada pelo login (POST /acessos, PI3-183). Sem ela, o login responde 503
+      # e as telas do site não abrem. Em Project Settings > API Keys; também digitada só no Render.
+      - key: SUPABASE_KEY
+        sync: false
       - key: SPRING_JPA_SHOW_SQL
         value: "false"
       - key: TZ

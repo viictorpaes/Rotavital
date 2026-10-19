@@ -416,7 +416,7 @@ paths:
           description: Bolsa criada com status inicial DISPONIVEL.
           headers:
             Location:
-              description: Endereço da bolsa criada (ex.: /api/v1/hemocomponentes/CH-1091).
+              description: "Endereço da bolsa criada (ex.: /api/v1/hemocomponentes/CH-1091)."
               schema: { type: string }
           content:
             application/json:

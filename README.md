@@ -1480,7 +1480,7 @@ export default function PaginaPortalDoador()
 <img src="https://img.shields.io/badge/-Render-111827?style=flat&logo=render&logoColor=46E3B7" height="22"/>
 <img src="https://img.shields.io/badge/-Vercel-111827?style=flat&logo=vercel&logoColor=white" height="22"/>
 <br>
-<img src="https://img.shields.io/badge/Unitários-157%2F157-22C55E?style=flat&logo=junit5&logoColor=white" height="22"/>
+<img src="https://img.shields.io/badge/Unitários-208%2F208-22C55E?style=flat&logo=junit5&logoColor=white" height="22"/>
 <img src="https://img.shields.io/badge/Integração-7%2F7-22C55E?style=flat&logo=postgresql&logoColor=white" height="22"/>
 <img src="https://img.shields.io/badge/Aceitação_(Gherkin)-13%2F13-22C55E?style=flat&logo=cucumber&logoColor=white" height="22"/>
 <img src="https://img.shields.io/badge/Red_→_Green-9_pares_de_commits-E0234E?style=flat&logo=git&logoColor=white" height="22"/>
@@ -1580,6 +1580,11 @@ flowchart LR
 > qualquer pessoa sobe o sistema sem a senha do Supabase e sem internet. Em produção (Render), a API continua
 > usando o **Supabase**. O `db/00_rotavital.sh` só cria uma tabela mínima `auth.users`, que no Supabase já existe
 > (a migration `escopo_clinico` aponta para ela).
+>
+> **Login no Compose:** desde a PI3‑183/184, as telas pedem e-mail e senha, conferidos no **Supabase Auth**, e o perfil
+> vem da tabela `usuario` do Supabase. O Postgres local não tem esses usuários, então no Compose o
+> `POST /api/v1/acessos` responde `503` ("Login indisponível") e o que se testa localmente é a API (tabela acima). O
+> login completo funciona no ambiente público, onde a API usa o Supabase e a `SUPABASE_KEY` fica no Render.
 
 <details>
 <summary>📸 <b>Evidências do E1</b> — saídas reais do terminal (14/10/2026, macOS + Docker Desktop 29.7)</summary>
@@ -1639,6 +1644,21 @@ $ curl -X PATCH ... CH-1080 -d {"status":"ENTREGUE"}   # RESERVADA → ENTREGUE 
 | `rotavital-backend` | 378 MB | `rotavital` (sem root) |
 | `rotavital-frontend` | 91 MB | `101` (Nginx sem root) |
 
+**Reconferido em 18/10/2026, depois de trazer a `main`** (login no Supabase Auth, listagem e cadastro de bolsas):
+volume novo e `docker compose up -d --build` com o código mesclado.
+
+```text
+#24 15.05 [INFO] Tests run: 208, Failures: 0, Errors: 0, Skipped: 0
+#24 15.40 [INFO] BUILD SUCCESS
+backend    rotavital-backend:local    Up 5 seconds (healthy)
+db         rotavital-db:local         Up 11 seconds (healthy)
+$ curl -X POST localhost/api/v1/hemocomponentes -d {...}        # cadastro que veio da main
+HTTP/1.1 201
+Location: /api/v1/hemocomponentes/CH-1081
+$ curl -X POST localhost/api/v1/acessos -d {...}                # login: no Compose não há Supabase Auth
+{"title":"Serviço indisponível","status":503,"detail":"Login indisponível: a variável SUPABASE_KEY não está configurada no backend."}
+```
+
 </details>
 
 <h3 align="center" id="cdt-testes">🧪 Testes — E2 · TDD <br>
@@ -1656,9 +1676,9 @@ em cada atividade, a regra cujo erro machuca mais (ver <a href="#cdt-risco">por 
 | | 🔐 Entrar | 📊 Acompanhar o painel | 📦 Consultar o estoque | 🏥 Requisitar | 🚚 Transportar | 🩺 Atender o paciente | ❤️ Doar |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Backbone** | escolher o perfil | ver números e alertas | ver lotes por tipo | pedir hemocomponente | planejar a rota | concluir o procedimento | agendar a doação |
-| ✅ **Já existia** | HU‑01 login por perfil | totais por tipo (PI3‑188) | HU‑03 consulta e erros (PI3‑181) | — | HU‑07 rota (Dijkstra) | — | HU‑09 / HU‑10 (frontend, dados mockados) |
+| ✅ **Fora do TDD** (já existia ou veio da `main` em paralelo) | HU‑01 login por perfil · login com e-mail e senha no Supabase Auth (PI3‑183/184/196) | totais por tipo (PI3‑188) | HU‑03 consulta e erros (PI3‑181) · listagem com filtros e paginação (PI3‑187/180) · cadastro de bolsa (PI3‑179) | — | HU‑07 rota (Dijkstra) | — | HU‑09 / HU‑10 (frontend, dados mockados) |
 | 🟢 **Release 1 (TDD)** | — | **HU‑02** alertas de validade e temperatura | HU‑03 cenários de caracterização | **HU‑04** sugestão de lote FEFO + ABO/Rh | — | **HU‑08** baixa da bolsa usada | — |
-| 🔵 **Release 2** | HU‑F01 login com senha | HU‑F03 notificar alerta crítico | HU‑05 registrar recebimento | gravar requisição e alocação · HU‑06 campanha | HU‑F04 rastreio ao vivo · telemetria | ligar a baixa ao paciente e ao procedimento | HU‑F06 elegibilidade do doador |
+| 🔵 **Release 2** | API bloquear por perfil (`403`) | HU‑F03 notificar alerta crítico | HU‑05 registrar recebimento | gravar requisição e alocação · HU‑06 campanha | HU‑F04 rastreio ao vivo · telemetria | ligar a baixa ao paciente e ao procedimento | HU‑F06 elegibilidade do doador |
 
 <h4 align="left">🧩 Histórias da Release 1 quebradas em tarefas</h4>
 
@@ -1730,7 +1750,7 @@ DISPONIVEL ──► RESERVADA ──► EM_TRANSITO ──► ENTREGUE ──�
 
 | Nível | O que garante | Ferramenta | Quantidade | Onde roda | Comando (em `backend/`) |
 | :--- | :--- | :--- | :---: | :--- | :--- |
-| 🧩 **Unitário** | Cada regra do domínio e dos serviços, sem banco | JUnit 5 (+ repositório falso e MockMvc) | **157** (59 de antes + 98 novos) | 1º estágio do `Dockerfile` e esteira | `mvn test` |
+| 🧩 **Unitário** | Cada regra do domínio e dos serviços, sem banco | JUnit 5 (+ repositório falso e MockMvc) | **208** (59 de antes + 98 da Release 1 + 51 do login e do cadastro e listagem de bolsas, vindos da `main`) | 1º estágio do `Dockerfile` e esteira | `mvn test` |
 | 🔗 **Integração** | API + JPA + **Postgres 17 de verdade**, criado com as migrations do Supabase (constraints, gatilhos, views) | Spring Boot Test + Testcontainers | **7** — [`EstoqueIT`](./backend/src/test/java/com/rotavital/integracao/EstoqueIT.java) (3), [`BaixaDaBolsaIT`](./backend/src/test/java/com/rotavital/integracao/BaixaDaBolsaIT.java) (4) | esteira | `mvn verify` |
 | ✅ **Aceitação (BDD)** | Um `.feature` por história, em português, chamando a API por HTTP | Cucumber 7 + Gherkin | **13 cenários** — HU‑02 (2), HU‑03 (2), HU‑04 (6), HU‑08 (3) | esteira (relatório HTML em `target/cucumber/`) | `mvn verify` |
 
@@ -1776,8 +1796,9 @@ Cada par é um commit <code>test:</code>, em que o teste novo falha porque o có
 
 | Ponto | Situação |
 | :--- | :--- |
-| 🖥️ Frontend (React) | Sem testes automatizados: a esteira só garante que compila (`tsc` + `vite build`). O `npm run lint` tem 18 erros herdados e por isso ainda não é gate. |
-| 🔐 HU‑01 (login) e rotas da HU‑07 no frontend | Fora da Release 1; o login ainda é só de nome (HU‑F01). |
+| 🖥️ Frontend (React) | Sem testes automatizados: a esteira só garante que compila (`tsc` + `vite build`). O `npm run lint` acusa 18 problemas herdados (15 erros e 3 avisos) e por isso ainda não é gate. |
+| 🔐 Login (PI3‑183/184/196) | Veio da `main` com testes unitários, com o Supabase Auth simulado (`AutenticacaoServiceTest`, `SupabaseAuthTest`, `AcessoControllerTest`), mas fora do red → green e sem teste contra o Supabase Auth de verdade (a esteira não tem usuários nem a chave). A API ainda não bloqueia por perfil: só o frontend esconde as telas. |
+| 🚚 Rotas da HU‑07 no frontend | Fora da Release 1. |
 | 🩸 Plaquetas | Seguem a regra das hemácias por decisão conservadora do grupo; **falta validar com um hemoterapeuta**. |
 | 🗄️ Alocação gravada no banco | A FK `fk_alocacao_bolsa_compativel` ainda exige bolsa do **mesmo** tipo da requisição. Quando a alocação for gravada (Release 2), uma migration nova precisa aceitar os tipos compatíveis. |
 | 🔁 `reservar()` / `descartar()` antigos | Não validam a transição (o fluxo de demonstração `TesteFluxo` ainda usa). O caminho oficial da API é `alterarStatus`. |
@@ -1803,7 +1824,7 @@ flowchart LR
 
 | Job | Roda quando | O que faz | Barra o quê |
 | :--- | :--- | :--- | :--- |
-| ☕ **Backend · testes** | todo push e PR | `mvn verify`: 157 unitários, 7 de integração e 13 cenários Gherkin contra um Postgres do Testcontainers; publica o resumo por nível e os relatórios como artefato | Qualquer teste vermelho para a esteira aqui |
+| ☕ **Backend · testes** | todo push e PR | `mvn verify`: 208 unitários, 7 de integração e 13 cenários Gherkin contra um Postgres do Testcontainers; publica o resumo por nível e os relatórios como artefato | Qualquer teste vermelho para a esteira aqui |
 | 🖥️ **Frontend · build** | todo push e PR | `npm ci` + `npm run build` (checagem de tipos do TypeScript) | Erro de tipo ou de build |
 | 🐳 **Imagens Docker** | depois dos dois acima | Builda os dois Dockerfiles; **só na `main`** publica a imagem da API no GHCR com a tag do sha do commit (a do frontend só prova o Dockerfile do Compose) | Dockerfile quebrado; sem os testes verdes, nem roda |
 | 🚀 **Deploy · Render + Vercel** | só push na `main`, depois das imagens | Chama o deploy hook do Render com a imagem da API do commit, builda e publica o site do commit na Vercel (`vercel build` + `vercel deploy --prebuilt --prod`) e faz o **smoke test**: espera `/actuator/info` com o sha novo, `/actuator/health` `UP`, o `/versao.json` do site com o sha novo e o site chegando na API pelo rewrite `/api/` | Se a versão nova não responder em 15 min, o job fica vermelho |
@@ -1814,7 +1835,7 @@ flowchart LR
 <p align="center">
 <code>main</code> sempre publicável e protegida → uma branch por tarefa (<code>feature/...</code>, <code>fix/...</code>,
 <code>docs/...</code>) → PR com a esteira verde → merge → deploy automático. É o fluxo que o grupo já usava (PRs #17 a
-#22 vieram de branches); agora a esteira e a proteção da <code>main</code> passam a garantir isso.
+#28 vieram de branches); agora a esteira e a proteção da <code>main</code> passam a garantir isso.
 </p>
 
 | Regra na `main` (Settings → Branches → *Add branch ruleset*) | Para quê |
@@ -1830,6 +1851,7 @@ flowchart LR
 | :--- | :--- | :--- |
 | Senha do Postgres local (`DB_PASSWORD`) | `.env` na máquina de cada um (no `.gitignore`; modelo em [`.env.example`](./.env.example)) | `docker compose` |
 | Senha do Supabase (`SUPABASE_DB_PASSWORD`) | Variáveis secretas do serviço `rotavital-api` no **Render** | Só a API em produção |
+| Chave publicável do Supabase (`SUPABASE_KEY`) | Variáveis do serviço `rotavital-api` no **Render** (é publicável, mas fica fora do Git como a senha) | Login da API (`POST /acessos`); sem ela, o login responde `503` e as telas não abrem |
 | `RENDER_DEPLOY_HOOK_API`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | **GitHub → Settings → Environments → `producao` → Secrets** | Só os jobs de deploy e rollback |
 | `API_URL`, `WEB_URL` (não são segredo) | GitHub → Environments → `producao` → Variables | Smoke test |
 | Login no GHCR | `GITHUB_TOKEN` automático do Actions | Job de imagens |
@@ -1855,7 +1877,8 @@ git push origin 67d4c55:refs/heads/demo/esteira-vermelha
    GHCR. O job de deploy falha avisando que faltam os segredos (esperado, só desta vez).
 5. **GHCR:** em *Packages*, deixe o pacote `rotavital-backend` como **Public** (ou cadastre uma *Registry Credential* no Render).
 6. **Render (API):** *New → Blueprint →* este repositório. O [`render.yaml`](./render.yaml) cria só o `rotavital-api`
-   (plano gratuito, Ohio) e pede a `SUPABASE_DB_PASSWORD`. Se um Blueprint antigo já tinha criado o `rotavital-web`,
+   (plano gratuito, Ohio) e pede a `SUPABASE_DB_PASSWORD` e a `SUPABASE_KEY` (a mesma do `backend/.env`). Se o serviço
+   já existia antes da `SUPABASE_KEY` entrar no Blueprint, cadastre-a à mão em *Environment*. Se um Blueprint antigo já tinha criado o `rotavital-web`,
    apague esse serviço no Render: o site agora fica na Vercel. Se o Render der outro domínio à API, ajuste o destino do
    rewrite `/api/` em [`frontend/vercel.json`](./frontend/vercel.json).
 7. **Vercel (site):** crie o projeto pela CLI, de dentro de `frontend/` (é de lá que a esteira roda a CLI; não configure
@@ -1924,7 +1947,7 @@ Salve os prints em `docs/evidencias/container-tdd-deploy/` e troque os ⏳ abaix
 | ☁️ Provedor de deploy | API no Render (web service por imagem, plano gratuito, Ohio, [Blueprint](./render.yaml)); site na Vercel ([`vercel.json`](./frontend/vercel.json)) | Os dois no Render; Koyeb; Railway, Fly.io | API: deploy por imagem com deploy hook, o Blueprint deixa a infraestrutura como código e Ohio fica na mesma região do Supabase. Site: o deploy dele no Render não funcionou para o grupo; a Vercel serve o build estático pela CDN e não "dorme". A API não vai para a Vercel porque ela não roda containers nem Java, e o Koyeb exige cartão de crédito na conta. |
 | 🔀 Site → API em produção | Rewrite `/api/:caminho*` da Vercel para o Render | `VITE_API_URL` apontando para o Render + CORS | O navegador continua chamando `/api/v1` relativo, o mesmo código do Compose, e sem CORS. |
 | 🟢 Banco em produção | Supabase (já existente) | Postgres do Render | Já tem os dados, as migrations aplicadas e o RLS; o Postgres gratuito do Render expira. |
-| 🔐 Segredos | Deploy hook do Render e token da Vercel no environment `producao` do GitHub; senha do Supabase só no Render; `.env` no `.gitignore` | Segredos no repositório ou em variáveis do workflow | Cada segredo fica só onde é usado, e o environment limita quem lê. |
+| 🔐 Segredos | Deploy hook do Render e token da Vercel no environment `producao` do GitHub; senha e chave do Supabase só no Render; `.env` no `.gitignore` | Segredos no repositório ou em variáveis do workflow | Cada segredo fica só onde é usado, e o environment limita quem lê. |
 | ✅ Fim do deploy | Smoke test: sha em `/actuator/info` + health `UP` + sha no `/versao.json` do site + site → API | Considerar pronto ao disparar o hook | O job só fica verde quando a versão nova responde de verdade. |
 | ↩️ Rollback | *Run workflow* com o sha anterior (reimplanta a imagem da API do GHCR e o site daquele sha) | Só `git revert` + rebuild; só os botões do Render e da Vercel | Volta em minutos (a API sem recompilar) e fica registrado; o `git revert` corrige a `main` depois. |
 
@@ -1954,6 +1977,9 @@ Uso permitido pelo enunciado e declarado aqui: <b>a IA rascunha; o grupo valida 
 2. *"USE O README"*, confirmado depois como: *"tudo no README, depois da última seção"*.
 3. Quando o `pom.xml` voltou ao estado anterior no meio do trabalho, a IA perguntou antes de reaplicar as dependências
    de teste; resposta: *"Não, pode reaplicar"*.
+4. *"me ajude a trazer os updates da main pra cá, e reconfira se está tudo de acordo com o pdf"*: merge da `main`
+   (conflitos resolvidos à mão), `mvn verify` e `docker compose` do zero com o código mesclado, a `SUPABASE_KEY` no
+   `render.yaml` e esta seção atualizada.
 </details>
 
 > ✍️ **Revisado por:** *(cada integrante que revisou uma parte coloca o nome aqui antes da entrega)*
@@ -1976,5 +2002,5 @@ Roteiro para a apresentação: a ordem em que as coisas aconteceram e o que cada
 | 8 | No container, o Docker Desktop do macOS não deixou executar o script do banco montado da máquina, e o Docker parou no meio de uma execução dos testes. | "Funciona na minha máquina" é exatamente o que o E1 combate: o que sobe na esteira tem que subir em qualquer PC. |
 | 9 | A IA acelerou o rascunho, mas errou detalhes que só apareceram rodando (o script no bind mount, o `${var,,}` que o bash do macOS não tem). | A IA rascunha, o grupo roda, confere e assina. |
 
-> **Resumo para os slides:** 3 histórias → 13 tarefas → 9 pares 🔴 → 🟢 → 157 unitários + 7 de integração + 13 cenários
+> **Resumo para os slides:** 3 histórias → 13 tarefas → 9 pares 🔴 → 🟢 → 208 unitários + 7 de integração + 13 cenários
 > Gherkin, todos na esteira, que só publica (API no Render, site na Vercel) com tudo verde.
