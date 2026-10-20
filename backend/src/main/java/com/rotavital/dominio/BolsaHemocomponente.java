@@ -1,5 +1,6 @@
 package com.rotavital.dominio;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -107,6 +108,12 @@ public class BolsaHemocomponente implements Persistable<String>
         return status == StatusBolsa.DISPONIVEL;
     }
 
+    // Pode ir para um paciente: está no estoque, ainda na validade e com a cadeia fria intacta.
+    public boolean estaAptaParaUso(LocalDate hoje)
+    {
+        return estaDisponivel() && !estaVencida(hoje) && !estaForaDaFaixa();
+    }
+
     public void reservar()
     {
         this.status = StatusBolsa.RESERVADA;
@@ -115,6 +122,26 @@ public class BolsaHemocomponente implements Persistable<String>
     public void descartar()
     {
         this.status = StatusBolsa.DESCARTADA;
+    }
+
+    /**
+     * Movimenta a bolsa para um novo status (HU-08: reservar, enviar, receber, usar ou descartar).
+     * Transição não permitida lança MovimentacaoInvalidaException e mantém o status atual.
+     */
+    public void alterarStatus(StatusBolsa novoStatus, LocalDate hoje)
+    {
+        if (!status.podePassarPara(novoStatus))
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " está " + status
+                    + " e não pode passar para " + novoStatus + ".");
+        }
+        if (novoStatus != StatusBolsa.DESCARTADA && estaVencida(hoje))
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " venceu em "
+                    + DateTimeFormatter.ofPattern("dd/MM/yyyy").format(dataValidade) + " e só pode ser descartada.");
+        }
+
+        this.status = novoStatus;
     }
 
     @PostLoad

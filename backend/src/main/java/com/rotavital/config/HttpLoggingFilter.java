@@ -30,8 +30,9 @@ public class HttpLoggingFilter extends OncePerRequestFilter
         String uri = request.getRequestURI();
         String query = request.getQueryString() != null ? "?" + request.getQueryString() : "";
 
-        // Ignora requisições de pre-flight OPTIONS do CORS para não poluir o terminal
-        if ("OPTIONS".equalsIgnoreCase(metodo))
+        // Ignora requisições de pre-flight OPTIONS do CORS e os healthchecks do Docker/Render
+        // (/actuator, a cada poucos segundos) para não poluir o terminal
+        if ("OPTIONS".equalsIgnoreCase(metodo) || uri.startsWith("/actuator"))
         {
             filterChain.doFilter(request, response);
             return;

@@ -26,8 +26,9 @@ info:
     `docs/PERFIS_DE_ACESSO.md`).
 
     **Implementados hoje:** `acessos`, `bancos/{bancoId}/estoque`,
-    `bancos/{bancoId}/estoque/resumo`, `GET hemocomponentes/{id}`, `pontos`,
-    `conexoes`, `rotas` e `benchmarks`. Os demais (o resto de `hemocomponentes`,
+    `bancos/{bancoId}/estoque/resumo`, `bancos/{bancoId}/sugestao-lote` (HU-04),
+    `bancos/{bancoId}/alertas` (HU-02), `GET` e `PATCH hemocomponentes/{id}`
+    (HU-08), `pontos`, `conexoes`, `rotas` e `benchmarks`. Os demais (o resto de `hemocomponentes`,
     `requisicoes`, `entregas`) existem só no contrato e respondem `404` até
     ganharem controller.
 
@@ -258,6 +259,99 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  /bancos/{bancoId}/sugestao-lote:
+    get:
+      tags: [Estoque]
+      summary: Lotes sugeridos para um paciente (HU-04, FEFO + ABO/Rh)
+      description: >
+        Bolsas aptas (disponíveis, dentro da validade e na faixa de temperatura)
+        e compatíveis com o tipo sanguíneo do paciente para o componente pedido.
+        Ordem: mesmo tipo do paciente primeiro, depois a que vence antes (FEFO).
+        Plasma e crioprecipitado seguem a compatibilidade ABO invertida, sem Rh;
+        hemácias e plaquetas, a das hemácias. "faltam" > 0 quando o estoque não
+        tem bolsas suficientes.
+      operationId: sugerirLotes
+      parameters:
+        - $ref: '#/components/parameters/BancoIdPath'
+        - name: tipoComponente
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/TipoComponente' }
+        - name: tipoSanguineo
+          in: query
+          required: true
+          description: Tipo sanguíneo do paciente (receptor).
+          schema: { $ref: '#/components/schemas/TipoSanguineo' }
+        - name: quantidade
+          in: query
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Lotes sugeridos, na ordem de uso.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [bancoDeSangueId, tipoComponente, tipoSanguineoPaciente, quantidadeSolicitada, quantidadeSugerida, faltam, lotes]
+                properties:
+                  bancoDeSangueId: { type: string, example: BS-01 }
+                  tipoComponente: { $ref: '#/components/schemas/TipoComponente' }
+                  tipoSanguineoPaciente: { $ref: '#/components/schemas/TipoSanguineo' }
+                  quantidadeSolicitada: { type: integer, example: 2 }
+                  quantidadeSugerida: { type: integer, example: 2 }
+                  faltam: { type: integer, example: 0 }
+                  lotes:
+                    type: array
+                    items: { $ref: '#/components/schemas/BolsaHemocomponente' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /bancos/{bancoId}/alertas:
+    get:
+      tags: [Estoque]
+      summary: Alertas de validade e temperatura do estoque (HU-02)
+      description: >
+        Só bolsas DISPONIVEL ou RESERVADA. VENCIDA e FORA_DA_FAIXA são CRITICO;
+        VENCE_EM_BREVE (0 a 7 dias) é ATENCAO. Críticos primeiro, depois pela
+        validade. Uma bolsa pode gerar dois alertas.
+      operationId: listarAlertasDoEstoque
+      parameters:
+        - $ref: '#/components/parameters/BancoIdPath'
+      responses:
+        '200':
+          description: Caixa de alertas do painel.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [bancoDeSangueId, total, criticos, alertas]
+                properties:
+                  bancoDeSangueId: { type: string, example: BS-01 }
+                  total: { type: integer, example: 2 }
+                  criticos: { type: integer, example: 1 }
+                  alertas:
+                    type: array
+                    items:
+                      type: object
+                      required: [bolsaId, tipoComponente, tipoSanguineo, dataValidade, tipo, nivel, mensagem]
+                      properties:
+                        bolsaId: { type: string, example: PQ-3014 }
+                        tipoComponente: { $ref: '#/components/schemas/TipoComponente' }
+                        tipoSanguineo: { $ref: '#/components/schemas/TipoSanguineo' }
+                        dataValidade: { type: string, format: date }
+                        tipo: { type: string, enum: [VENCIDA, VENCE_EM_BREVE, FORA_DA_FAIXA] }
+                        nivel: { type: string, enum: [CRITICO, ATENCAO] }
+                        mensagem: { type: string, example: "Bolsa PQ-3014 está a 25.6 °C, fora da faixa de 20.0 a 24.0 °C." }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
   # -- Hemocomponentes -----------------------------------------------------
   /hemocomponentes:
     get:
@@ -322,7 +416,7 @@ paths:
           description: Bolsa criada com status inicial DISPONIVEL.
           headers:
             Location:
-              description: Endereço da bolsa criada (ex.: /api/v1/hemocomponentes/CH-1091).
+              description: "Endereço da bolsa criada (ex.: /api/v1/hemocomponentes/CH-1091)."
               schema: { type: string }
           content:
             application/json:

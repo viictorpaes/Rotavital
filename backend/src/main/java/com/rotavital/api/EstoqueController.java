@@ -70,7 +70,7 @@ public class EstoqueController
 
         for (BolsaHemocomponente bolsa : bolsas)
         {
-            bolsasDTO.add(paraBolsaDTO(bolsa));
+            bolsasDTO.add(BolsaHemocomponenteDTO.de(bolsa));
         }
 
         EstoqueDTO estoque = new EstoqueDTO(bancoId, bolsasDTO.size(), bolsasDTO);
@@ -92,7 +92,7 @@ public class EstoqueController
 
         for (BolsaHemocomponente bolsa : estoqueService.listarBolsas(bancoId, tipoComponente, tipoSanguineo, status, page, size))
         {
-            bolsasDTO.add(paraBolsaDTO(bolsa));
+            bolsasDTO.add(BolsaHemocomponenteDTO.de(bolsa));
         }
 
         return ResponseEntity.ok(bolsasDTO);
@@ -102,7 +102,7 @@ public class EstoqueController
     @GetMapping("/hemocomponentes/{id}")
     public ResponseEntity<BolsaHemocomponenteDTO> consultarBolsa(@PathVariable("id") String id)
     {
-        return ResponseEntity.ok(paraBolsaDTO(estoqueService.buscarBolsa(id)));
+        return ResponseEntity.ok(BolsaHemocomponenteDTO.de(estoqueService.buscarBolsa(id)));
     }
 
     // Dados inválidos: o EstoqueService lança DadosInvalidosException (400) ou RegraDeNegocioException (422),
@@ -113,25 +113,7 @@ public class EstoqueController
         BolsaHemocomponente bolsa = estoqueService.cadastrarBolsa(dados);
 
         return ResponseEntity.created(URI.create("/api/v1/hemocomponentes/" + bolsa.getId()))
-                .body(paraBolsaDTO(bolsa));
-    }
-
-    private BolsaHemocomponenteDTO paraBolsaDTO(BolsaHemocomponente bolsa)
-    {
-        return new BolsaHemocomponenteDTO(
-                bolsa.getId(),
-                bolsa.getTipoComponente(),
-                bolsa.getTipoSanguineo(),
-                bolsa.getDataColeta(),
-                bolsa.getDataValidade(),
-                bolsa.getLoteSintetico(),
-                bolsa.getVolumeMl(),
-                bolsa.getTemperaturaCelsius(),
-                bolsa.getLocalizacao(),
-                bolsa.estaForaDaFaixa(),
-                bolsa.getStatus(),
-                bolsa.getBancoOrigem().getId()
-        );
+                .body(BolsaHemocomponenteDTO.de(bolsa));
     }
 
     private ResponseEntity<ErroDTO> bancoNaoEncontrado(String bancoId, String caminho)
