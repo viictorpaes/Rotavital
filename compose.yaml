@@ -43,16 +43,15 @@ services:
     environment:
       # Sobrescreve a conexão do application.properties (Supabase) pelo Postgres do Compose:
       # "db" é o nome do serviço acima, resolvido pelo DNS da rede do Compose.
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME:-rotavital}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER:-rotavital}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      # Conex�o direta com o banco do Supabase na nuvem:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require
+      SPRING_DATASOURCE_USERNAME: postgres.gilyfswvezmvtmlxgvrd
+      SPRING_DATASOURCE_PASSWORD: ${SUPABASE_DB_PASSWORD}
       SPRING_JPA_SHOW_SQL: "false"
+      SUPABASE_KEY: ${SUPABASE_KEY:-}
       TZ: America/Recife
     ports:
       - "${API_PORT:-8080}:8080"
-    depends_on:
-      db:
-        condition: service_healthy
     healthcheck:
       # O /actuator/health também consulta o banco: só fica UP com a API e o Postgres respondendo.
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
@@ -71,9 +70,6 @@ services:
       API_UPSTREAM: http://backend:8080
     ports:
       - "${WEB_PORT:-80}:8080"
-    depends_on:
-      backend:
-        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ > /dev/null"]
       interval: 10s
