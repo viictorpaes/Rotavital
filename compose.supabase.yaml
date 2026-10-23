@@ -1,0 +1,22 @@
+# ===================================================================
+# Rota Vital — a mesma pilha do compose.yaml, com o backend no banco do Supabase
+# (o mesmo da produção) e sem o Postgres local, para o login funcionar de ponta a ponta:
+#
+#   docker compose -f compose.yaml -f compose.supabase.yaml up -d --build
+#
+# Precisa de internet e de SUPABASE_DB_PASSWORD e SUPABASE_KEY no .env (ver .env.example).
+# O login confere a senha no Supabase Auth e busca o perfil na tabela usuario, que só
+# tem usuários ligados ao Supabase Auth no banco do Supabase, não no Postgres local.
+# Atenção: o que for gravado por aqui vai para o banco de produção.
+# ===================================================================
+services:
+  db:
+    # Num perfil que ninguém ativa: neste modo o container do Postgres local não sobe.
+    profiles: ["banco-local"]
+
+  backend:
+    depends_on: !reset {}
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require
+      SPRING_DATASOURCE_USERNAME: postgres.gilyfswvezmvtmlxgvrd
+      SPRING_DATASOURCE_PASSWORD: ${SUPABASE_DB_PASSWORD:?Defina SUPABASE_DB_PASSWORD no arquivo .env (copie de .env.example)}

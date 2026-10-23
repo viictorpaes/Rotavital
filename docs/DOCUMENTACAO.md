@@ -56,10 +56,20 @@ flowchart TD
     IDX --> EVD["evidencias/<br/>chamadas reais aos endpoints"]
     IDX --> PER["PERFIS_DE_ACESSO.md<br/>quem entra e o que cada perfil vê"]
     DRAW --> ENT["pdf/arquitetura-rotavital-paes-silva.pdf<br/>PDF entregue"]
+    R --> RUN["COMO_EXECUTAR.md<br/>rodar sem Docker"]
+    R --> EST["ESTRUTURA_DO_PROJETO.md<br/>módulos e árvore do repositório"]
+    R --> PI["ENTREGAS_PI.md<br/>Entregas 01 e 02 (HUs + BDD)"]
+    PI --> FVR["FIGMA_VS_REAL.md<br/>protótipo × sistema rodando"]
+    R --> CDT["DESAFIO_CONTAINER_TDD_DEPLOY.md<br/>evidências do E1 e configuração do deploy"]
 ```
 
 | Documento | Formato | Conteúdo | Leia quando... |
 | :--- | :--- | :--- | :--- |
+| [`COMO_EXECUTAR.md`](COMO_EXECUTAR.md) | Markdown | Backend e frontend sem Docker, endpoints com exemplos `curl`, comandos do Maven e do npm | se for rodar o projeto direto na máquina |
+| [`ESTRUTURA_DO_PROJETO.md`](ESTRUTURA_DO_PROJETO.md) | Markdown | Módulos e status, árvore comentada do repositório e o que cada camada faz hoje | quiser saber onde fica cada coisa no código |
+| [`ENTREGAS_PI.md`](ENTREGAS_PI.md) | Markdown | Entregas 01 e 02: histórias de usuário com cenários BDD, screencasts e Issue Tracker | se for conferir uma história ou o que cada entrega cobriu |
+| [`FIGMA_VS_REAL.md`](FIGMA_VS_REAL.md) | Markdown + prints | Cada tela do Figma ao lado da mesma tela no sistema, com o trecho de código | quiser comparar o protótipo com o que foi implementado |
+| [`DESAFIO_CONTAINER_TDD_DEPLOY.md`](DESAFIO_CONTAINER_TDD_DEPLOY.md) | Markdown | Saídas de terminal do E1 e passo a passo para ligar o deploy (Render, Vercel, GitHub) | se for configurar as contas do deploy ou conferir o E1 |
 | [`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md) | Markdown + Mermaid | Diagrama de classes, composição/herança, enums, fluxo de `TesteFluxo` | se for mexer nas classes de `com.rotavital.dominio` |
 | [`CONTRATOS_DE_API.md`](CONTRATOS_DE_API.md) | Markdown + Mermaid | Os 4 módulos REST, padrão de erro (RFC 7807), diagramas de sequência, gaps | se for desenhar ou consumir um endpoint |
 | [`openapi.yaml`](openapi.yaml) | OpenAPI 3.0.3 | Fonte da verdade do contrato — schemas, exemplos, respostas | se for importar no Swagger/Postman/Insomnia |
@@ -85,7 +95,7 @@ Documenta o pacote `com.rotavital.dominio` (`backend/src/main/java/com/rotavital
 POO da sprint **W04**. Cobre `PontoDeRede`, `Endereco`, `Hospital`, `BancoDeSangue`, `Estoque`,
 `BolsaHemocomponente`, `RequisicaoHospitalar`, `Conexao`, `RedeDistribuicao` (grafo + Dijkstra),
 `RotaCalculada` e os enums do domínio, além do fluxo manual de
-[`TesteFluxo.java`](../backend/src/test/java/com/rotavital/dominio/TesteFluxo.java).
+[`TesteFluxoTest.java`](../backend/src/test/java/com/rotavital/dominio/TesteFluxoTest.java).
 
 <h2 align="left" id="3-api">🌐 3. Contratos de API</h2>
 
@@ -136,8 +146,9 @@ Protótipo Lo-Fi publicado no Figma, com link em [`RotaVital.fig`](../RotaVital.
 raiz do repositório, apontando para o protótipo online) — acesso direto:
 [letter-raven-07178463.figma.site](https://letter-raven-07178463.figma.site).
 
-> As histórias de usuário (BDD) da Entrega 01 estão no [`README.md`](../README.md#-entrega-01) principal,
-> na seção "Entrega 01", em blocos expansíveis (▶️).
+> As histórias de usuário (BDD) da Entrega 01 estão em [`ENTREGAS_PI.md`](ENTREGAS_PI.md#-entrega-01),
+> em blocos expansíveis (▶️). Cada tela do protótipo ao lado do sistema rodando está em
+> [`FIGMA_VS_REAL.md`](FIGMA_VS_REAL.md).
 
 <h2 align="left" id="10-visualizar">🔎 10. Visualizando o contrato REST</h2>
 
@@ -151,7 +162,7 @@ docker run -p 8081:8080 -e SWAGGER_JSON=/spec/openapi.yaml \
 Acesse `http://localhost:8081`.
 
 **Postman / Insomnia:** `Importar → File → docs/openapi.yaml`. Os `examples` de cada operação já vêm
-populados com os dados de [`TesteFluxo.java`](../backend/src/test/java/com/rotavital/dominio/TesteFluxo.java)
+populados com os dados de [`TesteFluxoTest.java`](../backend/src/test/java/com/rotavital/dominio/TesteFluxoTest.java)
 (`BS-01`/Hemope Central, `BOLSA-001`, `HOSP-01`/Hospital das Clínicas), prontos para teste manual sem
 backend.
 

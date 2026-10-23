@@ -122,7 +122,7 @@ quem pode fazer o quê (FKs compostas `(id, papel)` → `usuario`, ver [`DER.md`
 | 2 | O admin pode fazer ações que gravam dados (requisição, campanha, procedimento)? | **Não.** Vê todas as telas e o diagnóstico, mas não grava ações clínicas | O banco já exige `MEDICO` em campanha e procedimento; um admin gravando quebraria essas regras |
 | 3 | Onde o admin fica cadastrado? | Na tabela `usuario`, com `papel = 'ADMIN'` | Todo mundo entra do mesmo jeito; só precisa incluir `ADMIN` no `CHECK` de `papel` |
 | 4 | Como cada um entra? | Login e senha para os três perfis, usando o **Supabase Auth** | O schema já prevê isso: `usuario.auth_user_id` → `auth.users` (HU-F01). A alternativa seria uma coluna própria de senha (guardada como hash) |
-| 5 | O médico pode agendar doação? A HU-09 diz que sim. | **Não.** O médico vê a lista e publica campanhas; quem agenda é o doador | O banco só aceita agendamento com `doador_papel = 'DOADOR'`. O texto da HU-09 no README ("médico ou doador ... agendar") fica desatualizado e precisa ser ajustado |
+| 5 | O médico pode agendar doação? A HU-09 diz que sim. | **Não.** O médico vê a lista e publica campanhas; quem agenda é o doador | O banco só aceita agendamento com `doador_papel = 'DOADOR'`. O texto da HU-09 em [`ENTREGAS_PI.md`](ENTREGAS_PI.md) ("médico ou doador ... agendar") fica desatualizado e precisa ser ajustado |
 | 6 | A API vai bloquear por perfil (`403`) já nesta sprint? | **Não**, fica para a próxima sprint | Nesta sprint: login validado na API (PI3-183) e telas protegidas no frontend (PI3-184). Esconder telas no frontend não é segurança de verdade: a API continua aberta para quem souber a URL |
 
 <h2 align="left" id="7-impacto">🔗 7. Impacto nas outras tasks</h2>
