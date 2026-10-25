@@ -23,8 +23,9 @@ import { useNotificacao } from "@/context/ContextoNotificacao";
 
 const BANCO_ID = "BS-01";
 
-/** Bolsas por página: 12 enche quatro linhas da grade de três colunas. */
-const TAMANHO_PAGINA = 12;
+
+/** Bolsas por página: 100 enche dez linhas da grade de três colunas. */
+const TAMANHO_PAGINA = 100;
 
 interface GrupoEstoque
 {
