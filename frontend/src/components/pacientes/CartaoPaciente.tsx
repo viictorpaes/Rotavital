@@ -27,8 +27,7 @@ export function CartaoPaciente({ paciente, disponiveis, onConcluir }: Readonly<P
         <div className="min-w-0">
           <p className="font-bold text-gray-900">{paciente.nome}</p>
           <p className="font-mono text-xs text-gray-500">
-            {paciente.sexo} · {paciente.idade} anos ·{" "}
-            {paciente.distanciaKm.toLocaleString("pt-BR", { minimumFractionDigits: 1 })} km
+            {paciente.sexo} · {paciente.idade} anos · {paciente.hospital}
           </p>
         </div>
         <SeloTipoSanguineo tipo={paciente.tipoSanguineo} />

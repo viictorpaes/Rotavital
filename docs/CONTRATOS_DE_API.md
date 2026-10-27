@@ -28,6 +28,7 @@
     - 2.2 [Autenticação e 401 × 403](#2-2-autenticacao)
     - 2.3 [Endpoints REST do MVP, por recurso](#2-3-endpoints)
     - 2.4 [Os 6 endpoints principais, em detalhe](#2-4-principais)
+    - 2.5 [Campanhas e agendamentos de doação (PI3-174)](#2-5-doacoes)
 3. [Módulo de Acesso (HU-01)](#3-acesso)
 4. [Módulo de Estoque e Hemocomponentes (PI3-46)](#4-estoque)
 5. [Módulo de Requisições Hospitalares e Alocação (PI3-47)](#5-requisicoes)
@@ -148,6 +149,12 @@ passar a ser exigido, a regra será:
 | `401 Unauthorized` | Falta o token ou ele é inválido/expirado: **não sabemos quem é** | `GET /api/v1/hemocomponentes` sem cabeçalho `Authorization` |
 | `403 Forbidden` | O token é válido, mas o perfil **não tem permissão** | Um DOADOR autenticado chama `POST /api/v1/requisicoes/{id}/alocacoes` |
 
+**Exceção: doações (PI3-174).** Os endpoints de campanhas e agendamentos que gravam já conferem o perfil, mas
+pelo header `X-Usuario-Id` (o `id` devolvido pelo `POST /acessos`, que o frontend manda em toda chamada), e
+não pelo token. Header ausente ou de usuário inexistente responde `401`; perfil sem permissão responde `403`.
+Trocar o header pelo token do Supabase fica para quando a decisão 6 for implementada. Detalhes na
+[seção 2.5](#2-5-doacoes).
+
 <h3 align="left" id="2-3-endpoints">🧾 2.3 Endpoints REST do MVP, por recurso</h3>
 
 São **19 endpoints**, mais de 15. Por isso a tabela está agrupada por recurso, e os 6 principais estão detalhados na
@@ -182,12 +189,24 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | **🌡️ Entregas → Leituras** | *`EntregaController` (planejado)* | | | | |
 | `POST` | `/api/v1/entregas/{id}/leituras` | 🕓 Registra uma leitura simulada (GPS + °C) | Nenhuma no MVP (alvo: médico) | `LeituraTelemetria` | `201` · `400` · `404` · `422` |
 | `GET` | `/api/v1/entregas/{id}/leituras` | 🕓 Histórico de leituras da entrega, em ordem cronológica | Nenhuma no MVP (alvo: médico) | `MonitoramentoEntrega` | `200` · `404` |
+| **❤️ Campanhas de doação** | *`CampanhaController`* | | | | |
+| `GET` | `/api/v1/campanhas?status=` | ✅ Campanhas da mais recente para a mais antiga, com o paciente e os agendamentos em aberto | Nenhuma | `Campanha[]` | `200` · `400` |
+| `GET` | `/api/v1/campanhas/{id}` | ✅ Detalhe de uma campanha | Nenhuma | `Campanha` | `200` · `404` |
+| `POST` | `/api/v1/campanhas` | ✅ Publica a campanha e cria o paciente na mesma transação | `X-Usuario-Id` (médico) | `Campanha` | `201` · `400` · `401` · `403` |
+| `PUT` | `/api/v1/campanhas/{id}` | ✅ Edita os dados do paciente divulgado (só campanha ativa) | `X-Usuario-Id` (médico) | `Campanha` | `200` · `400` · `401` · `403` · `404` · `422` |
+| `PATCH` | `/api/v1/campanhas/{id}/encerramento` | ✅ Encerra a campanha e cancela os agendamentos em aberto | `X-Usuario-Id` (médico) | `Campanha` | `200` · `401` · `403` · `404` · `422` |
+| **🗓️ Agendamentos de doação** | *`AgendamentoController`* | | | | |
+| `GET` | `/api/v1/campanhas/{id}/agendamentos` | ✅ Agendamentos da campanha | `X-Usuario-Id` (médico, admin) | `Agendamento[]` | `200` · `401` · `403` · `404` |
+| `POST` | `/api/v1/campanhas/{id}/agendamentos` | ✅ O doador agenda uma doação na campanha | `X-Usuario-Id` (doador) | `Agendamento` | `201` · `400` · `401` · `403` · `404` · `409` · `422` |
+| `GET` | `/api/v1/agendamentos/meus` | ✅ Agendamentos do próprio doador | `X-Usuario-Id` (doador) | `Agendamento[]` | `200` · `401` · `403` |
+| `PATCH` | `/api/v1/agendamentos/{id}` | ✅ Remarca (só o próprio doador, só em aberto) | `X-Usuario-Id` (doador) | `Agendamento` | `200` · `400` · `401` · `403` · `404` · `422` |
+| `PATCH` | `/api/v1/agendamentos/{id}/status` | ✅ Fecha o agendamento: doador cancela; médico cancela, registra doação feita ou falta | `X-Usuario-Id` (doador, médico) | `Agendamento` | `200` · `400` · `401` · `403` · `404` · `422` |
 | **📊 Benchmarks** | *`BenchmarkController`* | | | | |
 | `GET` | `/api/v1/benchmarks/auditoria-telemetria?tamanho=100000&modo=TODOS` | ✅ Auditoria sequencial × paralela sobre uma massa sintética (não persiste nada) | Nenhuma (uso interno) | `BenchmarkResponse` | `200` |
 | `POST` | `/api/v1/benchmarks/auditoria-telemetria` | ✅ A mesma auditoria, com os parâmetros no corpo JSON (não persiste nada, por isso 200) | Nenhuma (uso interno) | `BenchmarkResponse` | `200` |
 
 **Coerência dos status:**
-- `201` só aparece onde nasce um recurso (bolsa, requisição, alocação, leitura).
+- `201` só aparece onde nasce um recurso (bolsa, requisição, alocação, leitura, campanha, agendamento).
 - `204` só aparece no `DELETE`.
 - `200` aparece em leituras e em `POST` que não criam nada (`/acessos`, `/benchmarks`).
 - `400` é para entrada malformada, `404` para recurso inexistente e `422` para regra de negócio violada.
@@ -267,6 +286,49 @@ GET /api/v1/rotas?origemId=BS-01&destinoId=HOSP-01&janelaEntregaLimite=2026-12-3
 | `400` | `origemId` ou `destinoId` ausente | `Erro`: `"Informe origemId e destinoId na query string"` |
 | `404` | Ponto de rede inexistente | `Erro`: `"Ponto de rede não encontrado: NOPE"` |
 | `422` | Os pontos existem, mas não há caminho entre eles no grafo | `Erro` |
+
+<h3 align="left" id="2-5-doacoes">❤️ 2.5 Campanhas e agendamentos de doação (PI3-174)</h3>
+
+O médico publica uma campanha para um paciente (HU-06); doadores agendam a doação dentro dela pelo Portal do
+Doador (HU-10); o médico acompanha os agendamentos na tela de Doações e registra o que aconteceu (HU-09).
+Os dados ficam nas tabelas `paciente`, `campanha_doacao` e `agendamento_doacao` do Supabase.
+
+**Quem pode o quê** (decisões 2 e 5 de [`PERFIS_DE_ACESSO.md`](PERFIS_DE_ACESSO.md)):
+
+| Ação | 🩺 Médico | ❤️ Doador | 🛠️ Admin |
+|---|---|---|---|
+| Ver campanhas | ✅ | ✅ | ✅ |
+| Publicar, editar e encerrar campanha | ✅ | ❌ | ❌ |
+| Ver os agendamentos de uma campanha | ✅ | ❌ | ✅ |
+| Agendar e remarcar doação | ❌ | ✅ (os seus) | ❌ |
+| Cancelar agendamento | ✅ | ✅ (os seus) | ❌ |
+| Registrar doação feita ou falta | ✅ | ❌ | ❌ |
+
+**Regras conferidas no backend:**
+- Publicar cria o paciente e a campanha juntos. Edição só em campanha `ATIVA`.
+- Encerrar muda a campanha para `ENCERRADA` e cancela os agendamentos que ainda estavam `AGENDADO`.
+- Agendamento só em campanha ativa, no futuro e dentro do expediente do hemocentro: segunda a sábado, das
+  07h às 19h, no horário de Recife (o horário pode vir em qualquer fuso; o backend converte).
+- Um agendamento em aberto por doador. O banco também garante isso; se duas gravações chegarem juntas, a
+  segunda responde `409`.
+- Só agendamento `AGENDADO` muda. `FALTOU` só depois do horário marcado.
+
+**Exemplo: o doador agenda**
+```http
+POST /api/v1/campanhas/7d0c4b8e-0000-4000-8000-000000000001/agendamentos
+X-Usuario-Id: 5a2e…
+Content-Type: application/json
+
+{ "bancoId": "BS-01", "agendadoPara": "2026-11-04T09:30:00-03:00" }
+```
+| Status | Quando | Corpo |
+|---|---|---|
+| `201` | Agendamento criado | `Agendamento` com `status: "AGENDADO"` |
+| `400` | `bancoId` ou `agendadoPara` ausente, ou banco inexistente | `Erro`: `"O campo 'bancoId' é obrigatório."` |
+| `401` | Sem `X-Usuario-Id` | `Erro`: `"Entre no sistema para agendar doação."` |
+| `403` | Médico ou admin tentando agendar | `Erro`: `"Só doador pode agendar doação."` |
+| `404` | Campanha inexistente | `Erro`: `"Nenhuma campanha encontrada com id …"` |
+| `422` | Campanha encerrada, domingo, fora das 07h–19h, no passado ou doador já com agendamento em aberto | `Erro`: `"Você já tem uma doação agendada. Remarque ou cancele essa antes de marcar outra."` |
 
 <h2 align="left" id="3-acesso">🔑 3. Módulo de Acesso (HU-01)</h2>
 

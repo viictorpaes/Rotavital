@@ -1,6 +1,7 @@
 package com.rotavital.servico;
 
 import java.lang.reflect.Proxy;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -22,6 +23,26 @@ public final class RepositorioFalso
                 (proxy, chamado, argumentos) ->
                 {
                     if (!chamado.getName().equals(metodo))
+                    {
+                        throw new UnsupportedOperationException("Consulta inesperada no teste: " + chamado.getName());
+                    }
+
+                    return resposta.apply(argumentos);
+                });
+
+        return tipoDoRepositorio.cast(repositorio);
+    }
+
+    // Mesma ideia, para o serviço que faz mais de uma consulta no mesmo repositório (ex.: findById e save).
+    public static <T> T respondendo(Class<T> tipoDoRepositorio, Map<String, Function<Object[], Object>> respostas)
+    {
+        Object repositorio = Proxy.newProxyInstance(
+                tipoDoRepositorio.getClassLoader(),
+                new Class<?>[] { tipoDoRepositorio },
+                (proxy, chamado, argumentos) ->
+                {
+                    Function<Object[], Object> resposta = respostas.get(chamado.getName());
+                    if (resposta == null)
                     {
                         throw new UnsupportedOperationException("Consulta inesperada no teste: " + chamado.getName());
                     }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AlertTriangle, Clock } from "lucide-react";
 import { useDados } from "@/context/ContextoDados";
 import { diasAteVencer, statusLote } from "@/lib/estoque";
@@ -20,7 +21,9 @@ const JANELA_VENCIMENTO_DIAS = 4;
 export default function PaginaRequisicao()
 {
   const { lotes, recebimentosPendentes } = useDados();
-  const [aba, setAba] = useState<Aba>("solicitar");
+  // ?aba=campanha abre direto na campanha (botão "Nova campanha" da tela de Doações).
+  const [parametros] = useSearchParams();
+  const [aba, setAba] = useState<Aba>(parametros.get("aba") === "campanha" ? "campanha" : "solicitar");
 
   const vencendo = useMemo(
     () => lotes.filter((lote) => diasAteVencer(lote) <= JANELA_VENCIMENTO_DIAS).length,

@@ -7,9 +7,6 @@ export const NIVEL_SEGURANCA = 10;
 /** Janela de vencimento que exige priorização de liberação. */
 export const JANELA_VENCIMENTO_DIAS = 7;
 
-/** Há quantos minutos cada paciente crítico abriu a solicitação (mock). */
-const MINUTOS_SOLICITACAO: Record<string, number> = { p1: 4, p5: 12, p7: 38 };
-
 export interface IndicadorPainel
 {
   id: string;
@@ -37,11 +34,6 @@ function inicioDeHoje()
   return data;
 }
 
-function minutosAtras(minutos: number)
-{
-  return new Date(Date.now() - minutos * 60_000);
-}
-
 /** Rotina automática de conferência de estoque — roda às 6h de cada dia. */
 function rotinaDeHoje()
 {
@@ -57,8 +49,8 @@ function avisoDePaciente(pessoa: PessoaNecessitada): AvisoPainel
     origem: "paciente",
     severidade: pessoa.status,
     titulo: `Paciente ${pessoa.nome} precisa de sangue ${pessoa.tipoSanguineo}`,
-    detalhe: `${pessoa.causa} · ${pessoa.componente} · a ${pessoa.distanciaKm.toLocaleString("pt-BR")} km`,
-    registradoEm: minutosAtras(MINUTOS_SOLICITACAO[pessoa.id] ?? 120),
+    detalhe: `${pessoa.causa} · ${pessoa.componente} · ${pessoa.hospital}`,
+    registradoEm: new Date(pessoa.publicadaEm),
     destino: "/pacientes",
   };
 }

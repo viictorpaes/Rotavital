@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type {
   LoteHemocomponente,
   OrigemAtendimento,
@@ -6,31 +6,34 @@ import type {
   ProcedimentoConcluido,
   RequisicaoRecebida,
 } from "@/types";
+import type { CampanhaDTO } from "@/types/dtos";
 import { lotesEstoque } from "@/data/estoqueMock";
-import { pessoasNecessitadas } from "@/data/pessoasMock";
 import { requisicoesRecebidas } from "@/data/requisicoesMock";
 import { reservarPorFefo } from "@/lib/pacientes";
 import { converterBolsaParaLote } from "@/lib/estoque";
-import { buscarEstoque } from "@/services/api";
-import {
-  gerarProtocolo,
-  loteDaRequisicaoRecebida,
-  pacienteDaCampanha,
-  type DadosCampanha,
-} from "@/lib/requisicao";
+import { mensagemDeErro, pessoaDaCampanha } from "@/lib/doacoes";
+import { buscarEstoque, listarCampanhas } from "@/services/api";
+import { gerarProtocolo, loteDaRequisicaoRecebida } from "@/lib/requisicao";
+
+export type SituacaoCarga = "carregando" | "pronto" | "erro";
 
 interface ValorContextoDados
 {
   lotes: LoteHemocomponente[];
+  /** Pacientes das campanhas ativas, lidos do backend (HU-06, HU-09). */
   pacientes: PessoaNecessitada[];
+  /** Campanhas de doação, ativas e encerradas, da mais recente para a mais antiga (PI3-191). */
+  campanhas: CampanhaDTO[];
+  situacaoCampanhas: SituacaoCarga;
+  erroCampanhas: string | null;
+  /** Lê as campanhas de novo — chamado depois de publicar, editar, encerrar ou agendar. */
+  recarregarCampanhas: () => Promise<void>;
   /** Remessas ainda sem conferência física (HU-05). */
   recebimentosPendentes: RequisicaoRecebida[];
   /** Remessas conferidas nesta sessão, da mais recente para a mais antiga. */
   recebimentosConfirmados: RequisicaoRecebida[];
   /** Confere a remessa e soma as unidades ao estoque (HU-05). */
   confirmarRecebimento: (id: string) => void;
-  /** Publica o paciente nas telas de Doações e Pacientes (HU-06). */
-  publicarCampanha: (dados: DadosCampanha) => string;
   /** Procedimentos encerrados nesta sessão, do mais recente para o mais antigo. */
   procedimentosConcluidos: ProcedimentoConcluido[];
   /** Encerra o atendimento do paciente e dá a baixa correspondente (HU-08). */
@@ -43,12 +46,16 @@ interface ValorContextoDados
 const ContextoDados = createContext<ValorContextoDados | undefined>(undefined);
 
 /**
- * Estado compartilhado das telas operacionais — integrado com o banco de dados Supabase.
+ * Estado compartilhado das telas operacionais. Estoque e campanhas de doação vêm do backend (Supabase).
  */
 export function ProvedorDados({ children }: { children: ReactNode })
 {
   const [lotes, setLotes] = useState<LoteHemocomponente[]>(lotesEstoque);
-  const [pacientes, setPacientes] = useState<PessoaNecessitada[]>(pessoasNecessitadas);
+  const [campanhas, setCampanhas] = useState<CampanhaDTO[]>([]);
+  const [situacaoCampanhas, setSituacaoCampanhas] = useState<SituacaoCarga>("carregando");
+  const [erroCampanhas, setErroCampanhas] = useState<string | null>(null);
+  // O procedimento (HU-08) ainda não é gravado: o paciente concluído só sai da fila nesta sessão.
+  const [pacientesAtendidos, setPacientesAtendidos] = useState<string[]>([]);
   const [recebimentosPendentes, setPendentes] = useState<RequisicaoRecebida[]>(requisicoesRecebidas);
   const [recebimentosConfirmados, setConfirmados] = useState<RequisicaoRecebida[]>([]);
   const [procedimentosConcluidos, setProcedimentos] = useState<ProcedimentoConcluido[]>([]);
@@ -75,6 +82,34 @@ export function ProvedorDados({ children }: { children: ReactNode })
     carregarEstoqueReal();
   }, []);
 
+  const recarregarCampanhas = useCallback(async () =>
+  {
+    try
+    {
+      setCampanhas(await listarCampanhas());
+      setErroCampanhas(null);
+      setSituacaoCampanhas("pronto");
+    }
+    catch (e)
+    {
+      setErroCampanhas(mensagemDeErro(e));
+      setSituacaoCampanhas("erro");
+    }
+  }, []);
+
+  useEffect(() =>
+  {
+    recarregarCampanhas();
+  }, [recarregarCampanhas]);
+
+  const pacientes = useMemo(
+    () => campanhas
+      .filter((campanha) => campanha.status === "ATIVA")
+      .map(pessoaDaCampanha)
+      .filter((pessoa) => !pacientesAtendidos.includes(pessoa.id)),
+    [campanhas, pacientesAtendidos],
+  );
+
   const valor = useMemo<ValorContextoDados>(() =>
   {
     function confirmarRecebimento(id: string)
@@ -85,13 +120,6 @@ export function ProvedorDados({ children }: { children: ReactNode })
       setLotes((atuais) => [...atuais, loteDaRequisicaoRecebida(requisicao)]);
       setPendentes((atuais) => atuais.filter((item) => item.id !== id));
       setConfirmados((atuais) => [requisicao, ...atuais]);
-    }
-
-    function publicarCampanha(dados: DadosCampanha)
-    {
-      const protocolo = gerarProtocolo("CAM");
-      setPacientes((atuais) => [pacienteDaCampanha(dados, protocolo.toLowerCase()), ...atuais]);
-      return protocolo;
     }
 
     /**
@@ -129,7 +157,7 @@ export function ProvedorDados({ children }: { children: ReactNode })
         unidadesFaltantes: baixa?.unidadesFaltantes ?? 0,
       };
 
-      setPacientes((atuais) => atuais.filter((item) => item.id !== pacienteId));
+      setPacientesAtendidos((atuais) => [...atuais, pacienteId]);
       setProcedimentos((atuais) => [registro, ...atuais]);
       return registro;
     }
@@ -137,14 +165,27 @@ export function ProvedorDados({ children }: { children: ReactNode })
     return {
       lotes,
       pacientes,
+      campanhas,
+      situacaoCampanhas,
+      erroCampanhas,
+      recarregarCampanhas,
       recebimentosPendentes,
       recebimentosConfirmados,
       confirmarRecebimento,
-      publicarCampanha,
       procedimentosConcluidos,
       concluirProcedimento,
     };
-  }, [lotes, pacientes, recebimentosPendentes, recebimentosConfirmados, procedimentosConcluidos]);
+  }, [
+    lotes,
+    pacientes,
+    campanhas,
+    situacaoCampanhas,
+    erroCampanhas,
+    recarregarCampanhas,
+    recebimentosPendentes,
+    recebimentosConfirmados,
+    procedimentosConcluidos,
+  ]);
 
   return <ContextoDados.Provider value={valor}>{children}</ContextoDados.Provider>;
 }

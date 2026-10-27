@@ -108,6 +108,11 @@ class ClienteHttp
           {
             headers.set("X-Usuario-Papel", usuario.papel);
           }
+          // Quem está agindo: o backend confere o perfil nas campanhas e agendamentos de doação.
+          if (usuario?.id)
+          {
+            headers.set("X-Usuario-Id", usuario.id);
+          }
         }
       }
       catch
@@ -322,6 +327,15 @@ class ClienteHttp
     return this.requisitar<T>(caminho, {
       ...config,
       method: "PUT",
+      body: dados !== undefined ? JSON.stringify(dados) : undefined,
+    });
+  }
+
+  public patch<T>(caminho: string, dados?: unknown, config?: ConfiguracaoRequisicao): Promise<T>
+  {
+    return this.requisitar<T>(caminho, {
+      ...config,
+      method: "PATCH",
       body: dados !== undefined ? JSON.stringify(dados) : undefined,
     });
   }

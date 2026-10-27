@@ -1,59 +1,129 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, Heart } from "lucide-react";
 import type { Sexo, TipoComponente, TipoSanguineo, UrgenciaNecessidade } from "@/types";
+import type { CampanhaDTO, CampanhaPayloadDTO, PontoRedeDTO } from "@/types/dtos";
+import { useAutenticacao } from "@/context/ContextoAutenticacao";
 import { useDados } from "@/context/ContextoDados";
-import { TIPOS_SANGUINEOS } from "@/lib/estoque";
+import { TIPOS_SANGUINEOS, converterTipoComponente, converterTipoSanguineo } from "@/lib/estoque";
 import { COMPONENTES } from "@/lib/requisicao";
+import {
+  componenteParaBackend,
+  gravidadeDoBackend,
+  gravidadeParaBackend,
+  mensagemDeErro,
+  sexoDoBackend,
+  sexoParaBackend,
+  tipoSanguineoParaBackend,
+} from "@/lib/doacoes";
+import { editarCampanha, listarPontosRede, publicarCampanha } from "@/services/api";
 import { cn } from "@/lib/utilitarios";
 import { CLASSES_CONTROLE, CampoFormulario } from "./CampoFormulario";
 import { SeletorUrgencia } from "./SeletorUrgencia";
 
 const SEXOS: Sexo[] = ["Feminino", "Masculino"];
 
+interface Props
+{
+  /** Campanha a editar. Sem ela, o formulário publica uma campanha nova. */
+  campanha?: CampanhaDTO;
+  /** Chamado depois que a edição é gravada. */
+  onSalvo?: (campanha: CampanhaDTO) => void;
+  onCancelar?: () => void;
+}
+
 /**
  * HU-06 — Campanha de doação: publica o paciente nas telas de Doações e de
- * Pacientes para que doadores voluntários o encontrem.
+ * Pacientes para que doadores voluntários o encontrem. Grava no backend
+ * (POST /campanhas); com `campanha`, edita os dados divulgados (PUT /campanhas/{id}).
  */
-export function FormularioCampanha()
+export function FormularioCampanha({ campanha, onSalvo, onCancelar }: Readonly<Props>)
 {
-  const { publicarCampanha } = useDados();
+  const { usuario } = useAutenticacao();
+  const { recarregarCampanhas } = useDados();
   const navigate = useNavigate();
+  const paciente = campanha?.paciente;
+  const editando = campanha !== undefined;
 
-  const [nome, setNome] = useState("");
-  const [idade, setIdade] = useState("");
-  const [sexo, setSexo] = useState<Sexo>("Feminino");
-  const [tipoSanguineo, setTipoSanguineo] = useState<TipoSanguineo>("O-");
-  const [componente, setComponente] = useState<TipoComponente>(COMPONENTES[0]);
-  const [causa, setCausa] = useState("");
-  const [gravidade, setGravidade] = useState<UrgenciaNecessidade>("atencao");
-  const [protocolo, setProtocolo] = useState<string | null>(null);
+  const [hospitais, setHospitais] = useState<PontoRedeDTO[]>([]);
+  const [hospitalId, setHospitalId] = useState(paciente?.hospitalId ?? "");
+  const [nome, setNome] = useState(paciente?.nome ?? "");
+  const [dataNascimento, setDataNascimento] = useState(paciente?.dataNascimento ?? "");
+  const [sexo, setSexo] = useState<Sexo>(paciente ? sexoDoBackend(paciente.sexo) : "Feminino");
+  const [tipoSanguineo, setTipoSanguineo] = useState<TipoSanguineo>(
+    paciente ? converterTipoSanguineo(paciente.tipoSanguineo) : "O-",
+  );
+  const [componente, setComponente] = useState<TipoComponente>(
+    paciente ? converterTipoComponente(paciente.tipoComponente) : COMPONENTES[0],
+  );
+  const [unidades, setUnidades] = useState(String(paciente?.unidadesNecessarias ?? 1));
+  const [causa, setCausa] = useState(paciente?.causa ?? "");
+  const [gravidade, setGravidade] = useState<UrgenciaNecessidade>(
+    paciente ? gravidadeDoBackend(paciente.gravidade) : "atencao",
+  );
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [publicada, setPublicada] = useState<CampanhaDTO | null>(null);
 
-  function handleSubmit(evento: React.FormEvent)
+  // Só médico publica e edita campanha (decisão 2 de docs/PERFIS_DE_ACESSO.md); o backend também confere.
+  const podeGravar = usuario?.papel === "medico";
+
+  useEffect(() =>
+  {
+    listarPontosRede()
+      .then((pontos) =>
+      {
+        const lista = pontos.filter((ponto) => ponto.tipo === "HOSPITAL");
+        setHospitais(lista);
+        setHospitalId((atual) => atual || lista[0]?.id || "");
+      })
+      .catch(() => setErro("Não foi possível carregar a lista de hospitais."));
+  }, []);
+
+  async function handleSubmit(evento: React.FormEvent)
   {
     evento.preventDefault();
-    setProtocolo(
-      publicarCampanha({
-        nome,
-        sexo,
-        idade: Number(idade),
-        tipoSanguineo,
-        componente,
-        causa,
-        gravidade,
-      }),
-    );
+    const dados: CampanhaPayloadDTO = {
+      hospitalId,
+      nome,
+      sexo: sexoParaBackend(sexo),
+      dataNascimento,
+      tipoSanguineo: tipoSanguineoParaBackend(tipoSanguineo),
+      tipoComponente: componenteParaBackend(componente),
+      unidadesNecessarias: Number(unidades),
+      causa,
+      gravidade: gravidadeParaBackend(gravidade),
+    };
+
+    setEnviando(true);
+    setErro(null);
+    try
+    {
+      const salva = campanha ? await editarCampanha(campanha.id, dados) : await publicarCampanha(dados);
+      await recarregarCampanhas();
+      if (editando) onSalvo?.(salva);
+      else setPublicada(salva);
+    }
+    catch (e)
+    {
+      setErro(mensagemDeErro(e));
+    }
+    finally
+    {
+      setEnviando(false);
+    }
   }
 
   function novaCampanha()
   {
-    setProtocolo(null);
+    setPublicada(null);
     setNome("");
-    setIdade("");
+    setDataNascimento("");
+    setUnidades("1");
     setCausa("");
   }
 
-  if (protocolo)
+  if (publicada)
   {
     return (
       <div className="max-w-3xl space-y-4 rounded-xl border border-emerald-200 bg-emerald-50 p-6">
@@ -62,8 +132,8 @@ export function FormularioCampanha()
           Campanha publicada
         </p>
         <p className="text-sm text-emerald-800">
-          Protocolo <span className="font-mono font-semibold">{protocolo}</span>. O paciente já aparece
-          nas telas de Doações e de Pacientes.
+          A campanha de <span className="font-semibold">{publicada.paciente.nome}</span> foi gravada e o
+          paciente já aparece nas telas de Doações e de Pacientes e no Portal do Doador.
         </p>
         <div className="flex flex-wrap gap-3">
           <button
@@ -94,15 +164,17 @@ export function FormularioCampanha()
 
   return (
     <div className="max-w-3xl space-y-4">
-      <p className="border-l-2 border-rota-red pl-4 text-sm text-gray-500">
-        Uma campanha publica o paciente nas telas de <strong>Doações</strong> e{" "}
-        <strong>Pacientes</strong>, permitindo que doadores voluntários se cadastrem para ajudar
-        diretamente.
-      </p>
+      {!editando && (
+        <p className="border-l-2 border-rota-red pl-4 text-sm text-gray-500">
+          Uma campanha publica o paciente nas telas de <strong>Doações</strong> e{" "}
+          <strong>Pacientes</strong> e no Portal do Doador, para que doadores voluntários agendem uma
+          doação.
+        </p>
+      )}
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-5 rounded-xl border border-rota-border bg-white p-6 shadow-card"
+        className={cn("space-y-5", !editando && "rounded-xl border border-rota-border bg-white p-6 shadow-card")}
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <CampoFormulario rotulo="Nome do paciente" htmlFor="cam-nome">
@@ -117,43 +189,61 @@ export function FormularioCampanha()
             />
           </CampoFormulario>
 
-          <CampoFormulario rotulo="Idade" htmlFor="cam-idade">
+          <CampoFormulario rotulo="Data de nascimento" htmlFor="cam-nascimento">
             <input
-              id="cam-idade"
-              type="number"
-              min={1}
-              max={120}
+              id="cam-nascimento"
+              type="date"
               required
-              value={idade}
-              onChange={(e) => setIdade(e.target.value)}
-              placeholder="Ex.: 42"
+              min="1900-01-02"
+              max={new Date().toISOString().slice(0, 10)}
+              value={dataNascimento}
+              onChange={(e) => setDataNascimento(e.target.value)}
               className={CLASSES_CONTROLE}
             />
           </CampoFormulario>
         </div>
 
-        <CampoFormulario rotulo="Sexo">
-          <div role="group" aria-label="Sexo" className="flex gap-2">
-            {SEXOS.map((opcao) => (
-              <button
-                key={opcao}
-                type="button"
-                aria-pressed={sexo === opcao}
-                onClick={() => setSexo(opcao)}
-                className={cn(
-                  "flex-1 rounded-lg border px-3 py-2.5 font-mono text-sm font-semibold transition-colors",
-                  sexo === opcao
-                    ? "border-gray-900 bg-gray-900 text-white"
-                    : "border-rota-border bg-white text-gray-600 hover:border-gray-400",
-                )}
-              >
-                {opcao}
-              </button>
-            ))}
-          </div>
-        </CampoFormulario>
-
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <CampoFormulario rotulo="Sexo">
+            <div role="group" aria-label="Sexo" className="flex gap-2">
+              {SEXOS.map((opcao) => (
+                <button
+                  key={opcao}
+                  type="button"
+                  aria-pressed={sexo === opcao}
+                  onClick={() => setSexo(opcao)}
+                  className={cn(
+                    "flex-1 rounded-lg border px-3 py-2.5 font-mono text-sm font-semibold transition-colors",
+                    sexo === opcao
+                      ? "border-gray-900 bg-gray-900 text-white"
+                      : "border-rota-border bg-white text-gray-600 hover:border-gray-400",
+                  )}
+                >
+                  {opcao}
+                </button>
+              ))}
+            </div>
+          </CampoFormulario>
+
+          <CampoFormulario rotulo="Hospital" htmlFor="cam-hospital">
+            <select
+              id="cam-hospital"
+              required
+              value={hospitalId}
+              onChange={(e) => setHospitalId(e.target.value)}
+              className={CLASSES_CONTROLE}
+            >
+              {hospitais.length === 0 && <option value="">Carregando hospitais...</option>}
+              {hospitais.map((hospital) => (
+                <option key={hospital.id} value={hospital.id}>
+                  {hospital.nome}
+                </option>
+              ))}
+            </select>
+          </CampoFormulario>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <CampoFormulario rotulo="Tipo sanguíneo" htmlFor="cam-tipo">
             <select
               id="cam-tipo"
@@ -179,6 +269,19 @@ export function FormularioCampanha()
               ))}
             </select>
           </CampoFormulario>
+
+          <CampoFormulario rotulo="Unidades necessárias" htmlFor="cam-unidades">
+            <input
+              id="cam-unidades"
+              type="number"
+              min={1}
+              max={50}
+              required
+              value={unidades}
+              onChange={(e) => setUnidades(e.target.value)}
+              className={CLASSES_CONTROLE}
+            />
+          </CampoFormulario>
         </div>
 
         <CampoFormulario rotulo="Causa / diagnóstico" htmlFor="cam-causa">
@@ -197,13 +300,36 @@ export function FormularioCampanha()
           <SeletorUrgencia rotuloGrupo="Nível de gravidade" value={gravidade} onChange={setGravidade} />
         </CampoFormulario>
 
-        <button
-          type="submit"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-rota-red px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-rota-redDark"
-        >
-          <Heart className="h-4 w-4" />
-          Publicar campanha de doação
-        </button>
+        {!podeGravar && (
+          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+            Só médico pode {editando ? "editar" : "publicar"} campanha de doação.
+          </p>
+        )}
+        {erro && (
+          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {erro}
+          </p>
+        )}
+
+        <div className="flex gap-3">
+          {onCancelar && (
+            <button
+              type="button"
+              onClick={onCancelar}
+              className="rounded-lg border border-rota-border bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:border-gray-400"
+            >
+              Cancelar
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={!podeGravar || enviando}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-rota-red px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-rota-redDark disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Heart className="h-4 w-4" />
+            {enviando ? "Gravando..." : editando ? "Salvar alterações" : "Publicar campanha de doação"}
+          </button>
+        </div>
       </form>
     </div>
   );

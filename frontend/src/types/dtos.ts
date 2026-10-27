@@ -193,6 +193,79 @@ export interface LoginPayloadDTO
 }
 
 // ======================================================================
+// DTOs - CAMPANHAS & AGENDAMENTOS DE DOAÇÃO
+// ======================================================================
+
+export type SexoBackend = "FEMININO" | "MASCULINO";
+
+export type GravidadeBackend = "CRITICO" | "ATENCAO" | "ESTAVEL";
+
+export type StatusPacienteBackend = "AGUARDANDO" | "ATENDIDO" | "CANCELADO";
+
+export type StatusCampanhaBackend = "ATIVA" | "ENCERRADA";
+
+export type StatusAgendamentoBackend = "AGENDADO" | "REALIZADO" | "CANCELADO" | "FALTOU";
+
+export interface PacienteDTO
+{
+  id: string;
+  nome: string;
+  sexo: SexoBackend;
+  /** AAAA-MM-DD */
+  dataNascimento: string;
+  idade: number;
+  tipoSanguineo: TipoSanguineoBackend;
+  tipoComponente: TipoComponenteBackend;
+  unidadesNecessarias: number;
+  causa: string;
+  gravidade: GravidadeBackend;
+  status: StatusPacienteBackend;
+  hospitalId: string;
+  hospitalNome: string;
+}
+
+export interface CampanhaDTO
+{
+  id: string;
+  status: StatusCampanhaBackend;
+  publicadaEm: string;
+  encerradaEm: string | null;
+  publicadaPorNome: string | null;
+  agendamentosEmAberto: number;
+  paciente: PacienteDTO;
+}
+
+/** Corpo do POST e do PUT de /campanhas. */
+export interface CampanhaPayloadDTO
+{
+  hospitalId: string;
+  nome: string;
+  sexo: SexoBackend;
+  dataNascimento: string;
+  tipoSanguineo: TipoSanguineoBackend;
+  tipoComponente: TipoComponenteBackend;
+  unidadesNecessarias: number;
+  causa: string;
+  gravidade: GravidadeBackend;
+}
+
+export interface AgendamentoDTO
+{
+  id: string;
+  campanhaId: string | null;
+  pacienteNome: string | null;
+  doadorId: string;
+  doadorNome: string;
+  doadorTipoSanguineo: TipoSanguineoBackend | null;
+  bancoId: string;
+  bancoNome: string;
+  /** Data e hora com fuso (ISO 8601). */
+  agendadoPara: string;
+  status: StatusAgendamentoBackend;
+  criadoEm: string;
+}
+
+// ======================================================================
 // DTOs - DIAGNÓSTICO & AUDITORIA HTTP
 // ======================================================================
 

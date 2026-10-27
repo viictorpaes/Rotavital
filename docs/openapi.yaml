@@ -54,6 +54,11 @@ tags:
     description: Telemetria simulada da cadeia fria durante o transporte.
   - name: Benchmark
     description: Auditoria de telemetria sequencial x paralela (atividade de paralelismo).
+  - name: Doacoes
+    description: >
+      Campanhas de doação (HU-06, PI3-191) e agendamentos de doação dentro de cada
+      campanha (HU-09, HU-10, PI3-192). As ações que gravam exigem o header
+      X-Usuario-Id com o id devolvido pelo POST /acessos.
 
 servers:
   - url: http://localhost:8080/api/v1
@@ -734,6 +739,323 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  # -- Doações: campanhas e agendamentos ----------------------------------
+  /campanhas:
+    get:
+      tags: [Doacoes]
+      summary: Lista as campanhas de doação, da mais recente para a mais antiga
+      description: >
+        Sem status, devolve ativas e encerradas. Cada campanha traz o paciente
+        divulgado e quantos agendamentos ainda estão em aberto.
+      operationId: listarCampanhas
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/StatusCampanha' }
+      responses:
+        '200':
+          description: Campanhas (lista vazia se nenhuma bater com o filtro).
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Campanha' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Doacoes]
+      summary: Publica uma campanha de doação (só médico)
+      description: >
+        Cria o paciente e a campanha na mesma transação. O médico do header vira
+        publicada_por. Campos ausentes ou mal preenchidos saem todos juntos no
+        detail do 400.
+      operationId: publicarCampanha
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CampanhaRequest' }
+            example:
+              hospitalId: HOSP-01
+              nome: Maria Souza
+              sexo: FEMININO
+              dataNascimento: "1990-05-10"
+              tipoSanguineo: O_NEGATIVO
+              tipoComponente: HEMACIAS
+              unidadesNecessarias: 2
+              causa: Cirurgia cardíaca
+              gravidade: CRITICO
+      responses:
+        '201':
+          description: Campanha publicada. O header Location aponta para /campanhas/{id}.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Campanha' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /campanhas/{id}:
+    get:
+      tags: [Doacoes]
+      summary: Detalhe de uma campanha
+      operationId: consultarCampanha
+      parameters:
+        - $ref: '#/components/parameters/CampanhaIdPath'
+      responses:
+        '200':
+          description: Campanha encontrada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Campanha' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Doacoes]
+      summary: Edita os dados do paciente divulgado (só médico, só campanha ativa)
+      operationId: editarCampanha
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+        - $ref: '#/components/parameters/CampanhaIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CampanhaRequest' }
+      responses:
+        '200':
+          description: Campanha com os dados novos.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Campanha' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: A campanha já foi encerrada.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Regra de negócio violada
+                status: 422
+                detail: A campanha foi encerrada em 01/11/2026 e não pode mais ser editada.
+                instance: /api/v1/campanhas/7d0c4b8e-0000-4000-8000-000000000001
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /campanhas/{id}/encerramento:
+    patch:
+      tags: [Doacoes]
+      summary: Encerra a campanha (só médico)
+      description: >
+        Muda o status para ENCERRADA, grava encerradaEm e cancela os agendamentos
+        que ainda estavam em aberto na campanha. Sem corpo.
+      operationId: encerrarCampanha
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+        - $ref: '#/components/parameters/CampanhaIdPath'
+      responses:
+        '200':
+          description: Campanha encerrada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Campanha' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /campanhas/{id}/agendamentos:
+    get:
+      tags: [Doacoes]
+      summary: Agendamentos da campanha (médico e admin)
+      operationId: listarAgendamentosDaCampanha
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+        - $ref: '#/components/parameters/CampanhaIdPath'
+      responses:
+        '200':
+          description: Agendamentos, do horário mais próximo para o mais distante.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Agendamento' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Doacoes]
+      summary: O doador do header agenda uma doação na campanha (só doador)
+      description: >
+        Regras: campanha ATIVA, horário no futuro e dentro do expediente do
+        hemocentro (segunda a sábado, 07h às 19h, horário de Recife) e no máximo
+        um agendamento em aberto por doador.
+      operationId: agendarDoacao
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+        - $ref: '#/components/parameters/CampanhaIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NovoAgendamentoRequest' }
+            example:
+              bancoId: BS-01
+              agendadoPara: "2026-11-04T09:30:00-03:00"
+      responses:
+        '201':
+          description: Agendamento criado com status AGENDADO. O header Location aponta para /agendamentos/{id}.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Agendamento' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          description: Campanha encerrada, horário fora do expediente ou doador já com agendamento em aberto.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              example:
+                type: about:blank
+                title: Regra de negócio violada
+                status: 422
+                detail: "O horário escolhido (08/11/2026 às 10:00) está fora do atendimento do hemocentro: segunda a sábado, das 07h às 19h."
+                instance: /api/v1/campanhas/7d0c4b8e-0000-4000-8000-000000000001/agendamentos
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /agendamentos/meus:
+    get:
+      tags: [Doacoes]
+      summary: Agendamentos do doador do header (só doador)
+      operationId: listarMeusAgendamentos
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+      responses:
+        '200':
+          description: Agendamentos do doador, do mais recente para o mais antigo.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Agendamento' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /agendamentos/{id}:
+    patch:
+      tags: [Doacoes]
+      summary: Remarca o agendamento (só o próprio doador, só em aberto)
+      operationId: remarcarAgendamento
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+        - $ref: '#/components/parameters/AgendamentoIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RemarcarAgendamentoRequest' }
+            example:
+              agendadoPara: "2026-11-07T18:00:00-03:00"
+      responses:
+        '200':
+          description: Agendamento com o novo horário.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Agendamento' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /agendamentos/{id}/status:
+    patch:
+      tags: [Doacoes]
+      summary: Fecha o agendamento (doador cancela; médico cancela, registra doação feita ou falta)
+      description: >
+        Aceita REALIZADO, CANCELADO ou FALTOU, só para agendamento em aberto. O
+        doador só cancela os seus. FALTOU só depois do horário marcado. O admin
+        não altera agendamentos.
+      operationId: mudarStatusAgendamento
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+        - $ref: '#/components/parameters/AgendamentoIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AtualizarStatusAgendamentoRequest' }
+            example:
+              status: REALIZADO
+      responses:
+        '200':
+          description: Agendamento com o status novo.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Agendamento' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
 components:
 
   # -- Parâmetros reutilizáveis ----------------------------------------------
@@ -765,6 +1087,28 @@ components:
       required: true
       schema: { type: string }
       example: ENT-001
+
+    CampanhaIdPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+      example: 7d0c4b8e-0000-4000-8000-000000000001
+
+    AgendamentoIdPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+      example: 2b6f1a90-0000-4000-8000-000000000002
+
+    UsuarioIdHeader:
+      name: X-Usuario-Id
+      in: header
+      description: >
+        Id do usuário que está agindo, o mesmo devolvido pelo POST /acessos. Ausente
+        ou de usuário inexistente responde 401; perfil sem permissão responde 403.
+      schema: { type: string, format: uuid }
 
     Page:
       name: page
@@ -1081,6 +1425,108 @@ components:
       required: [tamanhoMassa, todosResultadosIdenticos, mensagemConsistencia, execucoes]
 
     # ---- Erro (RFC 7807) ----
+    # ---- Doações ----
+    Sexo:
+      type: string
+      enum: [FEMININO, MASCULINO]
+
+    Gravidade:
+      type: string
+      enum: [CRITICO, ATENCAO, ESTAVEL]
+
+    StatusPaciente:
+      type: string
+      enum: [AGUARDANDO, ATENDIDO, CANCELADO]
+
+    StatusCampanha:
+      type: string
+      enum: [ATIVA, ENCERRADA]
+
+    StatusAgendamento:
+      type: string
+      enum: [AGENDADO, REALIZADO, CANCELADO, FALTOU]
+
+    CampanhaRequest:
+      type: object
+      description: Dados do paciente divulgado, no POST e no PUT de /campanhas.
+      properties:
+        hospitalId: { type: string, example: HOSP-01 }
+        nome: { type: string }
+        sexo: { $ref: '#/components/schemas/Sexo' }
+        dataNascimento: { type: string, format: date }
+        tipoSanguineo: { $ref: '#/components/schemas/TipoSanguineo' }
+        tipoComponente: { $ref: '#/components/schemas/TipoComponente' }
+        unidadesNecessarias: { type: integer, minimum: 1, maximum: 50 }
+        causa: { type: string }
+        gravidade: { $ref: '#/components/schemas/Gravidade' }
+      required: [hospitalId, nome, sexo, dataNascimento, tipoSanguineo, tipoComponente, unidadesNecessarias, causa, gravidade]
+
+    Paciente:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string }
+        sexo: { $ref: '#/components/schemas/Sexo' }
+        dataNascimento: { type: string, format: date }
+        idade: { type: integer, description: Idade hoje, calculada no backend. }
+        tipoSanguineo: { $ref: '#/components/schemas/TipoSanguineo' }
+        tipoComponente: { $ref: '#/components/schemas/TipoComponente' }
+        unidadesNecessarias: { type: integer }
+        causa: { type: string }
+        gravidade: { $ref: '#/components/schemas/Gravidade' }
+        status: { $ref: '#/components/schemas/StatusPaciente' }
+        hospitalId: { type: string }
+        hospitalNome: { type: string }
+
+    Campanha:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/StatusCampanha' }
+        publicadaEm: { type: string, format: date-time }
+        encerradaEm: { type: string, format: date-time, nullable: true }
+        publicadaPorNome: { type: string, nullable: true }
+        agendamentosEmAberto: { type: integer }
+        paciente: { $ref: '#/components/schemas/Paciente' }
+
+    NovoAgendamentoRequest:
+      type: object
+      properties:
+        bancoId: { type: string, example: BS-01 }
+        agendadoPara: { type: string, format: date-time, example: "2026-11-04T09:30:00-03:00" }
+      required: [bancoId, agendadoPara]
+
+    RemarcarAgendamentoRequest:
+      type: object
+      properties:
+        agendadoPara: { type: string, format: date-time }
+      required: [agendadoPara]
+
+    AtualizarStatusAgendamentoRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [REALIZADO, CANCELADO, FALTOU]
+      required: [status]
+
+    Agendamento:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        campanhaId: { type: string, format: uuid, nullable: true }
+        pacienteNome: { type: string, nullable: true }
+        doadorId: { type: string, format: uuid }
+        doadorNome: { type: string }
+        doadorTipoSanguineo:
+          allOf: [{ $ref: '#/components/schemas/TipoSanguineo' }]
+          nullable: true
+        bancoId: { type: string }
+        bancoNome: { type: string }
+        agendadoPara: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/StatusAgendamento' }
+        criadoEm: { type: string, format: date-time }
+
     Erro:
       type: object
       description: Problem Details for HTTP APIs (RFC 7807).
@@ -1110,6 +1556,42 @@ components:
             status: 400
             detail: "O campo 'quantidade' é obrigatório e deve ser maior que zero."
             instance: /api/v1/requisicoes
+
+    Unauthorized:
+      description: Não diz quem está agindo (header X-Usuario-Id ausente ou de usuário inexistente).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          example:
+            type: about:blank
+            title: Não autorizado
+            status: 401
+            detail: Entre no sistema para agendar doação.
+            instance: /api/v1/campanhas/7d0c4b8e-0000-4000-8000-000000000001/agendamentos
+
+    Forbidden:
+      description: O perfil do usuário não pode fazer esta ação.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          example:
+            type: about:blank
+            title: Acesso negado
+            status: 403
+            detail: Só médico pode publicar campanha de doação.
+            instance: /api/v1/campanhas
+
+    Conflict:
+      description: Duas gravações ao mesmo tempo; o índice único do banco recusou a segunda.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          example:
+            type: about:blank
+            title: Conflito
+            status: 409
+            detail: A operação conflita com um registro gravado ao mesmo tempo. Atualize a tela e tente de novo.
+            instance: /api/v1/campanhas/7d0c4b8e-0000-4000-8000-000000000001/agendamentos
 
     NotFound:
       description: Recurso não encontrado.
