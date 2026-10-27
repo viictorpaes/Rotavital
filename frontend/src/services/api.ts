@@ -12,6 +12,9 @@ import type {
   LoginPayloadDTO,
   RespostaAcesso,
   EstoqueDTO,
+  BolsaHemocomponenteDTO,
+  FiltrosHemocomponentesDTO,
+  NovaBolsaHemocomponenteDTO,
   PontoRedeDTO,
   RotaCalculadaDTO,
   DiagnosticoDados,
@@ -39,6 +42,27 @@ export async function buscarEstoque(bancoId: string = "BS-01", tipoSanguineo?: s
   return clienteHttp.get<EstoqueDTO>(`/bancos/${bancoId}/estoque`, {
     params: { tipoSanguineo },
   });
+}
+
+/**
+ * Lista bolsas com filtros e paginação, da que vence primeiro para a última (FEFO). Filtro ausente
+ * não restringe. Silencioso: a tela de Estoque mostra o erro no próprio corpo, sem o toast global.
+ */
+export async function listarHemocomponentes(filtros: FiltrosHemocomponentesDTO = {}): Promise<BolsaHemocomponenteDTO[]>
+{
+  return clienteHttp.get<BolsaHemocomponenteDTO[]>("/hemocomponentes", {
+    params: { ...filtros },
+    silencioso: true,
+  });
+}
+
+/**
+ * Registra uma bolsa nova no estoque (PI3-179) e devolve a bolsa criada, com o id gerado pelo backend.
+ * Silencioso: o formulário mostra a mensagem de erro da API dentro dele, sem o toast global.
+ */
+export async function cadastrarHemocomponente(dados: NovaBolsaHemocomponenteDTO): Promise<BolsaHemocomponenteDTO>
+{
+  return clienteHttp.post<BolsaHemocomponenteDTO>("/hemocomponentes", dados, { silencioso: true });
 }
 
 /**

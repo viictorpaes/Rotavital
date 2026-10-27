@@ -62,7 +62,7 @@ flowchart LR
 | Módulo | Subtask | Recursos | Espelha no domínio | Implementado? |
 |---|---|---|---|:---:|
 | 🔑 Acesso | HU-01 | `/acessos` | `Usuario` (senha conferida pelo Supabase Auth) | ✅ |
-| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque`, `GET /bancos/{bancoId}/estoque/resumo` e `GET /hemocomponentes/{id}`) |
+| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (só `GET /bancos/{bancoId}/estoque`, `GET /bancos/{bancoId}/estoque/resumo`, `GET /hemocomponentes`, `POST /hemocomponentes` e `GET /hemocomponentes/{id}`) |
 | 🏥 Requisições e Alocação | PI3-47 | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ❌ sem controller |
 | 🚚 Roteirização e Logística | PI3-48 | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ |
 | 🌡️ Telemetria e Cadeia Fria | PI3-49 | `/entregas/{id}/leituras` | *(gap — sem classe de domínio)* | ❌ sem controller |
@@ -170,8 +170,8 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | `GET` | `/api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` | ✅ Estoque consolidado de um banco de sangue | Nenhuma no MVP (alvo: médico) | `Estoque` | `200` · `400` · `404` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | ✅ Totais de bolsas disponíveis e válidas por tipo sanguíneo e componente (tela inicial) | Nenhuma no MVP (alvo: médico) | `ResumoEstoque` | `200` · `404` |
 | **📦 Hemocomponentes** | *`HemocomponenteController` (planejado)* | | | | |
-| `GET` | `/api/v1/hemocomponentes?bancoId=&tipoComponente=&tipoSanguineo=&status=&page=0&size=20` | 🕓 Lista bolsas com filtros e paginação | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente[]` | `200` |
-| `POST` | `/api/v1/hemocomponentes` | 🕓 Cadastra uma bolsa (status inicial `DISPONIVEL`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `201` · `400` · `422` |
+| `GET` | `/api/v1/hemocomponentes?bancoId=&tipoComponente=&tipoSanguineo=&status=&page=0&size=20` | ✅ Lista bolsas com filtros e paginação, da que vence primeiro para a última (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente[]` | `200` · `400` |
+| `POST` | `/api/v1/hemocomponentes` | ✅ Cadastra uma bolsa (status inicial `DISPONIVEL`; por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `201` · `400` · `422` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | ✅ Detalhe de uma bolsa (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` |
 | `PATCH` | `/api/v1/hemocomponentes/{id}` | 🕓 Transição de status (reservar, descartar…) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` · `422` |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | 🕓 Remove um cadastro feito por engano | Nenhuma no MVP (alvo: médico) | *(sem corpo)* | `204` · `404` |
@@ -246,13 +246,14 @@ GET /api/v1/bancos/BS-01/estoque?tipoSanguineo=O_NEGATIVO
 | `200` | Banco existe | `Estoque`: `{"bancoDeSangueId":"BS-01","totalBolsas":3,"bolsas":[…]}` |
 | `404` | `bancoId` desconhecido | `Erro`: `"Nenhum banco de sangue encontrado com id XX"` |
 
-**3. `GET /api/v1/hemocomponentes`** 🕓 · Nenhuma no MVP (alvo: médico)
+**3. `GET /api/v1/hemocomponentes`** ✅ · Nenhuma no MVP (alvo: médico)
 ```http
 GET /api/v1/hemocomponentes?bancoId=BS-01&tipoSanguineo=O_POSITIVO&status=DISPONIVEL&page=0&size=20
 ```
 | Status | Quando | Corpo |
 |---|---|---|
-| `200` | Sempre (lista vazia se nada bater com os filtros) | `BolsaHemocomponente[]` |
+| `200` | Filtros válidos (lista vazia se nada bater). Todos os filtros são opcionais e combináveis; ordem por `dataValidade` (FEFO); padrão `page=0`, `size=20` | `BolsaHemocomponente[]` |
+| `400` | Filtro fora do enum, `page` negativa, `size` fora de 1 a 100 ou `page` × `size` acima de 2147483647 | `Erro`: `"O parâmetro 'size' deve estar entre 1 e 100."` |
 
 **4. `POST /api/v1/requisicoes`** 🕓 · Nenhuma no MVP (alvo: médico)
 ```http
@@ -372,7 +373,7 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 |---|---|---|---|
 | `GET` | `/api/v1/bancos/{bancoId}/estoque` | Estoque consolidado de um banco de sangue (filtro: `tipoSanguineo`) | `BancoDeSangue.getEstoque()` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | Totais por tipo sanguíneo e componente, só bolsas `DISPONIVEL` e dentro da validade | views `vw_estoque_por_tipo` e `vw_estoque_agrupado` |
-| `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `Estoque.getBolsas()` / `buscarDisponiveis(...)` |
+| `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `BolsaHemocomponenteRepository.buscarComFiltros(...)` |
 | `POST` | `/api/v1/hemocomponentes` | Cadastra uma nova bolsa (status inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | Detalhe de uma bolsa | — |
 | `PATCH` | `/api/v1/hemocomponentes/{id}` | Transição de status (`reservar`, `descartar`, etc.) | `reservar()` / `descartar()` |
@@ -406,10 +407,18 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 > descarte (PI3-190) devem usar o mesmo método, para responder a mesma mensagem. `tipoSanguineo` fora da lista no
 > `GET /bancos/{bancoId}/estoque` → `400` com os valores aceitos.
 >
-> A validação do cadastro (PI3-179) já existe em `EstoqueService.validarNovaBolsa`. Campo obrigatório ausente ou
-> `volumeMl` ≤ 0 → `400`. Coleta depois de hoje, validade antes da coleta, bolsa já vencida ou banco de origem
-> inexistente → `422`. A mensagem junta todos os problemas encontrados. Os demais endpoints de `/hemocomponentes`
-> continuam só no contrato.
+> `POST /api/v1/hemocomponentes` também roda (PI3-179): o `EstoqueService.cadastrarBolsa` valida os dados com
+> `validarNovaBolsa` e grava a bolsa na tabela `bolsa_hemocomponente` com status `DISPONIVEL`. Responde `201` com a
+> bolsa criada e o endereço dela em `Location`. O id é gerado pelo backend: sigla do componente + o maior número já
+> usado na faixa dele, mais um (`CH` 1001–1999, `PF` 2001–2999, `PQ` 3001–3999, `CR` 4001–4999; a bolsa de teste
+> `CH-9999` fica fora da conta). `temperaturaCelsius` é obrigatória e `localizacao` é opcional.
+>
+> Campo obrigatório ausente ou `volumeMl` ≤ 0 → `400`. Coleta depois de hoje, validade antes da coleta ou no mesmo
+> dia, validade além do prazo do componente (hemácias 42 dias, plaquetas 7, crioprecipitado 365, plasma 730),
+> bolsa já vencida, volume acima de 700 ml, temperatura fora de -80 a 60 °C, lote já usado no mesmo componente ou
+> banco de origem inexistente → `422`. São as mesmas regras das constraints da tabela, conferidas antes de gravar
+> para a resposta não virar `500`. A mensagem junta todos os problemas encontrados. Os demais endpoints de
+> `/hemocomponentes` continuam só no contrato.
 
 **DTOs Java equivalentes** (`backend/src/main/java/com/rotavital/api/dto/estoque/`):
 [`BolsaHemocomponenteDTO`](../backend/src/main/java/com/rotavital/api/dto/estoque/BolsaHemocomponenteDTO.java) ·

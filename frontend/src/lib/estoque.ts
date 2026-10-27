@@ -1,4 +1,10 @@
-import type { LoteHemocomponente, TipoSanguineo, UrgenciaNecessidade } from "@/types";
+import type { LoteHemocomponente, TipoComponente, TipoSanguineo, UrgenciaNecessidade } from "@/types";
+import type {
+  BolsaHemocomponenteDTO,
+  StatusBolsaBackend,
+  TipoComponenteBackend,
+  TipoSanguineoBackend,
+} from "@/types/dtos";
 
 export const TIPOS_SANGUINEOS: TipoSanguineo[] = 
 ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -81,7 +87,7 @@ export function converterTipoSanguineo(tipo: string): TipoSanguineo
   }
 }
 
-export function converterTipoComponente(tipo: string): any
+export function converterTipoComponente(tipo: string): TipoComponente
 {
   switch (tipo)
   {
@@ -94,7 +100,7 @@ export function converterTipoComponente(tipo: string): any
     case "CRIOPRECIPITADO":
       return "Crioprecipitado";
     default:
-      return tipo || "Concentrado de Hemácias";
+      return (tipo as TipoComponente) || "Concentrado de Hemácias";
   }
 }
 
@@ -119,7 +125,7 @@ export function obterFaixaTemperatura(tipo: string): { minima: number; maxima: n
   }
 }
 
-export function converterBolsaParaLote(bolsa: any): LoteHemocomponente
+export function converterBolsaParaLote(bolsa: BolsaHemocomponenteDTO): LoteHemocomponente
 {
   const componente = converterTipoComponente(bolsa.tipoComponente);
   const tipoSanguineo = converterTipoSanguineo(bolsa.tipoSanguineo);
@@ -135,5 +141,90 @@ export function converterBolsaParaLote(bolsa: any): LoteHemocomponente
     temperaturaAtual: bolsa.temperaturaCelsius ?? bolsa.temperaturaAtual ?? 4.0,
     temperaturaIdeal: obterFaixaTemperatura(bolsa.tipoComponente),
     localizacao: bolsa.localizacao || bolsa.localizacaoFisica || "Câmara Fria",
+    statusBolsa: bolsa.status,
   };
+}
+
+const TIPO_SANGUINEO_BACKEND: Record<TipoSanguineo, TipoSanguineoBackend> =
+{
+  "A+": "A_POSITIVO",
+  "A-": "A_NEGATIVO",
+  "B+": "B_POSITIVO",
+  "B-": "B_NEGATIVO",
+  "AB+": "AB_POSITIVO",
+  "AB-": "AB_NEGATIVO",
+  "O+": "O_POSITIVO",
+  "O-": "O_NEGATIVO",
+};
+
+/** "O-" → "O_NEGATIVO": o caminho inverso de converterTipoSanguineo, para os filtros da API. */
+export function paraTipoSanguineoBackend(tipo: TipoSanguineo): TipoSanguineoBackend
+{
+  return TIPO_SANGUINEO_BACKEND[tipo];
+}
+
+/** Componentes que o filtro da tela de Estoque oferece, com o rótulo usado nos cartões. */
+export const COMPONENTES_FILTRO: Array<{ valor: TipoComponenteBackend; rotulo: string }> =
+(["HEMACIAS", "PLASMA", "PLAQUETAS", "CRIOPRECIPITADO"] as const).map((valor) => (
+  { valor, rotulo: converterTipoComponente(valor) }
+));
+
+const ROTULOS_STATUS_BOLSA: Record<StatusBolsaBackend, string> =
+{
+  DISPONIVEL: "Disponível",
+  RESERVADA: "Reservada",
+  EM_TRANSITO: "Em trânsito",
+  ENTREGUE: "Entregue",
+  DESCARTADA: "Descartada",
+  UTILIZADA: "Utilizada",
+};
+
+/** Status que o filtro da tela de Estoque oferece, na ordem do ciclo de vida da bolsa. */
+export const STATUS_FILTRO: Array<{ valor: StatusBolsaBackend; rotulo: string }> =
+(Object.keys(ROTULOS_STATUS_BOLSA) as StatusBolsaBackend[]).map((valor) => (
+  { valor, rotulo: ROTULOS_STATUS_BOLSA[valor] }
+));
+
+/** "EM_TRANSITO" → "Em trânsito"; devolve o próprio valor se o backend mandar um status novo. */
+export function rotuloStatusBolsa(status: string): string
+{
+  return ROTULOS_STATUS_BOLSA[status as StatusBolsaBackend] ?? status;
+}
+/** Validade máxima de cada componente, em dias depois da coleta (TipoComponente no backend). */
+export const PRAZO_MAXIMO_DIAS: Record<TipoComponenteBackend, number> =
+{
+  HEMACIAS: 42,
+  PLASMA: 730,
+  PLAQUETAS: 7,
+  CRIOPRECIPITADO: 365,
+};
+
+/** Data de hoje no fuso do navegador, no formato do input date (AAAA-MM-DD). */
+export function hojeIso(): string
+{
+  const hoje = new Date();
+  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoje.getDate()).padStart(2, "0");
+  return `${hoje.getFullYear()}-${mes}-${dia}`;
+}
+
+/** "2026-10-16" + 42 → "2026-11-27". Feito em UTC para o horário de verão não pular um dia. */
+export function somarDias(iso: string, dias: number): string
+{
+  const data = new Date(`${iso}T00:00:00Z`);
+  data.setUTCDate(data.getUTCDate() + dias);
+  return data.toISOString().slice(0, 10);
+}
+
+/** Validade sugerida para uma bolsa nova: o prazo máximo do componente, contado da coleta. */
+export function sugerirValidade(componente: TipoComponenteBackend, dataColeta: string): string
+{
+  return dataColeta ? somarDias(dataColeta, PRAZO_MAXIMO_DIAS[componente]) : "";
+}
+
+/** Temperatura inicial do formulário: o meio da faixa ideal do componente (hemácias → 4 °C). */
+export function temperaturaSugerida(componente: TipoComponenteBackend): number
+{
+  const { minima, maxima } = obterFaixaTemperatura(componente);
+  return (minima + maxima) / 2;
 }

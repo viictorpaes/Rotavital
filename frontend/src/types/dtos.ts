@@ -72,6 +72,35 @@ export interface BolsaHemocomponenteDTO
   bancoOrigemId?: string;
 }
 
+/** Filtros opcionais e combináveis de GET /hemocomponentes; page começa em 0 e size vai de 1 a 100. */
+export interface FiltrosHemocomponentesDTO
+{
+  bancoId?: string;
+  tipoComponente?: TipoComponenteBackend;
+  tipoSanguineo?: TipoSanguineoBackend;
+  status?: StatusBolsaBackend;
+  page?: number;
+  size?: number;
+}
+
+/**
+ * Corpo de POST /hemocomponentes (PI3-179). Os campos que o formulário pode deixar em branco aceitam
+ * null: quem valida é a API, que devolve todos os problemas de uma vez (400 ou 422).
+ */
+export interface NovaBolsaHemocomponenteDTO
+{
+  tipoComponente: TipoComponenteBackend;
+  tipoSanguineo: TipoSanguineoBackend;
+  dataColeta: string | null;
+  dataValidade: string | null;
+  loteSintetico: string;
+  volumeMl: number | null;
+  temperaturaCelsius: number | null;
+  /** Opcional: refrigerador/prateleira/nível. */
+  localizacao?: string;
+  bancoOrigemId: string;
+}
+
 export interface EstoqueDTO
 {
   bancoDeSangueId: string;

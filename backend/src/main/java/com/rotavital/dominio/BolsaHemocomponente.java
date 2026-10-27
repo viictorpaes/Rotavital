@@ -1,8 +1,10 @@
 package com.rotavital.dominio;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.springframework.data.domain.Persistable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,11 +13,14 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "bolsa_hemocomponente")
-public class BolsaHemocomponente
+public class BolsaHemocomponente implements Persistable<String>
 {
     @Id
     @Column(name = "id")
@@ -58,6 +63,12 @@ public class BolsaHemocomponente
     @JoinColumn(name = "banco_origem_id", nullable = false)
     private BancoDeSangue bancoOrigem;
 
+    // O id é preenchido pelo sistema, então o save() não sabe sozinho se a bolsa é nova e faria um merge,
+    // que sobrescreve a bolsa que já tiver esse id. Com isto, bolsa criada com new vira sempre INSERT
+    // (id repetido dá erro), e bolsa lida do banco deixa de ser nova.
+    @Transient
+    private boolean nova = true;
+
     // Exigido pelo Hibernate para criar o objeto ao ler do banco; no código, use o construtor com parâmetros.
     protected BolsaHemocomponente()
     {
@@ -97,6 +108,12 @@ public class BolsaHemocomponente
         return status == StatusBolsa.DISPONIVEL;
     }
 
+    // Pode ir para um paciente: está no estoque, ainda na validade e com a cadeia fria intacta.
+    public boolean estaAptaParaUso(LocalDate hoje)
+    {
+        return estaDisponivel() && !estaVencida(hoje) && !estaForaDaFaixa();
+    }
+
     public void reservar()
     {
         this.status = StatusBolsa.RESERVADA;
@@ -107,6 +124,40 @@ public class BolsaHemocomponente
         this.status = StatusBolsa.DESCARTADA;
     }
 
+    /**
+     * Movimenta a bolsa para um novo status (HU-08: reservar, enviar, receber, usar ou descartar).
+     * Transição não permitida lança MovimentacaoInvalidaException e mantém o status atual.
+     */
+    public void alterarStatus(StatusBolsa novoStatus, LocalDate hoje)
+    {
+        if (!status.podePassarPara(novoStatus))
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " está " + status
+                    + " e não pode passar para " + novoStatus + ".");
+        }
+        if (novoStatus != StatusBolsa.DESCARTADA && estaVencida(hoje))
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " venceu em "
+                    + DateTimeFormatter.ofPattern("dd/MM/yyyy").format(dataValidade) + " e só pode ser descartada.");
+        }
+
+        this.status = novoStatus;
+    }
+
+    @PostLoad
+    @PostPersist
+    void marcarComoGravada()
+    {
+        this.nova = false;
+    }
+
+    @Override
+    public boolean isNew()
+    {
+        return nova;
+    }
+
+    @Override
     public String getId()
     {
         return id;
