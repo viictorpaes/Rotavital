@@ -76,8 +76,8 @@ As senhas dos usuários de teste não estão no repositório: ficam com o grupo.
 
 <h2 align="left" id="cdt-configuracao">🛠️ 2. Configuração única do deploy (quem tem acesso às contas)</h2>
 
-Passo a passo para ligar o deploy e colher as evidências do E3. As regras de proteção da `main`, a tabela de
-segredos e a tabela de evidências estão em [Pipeline e deploy](../README.md#cdt-pipeline), no README.
+Passo a passo para ligar o deploy e colher as evidências do E3. As regras de proteção da `main` e a tabela de
+evidências estão em [Pipeline e deploy](../README.md#cdt-pipeline), no README; os segredos, [abaixo](#cdt-segredos).
 
 > [!WARNING]
 > Mescle o PR desta entrega com **"Create a merge commit"**: o *squash* junta tudo num commit só e apaga o
@@ -87,16 +87,28 @@ segredos e a tabela de evidências estão em [Pipeline e deploy](../README.md#cd
    a `main`. O `67d4c55` é o teste de ABO/Rh antes do código.
 2. Proteja a `main` ([regras no README](../README.md#cdt-pipeline)). No PR de demonstração, o **Backend · testes** fica
    vermelho e o merge é bloqueado → 📸 **print 🔴**. Feche o PR sem mesclar e apague a branch.
-3. Abra o PR de `feature/container-tdd-deploy` → esteira verde → merge com **"Create a merge commit"**. Desta vez o deploy
-   falha por falta dos segredos, como esperado.
+3. ✅ *Feito em 20/10:* o PR #31 (`feature/container-tdd-deploy`) passou na esteira e foi mesclado com merge commit. A
+   [execução na `main`](https://github.com/viictorpaes/Rotavital/actions/runs/39512621182) passou nos testes e nas
+   imagens e falhou no deploy, como esperado sem os segredos.
 4. **GHCR:** em *Packages*, deixe o `rotavital-backend` como **Public**.
 5. **Render:** *New → Blueprint →* este repositório. O `render.yaml` cria o `rotavital-api` e pede a `SUPABASE_DB_PASSWORD`
    e a `SUPABASE_KEY`; se o serviço já existia, cadastre a chave em *Environment*. Copie o *Deploy Hook* e apague o
    `rotavital-web` antigo, se ele existir.
 6. **Vercel:** dentro de `frontend/`, rode `npx vercel@64.0.2 login` e `npx vercel@64.0.2 link` (projeto novo
    `rotavital-web`, diretório `./`). O `orgId` e o `projectId` ficam em `.vercel/project.json`. Crie também um token.
-7. Cadastre os segredos e as variáveis da [tabela de segredos](../README.md#cdt-pipeline) no environment `producao`. Se a
+7. Cadastre os segredos e as variáveis da [tabela abaixo](#cdt-segredos) no environment `producao`. Se a
    API ganhar outro domínio, ajuste o rewrite em [`frontend/vercel.json`](../frontend/vercel.json).
-8. Em *Actions*, abra a execução do passo 3 e clique em *Re-run failed jobs* → 📸 **print 🟢** + **URL pública**.
+8. Em *Actions*, abra a [execução do passo 3](https://github.com/viictorpaes/Rotavital/actions/runs/39512621182) e clique
+   em *Re-run failed jobs* → 📸 **print 🟢** + **URL pública**.
 9. Depois do próximo merge, rode *Run workflow* com o sha anterior → 📸 **print ↩️**. Salve os prints em
    `docs/evidencias/container-tdd-deploy/` e preencha a [tabela de evidências](../README.md#cdt-evidencias-e3) do README.
+
+<h3 align="left" id="cdt-segredos">🔐 Segredos e variáveis</h3>
+
+| Segredo / configuração | Onde fica |
+| :--- | :--- |
+| `DB_PASSWORD` (Postgres local); `SUPABASE_KEY` e `SUPABASE_DB_PASSWORD`, opcionais, para o login no Compose | `.env` de cada um, no `.gitignore` (modelo em [`.env.example`](../.env.example)) |
+| `SUPABASE_DB_PASSWORD`, `SUPABASE_KEY` | Variáveis do `rotavital-api` no **Render** ([`render.yaml`](../render.yaml)); sem a chave, o login responde `503` |
+| `RENDER_DEPLOY_HOOK_API`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | GitHub → Environments → `producao` → Secrets |
+| `API_URL`, `WEB_URL` (não são segredo) | GitHub → Environments → `producao` → Variables |
+| Login no GHCR | `GITHUB_TOKEN` automático do Actions |
