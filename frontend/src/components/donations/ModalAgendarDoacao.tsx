@@ -1,52 +1,106 @@
 import { useState } from "react";
-import { Clock, MapPin, X } from "lucide-react";
+import { CheckCircle2, Clock, MapPin } from "lucide-react";
 import type { PessoaNecessitada } from "@/types";
+import type { AgendamentoDTO } from "@/types/dtos";
+import { useDados } from "@/context/ContextoDados";
+import {
+  HORARIOS_ATENDIMENTO,
+  amanha,
+  ehDomingo,
+  formatarHorario,
+  horarioDoBackend,
+  horarioParaBackend,
+  mensagemDeErro,
+} from "@/lib/doacoes";
+import { agendarDoacao, remarcarAgendamento } from "@/services/api";
+import { CLASSES_CONTROLE, CampoFormulario } from "@/components/requisicao/CampoFormulario";
+import { Modal } from "@/components/ui/Modal";
 
 interface Props
 {
-  pessoa: PessoaNecessitada;
+  /** Paciente da campanha em que o doador vai agendar. */
+  pessoa?: PessoaNecessitada;
+  /** Agendamento a remarcar. Com ele, o modal muda só o horário. */
+  agendamento?: AgendamentoDTO;
   onClose: () => void;
+  /** Chamado com o agendamento gravado. */
+  onConcluido: (agendamento: AgendamentoDTO) => void;
 }
 
-export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
+/** HU-10 · PI3-192 — O doador escolhe dia e horário da doação no hemocentro, ou remarca a que já tem. */
+export function ModalAgendarDoacao({ pessoa, agendamento, onClose, onConcluido }: Readonly<Props>)
 {
-  const [confirmado, setConfirmado] = useState(false);
+  const { recarregarCampanhas } = useDados();
+  const inicial = agendamento ? horarioDoBackend(agendamento.agendadoPara) : { data: amanha(), hora: "09:00" };
+  const [data, setData] = useState(inicial.data);
+  const [hora, setHora] = useState(inicial.hora);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [gravado, setGravado] = useState<AgendamentoDTO | null>(null);
+
+  const domingo = data !== "" && ehDomingo(data);
+  const nomePaciente = pessoa?.nome ?? agendamento?.pacienteNome;
+
+  async function confirmar(evento: React.FormEvent)
+  {
+    evento.preventDefault();
+    const horario = horarioParaBackend(data, hora);
+
+    setEnviando(true);
+    setErro(null);
+    try
+    {
+      const salvo = agendamento
+        ? await remarcarAgendamento(agendamento.id, horario)
+        : await agendarDoacao(pessoa!.campanhaId, horario);
+      await recarregarCampanhas();
+      setGravado(salvo);
+      onConcluido(salvo);
+    }
+    catch (e)
+    {
+      setErro(mensagemDeErro(e));
+    }
+    finally
+    {
+      setEnviando(false);
+    }
+  }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={onClose}
-      role="presentation"
-    >
-      <div
-        className="w-full max-w-md rounded-2xl border border-rota-border bg-white p-6 shadow-card"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="schedule-modal-title"
-      >
-        <div className="mb-4 flex items-start justify-between">
-          <h2
-            id="schedule-modal-title"
-            className="font-mono text-xs font-bold uppercase tracking-widest text-gray-500"
-          >
-            Agende sua doação
-          </h2>
+    <Modal titulo={agendamento ? "Remarcar doação" : "Agende sua doação"} onClose={onClose}>
+      {gravado ? (
+        <div className="space-y-4">
+          <p className="flex items-center gap-2 text-lg font-bold text-emerald-700">
+            <CheckCircle2 className="h-5 w-5" />
+            {agendamento ? "Doação remarcada" : "Doação agendada"}
+          </p>
+          <p className="text-sm text-gray-700">
+            Esperamos você em <span className="font-semibold">{formatarHorario(gravado.agendadoPara)}</span> no{" "}
+            {gravado.bancoNome}. Obrigado por ajudar {nomePaciente ?? "quem precisa"}!
+          </p>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-gray-400 hover:bg-rota-surface2 hover:text-gray-700"
-            aria-label="Fechar"
+            className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-700"
           >
-            <X className="h-5 w-5" />
+            Fechar
           </button>
         </div>
-
-        <div className="space-y-4">
-          <p className="text-sm text-gray-700">
-            Você vai doar para <span className="font-bold text-gray-900">{pessoa.nome}</span> — tipo{" "}
-            <span className="font-bold text-rota-red">{pessoa.tipoSanguineo}</span> · {pessoa.componente}.
-          </p>
+      ) : (
+        <form onSubmit={confirmar} className="space-y-4">
+          {pessoa && (
+            <p className="text-sm text-gray-700">
+              Você vai doar para <span className="font-bold text-gray-900">{pessoa.nome}</span> — tipo{" "}
+              <span className="font-bold text-rota-red">{pessoa.tipoSanguineo}</span> · {pessoa.componente}.
+            </p>
+          )}
+          {agendamento && (
+            <p className="text-sm text-gray-700">
+              Horário atual: <span className="font-semibold">{formatarHorario(agendamento.agendadoPara)}</span>
+              {nomePaciente ? ` · doação para ${nomePaciente}` : ""}.
+            </p>
+          )}
 
           <EsbocoMapaRota />
 
@@ -63,19 +117,53 @@ export function ModalAgendarDoacao({ pessoa, onClose }: Readonly<Props>)
             <p className="font-semibold text-gray-900">Seg a Sáb · 07h às 19h</p>
           </div>
 
-          <p className="border-l-2 border-rota-border pl-2 text-sm italic text-gray-500">{pessoa.causa}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <CampoFormulario rotulo="Dia" htmlFor="agendar-dia">
+              <input
+                id="agendar-dia"
+                type="date"
+                required
+                min={amanha()}
+                value={data}
+                onChange={(e) => setData(e.target.value)}
+                className={CLASSES_CONTROLE}
+              />
+            </CampoFormulario>
+            <CampoFormulario rotulo="Horário" htmlFor="agendar-hora">
+              <select
+                id="agendar-hora"
+                value={hora}
+                onChange={(e) => setHora(e.target.value)}
+                className={CLASSES_CONTROLE}
+              >
+                {HORARIOS_ATENDIMENTO.map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+            </CampoFormulario>
+          </div>
+
+          {domingo && (
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+              O hemocentro não abre aos domingos. Escolha outro dia.
+            </p>
+          )}
+          {erro && (
+            <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {erro}
+            </p>
+          )}
 
           <button
-            type="button"
-            onClick={() => setConfirmado(true)}
-            disabled={confirmado}
-            className="w-full rounded-lg bg-rota-red px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-rota-redDark disabled:cursor-default disabled:bg-emerald-600"
+            type="submit"
+            disabled={enviando || domingo}
+            className="w-full rounded-lg bg-rota-red px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-rota-redDark disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {confirmado ? "Rota traçada — até logo!" : "Confirmar e traçar rota no celular"}
+            {enviando ? "Gravando..." : agendamento ? "Confirmar novo horário" : "Confirmar agendamento"}
           </button>
-        </div>
-      </div>
-    </div>
+        </form>
+      )}
+    </Modal>
   );
 }
 

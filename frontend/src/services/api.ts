@@ -4,6 +4,11 @@ export { clienteHttp, ErroHttp };
 
 export * from "@/types/dtos";
 import type {
+  AgendamentoDTO,
+  CampanhaDTO,
+  CampanhaPayloadDTO,
+  StatusAgendamentoBackend,
+  StatusCampanhaBackend,
   LoginPayloadDTO,
   RespostaAcesso,
   EstoqueDTO,
@@ -76,6 +81,73 @@ export async function calcularRota(origemId: string, destinoId: string, partida?
   return clienteHttp.get<RotaCalculadaDTO>("/rotas", {
     params: { origemId, destinoId, partida },
   });
+}
+
+// ----------------------------------------------------------------------
+// Campanhas e agendamentos de doação (PI3-191, PI3-192). As ações que gravam
+// exigem o header X-Usuario-Id, que o clienteHttp manda a partir da sessão.
+// São silenciosas: cada tela mostra o erro do backend perto de onde a ação aconteceu.
+// ----------------------------------------------------------------------
+
+/** Campanhas da mais recente para a mais antiga; sem status, ativas e encerradas. */
+export async function listarCampanhas(status?: StatusCampanhaBackend): Promise<CampanhaDTO[]>
+{
+  return clienteHttp.get<CampanhaDTO[]>("/campanhas", { params: { status }, silencioso: true });
+}
+
+/** Publica o paciente para os doadores (só médico). */
+export async function publicarCampanha(dados: CampanhaPayloadDTO): Promise<CampanhaDTO>
+{
+  return clienteHttp.post<CampanhaDTO>("/campanhas", dados, { silencioso: true });
+}
+
+/** Troca os dados do paciente divulgado (só médico, só campanha ativa). */
+export async function editarCampanha(id: string, dados: CampanhaPayloadDTO): Promise<CampanhaDTO>
+{
+  return clienteHttp.put<CampanhaDTO>(`/campanhas/${id}`, dados, { silencioso: true });
+}
+
+/** Encerra a campanha e cancela os agendamentos em aberto dela (só médico). */
+export async function encerrarCampanha(id: string): Promise<CampanhaDTO>
+{
+  return clienteHttp.patch<CampanhaDTO>(`/campanhas/${id}/encerramento`, undefined, { silencioso: true });
+}
+
+/** Agendamentos de uma campanha (médico e admin). */
+export async function listarAgendamentosDaCampanha(campanhaId: string): Promise<AgendamentoDTO[]>
+{
+  return clienteHttp.get<AgendamentoDTO[]>(`/campanhas/${campanhaId}/agendamentos`, { silencioso: true });
+}
+
+/** O doador da sessão marca uma doação na campanha. */
+export async function agendarDoacao(campanhaId: string, agendadoPara: string, bancoId: string = "BS-01"): Promise<AgendamentoDTO>
+{
+  return clienteHttp.post<AgendamentoDTO>(
+    `/campanhas/${campanhaId}/agendamentos`,
+    { bancoId, agendadoPara },
+    { silencioso: true },
+  );
+}
+
+/** Agendamentos do doador da sessão, do mais recente para o mais antigo. */
+export async function listarMeusAgendamentos(): Promise<AgendamentoDTO[]>
+{
+  return clienteHttp.get<AgendamentoDTO[]>("/agendamentos/meus", { silencioso: true });
+}
+
+/** O doador muda o horário do próprio agendamento em aberto. */
+export async function remarcarAgendamento(id: string, agendadoPara: string): Promise<AgendamentoDTO>
+{
+  return clienteHttp.patch<AgendamentoDTO>(`/agendamentos/${id}`, { agendadoPara }, { silencioso: true });
+}
+
+/** Fecha o agendamento: o doador só cancela; o médico também registra doação feita ou falta. */
+export async function mudarStatusAgendamento(
+  id: string,
+  status: Exclude<StatusAgendamentoBackend, "AGENDADO">,
+): Promise<AgendamentoDTO>
+{
+  return clienteHttp.patch<AgendamentoDTO>(`/agendamentos/${id}/status`, { status }, { silencioso: true });
 }
 
 /**

@@ -1,21 +1,52 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Droplet, Search } from "lucide-react";
 import { useAutenticacao } from "@/context/ContextoAutenticacao";
 import { useDados } from "@/context/ContextoDados";
 import type { PessoaNecessitada, TipoSanguineo } from "@/types";
+import type { AgendamentoDTO } from "@/types/dtos";
+import { agendamentoEmAberto } from "@/lib/doacoes";
+import { listarMeusAgendamentos } from "@/services/api";
 import { FiltroTipoSanguineo } from "@/components/donations/FiltroTipoSanguineo";
 import { CartaoPessoa } from "@/components/donations/CartaoPessoa";
 import { ModalAgendarDoacao } from "@/components/donations/ModalAgendarDoacao";
+import { MinhasDoacoes } from "@/components/donations/MinhasDoacoes";
 
+/**
+ * HU-10 · PI3-192 — Portal do doador: pacientes das campanhas ativas, agendamento da
+ * doação e acompanhamento (remarcar ou cancelar) dos próprios agendamentos.
+ */
 export default function PaginaPortalDoador()
 {
   const { usuario, logout } = useAutenticacao();
   const navigate = useNavigate();
-  const { pacientes: pessoasNecessitadas } = useDados();
+  const { pacientes: pessoasNecessitadas, situacaoCampanhas, erroCampanhas } = useDados();
   const [busca, setBusca] = useState("");
   const [filtroTipo, setFiltroTipo] = useState<TipoSanguineo | "todos">("todos");
   const [selecionada, setSelecionada] = useState<PessoaNecessitada | null>(null);
+  const [remarcando, setRemarcando] = useState<AgendamentoDTO | null>(null);
+  const [meusAgendamentos, setMeusAgendamentos] = useState<AgendamentoDTO[]>([]);
+
+  const ehDoador = usuario?.papel === "doador";
+
+  const carregarMeusAgendamentos = useCallback(async () =>
+  {
+    try
+    {
+      setMeusAgendamentos(await listarMeusAgendamentos());
+    }
+    catch
+    {
+      // Sem a lista, o portal continua mostrando as campanhas; o backend recusa um segundo agendamento.
+    }
+  }, []);
+
+  useEffect(() =>
+  {
+    if (ehDoador) carregarMeusAgendamentos();
+  }, [ehDoador, carregarMeusAgendamentos]);
+
+  const emAberto = agendamentoEmAberto(meusAgendamentos);
 
   const pessoasFiltradas = useMemo(() =>
   {
@@ -82,6 +113,12 @@ export default function PaginaPortalDoador()
           </span>
         </div>
 
+        <MinhasDoacoes
+          agendamentos={meusAgendamentos}
+          onRemarcar={setRemarcando}
+          onAlterado={carregarMeusAgendamentos}
+        />
+
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -96,21 +133,52 @@ export default function PaginaPortalDoador()
           <FiltroTipoSanguineo value={filtroTipo} onChange={setFiltroTipo} />
         </div>
 
-        {pessoasFiltradas.length === 0 ? (
+        {emAberto && (
+          <p className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-2.5 text-sm text-sky-800">
+            Você já tem uma doação agendada. Para doar para outra pessoa, remarque ou cancele a atual.
+          </p>
+        )}
+
+        {situacaoCampanhas === "carregando" ? (
+          <p className="rounded-xl border border-rota-border bg-white p-6 text-center text-sm text-gray-500">
+            Carregando campanhas...
+          </p>
+        ) : situacaoCampanhas === "erro" ? (
+          <p className="rounded-xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">
+            Não foi possível carregar as campanhas: {erroCampanhas}
+          </p>
+        ) : pessoasFiltradas.length === 0 ? (
           <p className="rounded-xl border border-rota-border bg-white p-6 text-center text-sm text-gray-500">
             Nenhuma pessoa encontrada.
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {pessoasFiltradas.map((pessoa) => (
-              <CartaoPessoa key={pessoa.id} pessoa={pessoa} onDoar={setSelecionada} />
+              <CartaoPessoa
+                key={pessoa.id}
+                pessoa={pessoa}
+                onDoar={setSelecionada}
+                desabilitado={emAberto !== undefined}
+              />
             ))}
           </div>
         )}
       </main>
 
       {selecionada && (
-        <ModalAgendarDoacao pessoa={selecionada} onClose={() => setSelecionada(null)} />
+        <ModalAgendarDoacao
+          pessoa={selecionada}
+          onClose={() => setSelecionada(null)}
+          onConcluido={carregarMeusAgendamentos}
+        />
+      )}
+
+      {remarcando && (
+        <ModalAgendarDoacao
+          agendamento={remarcando}
+          onClose={() => setRemarcando(null)}
+          onConcluido={carregarMeusAgendamentos}
+        />
       )}
     </div>
   );

@@ -7,9 +7,11 @@ interface Props
 {
   pessoa: PessoaNecessitada;
   onDoar: (pessoa: PessoaNecessitada) => void;
+  /** O doador já tem uma doação em aberto: o backend aceita só uma por vez. */
+  desabilitado?: boolean;
 }
 
-export function CartaoPessoa({ pessoa, onDoar }: Readonly<Props>)
+export function CartaoPessoa({ pessoa, onDoar, desabilitado = false }: Readonly<Props>)
 {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-rota-border bg-white p-5 shadow-card">
@@ -17,7 +19,7 @@ export function CartaoPessoa({ pessoa, onDoar }: Readonly<Props>)
         <div className="min-w-0">
           <p className="font-bold text-gray-900">{pessoa.nome}</p>
           <p className="text-sm text-gray-500">
-            {pessoa.sexo} · {pessoa.idade} anos · {pessoa.distanciaKm.toLocaleString("pt-BR", { minimumFractionDigits: 1 })} km
+            {pessoa.sexo} · {pessoa.idade} anos · {pessoa.hospital}
           </p>
         </div>
         <SeloTipoSanguineo tipo={pessoa.tipoSanguineo} />
@@ -32,7 +34,8 @@ export function CartaoPessoa({ pessoa, onDoar }: Readonly<Props>)
       <button
         type="button"
         onClick={() => onDoar(pessoa)}
-        className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-rota-red px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rota-redDark"
+        disabled={desabilitado}
+        className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-rota-red px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rota-redDark disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Droplet className="h-4 w-4" fill="currentColor" />
         Fazer doação

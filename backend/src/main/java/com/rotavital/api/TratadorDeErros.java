@@ -1,10 +1,12 @@
 package com.rotavital.api;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,11 +19,13 @@ import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.rotavital.api.dto.comum.ErroDTO;
+import com.rotavital.servico.AcessoNegadoException;
 import com.rotavital.servico.AutenticacaoIndisponivelException;
 import com.rotavital.servico.CredenciaisInvalidasException;
 import com.rotavital.servico.DadosInvalidosException;
 import com.rotavital.servico.RecursoNaoEncontradoException;
 import com.rotavital.servico.RegraDeNegocioException;
+import com.rotavital.servico.UsuarioNaoIdentificadoException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -55,6 +59,26 @@ public class TratadorDeErros
     public ResponseEntity<ErroDTO> credenciaisInvalidas(CredenciaisInvalidasException e, HttpServletRequest request)
     {
         return erro(401, "Não autorizado", e.getMessage(), request);
+    }
+
+    @ExceptionHandler(UsuarioNaoIdentificadoException.class)
+    public ResponseEntity<ErroDTO> usuarioNaoIdentificado(UsuarioNaoIdentificadoException e, HttpServletRequest request)
+    {
+        return erro(401, "Não autorizado", e.getMessage(), request);
+    }
+
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ErroDTO> acessoNegado(AcessoNegadoException e, HttpServletRequest request)
+    {
+        return erro(403, "Acesso negado", e.getMessage(), request);
+    }
+
+    // Duas gravações ao mesmo tempo que o serviço não pegou (ex.: dois agendamentos em aberto do mesmo
+    // doador): o índice único do banco recusa a segunda.
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErroDTO> conflito(DataIntegrityViolationException e, HttpServletRequest request)
+    {
+        return erro(409, "Conflito", "A operação conflita com um registro gravado ao mesmo tempo. Atualize a tela e tente de novo.", request);
     }
 
     @ExceptionHandler(AutenticacaoIndisponivelException.class)
@@ -107,6 +131,10 @@ public class TratadorDeErros
             return " Valores aceitos: " + Arrays.stream(tipo.getEnumConstants())
                     .map(String::valueOf)
                     .collect(Collectors.joining(", ")) + ".";
+        }
+        if (tipo == OffsetDateTime.class)
+        {
+            return " Use data e hora com fuso, no formato AAAA-MM-DDTHH:MM:SS-03:00.";
         }
         if (tipo == LocalDate.class)
         {

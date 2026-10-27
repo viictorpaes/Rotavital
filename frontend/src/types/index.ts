@@ -34,9 +34,14 @@ export interface PessoaNecessitada
   componente: TipoComponente;
   /** Unidades previstas para o procedimento — base da baixa FEFO (HU-08). */
   unidadesNecessarias: number;
-  distanciaKm: number;
+  /** Hospital onde o paciente está internado. */
+  hospital: string;
   status: UrgenciaNecessidade;
   causa: string;
+  /** Campanha de doação que divulga o paciente (HU-06). */
+  campanhaId: string;
+  /** Quando a campanha foi publicada (ISO 8601). */
+  publicadaEm: string;
 }
 
 /** Como o hemocomponente do procedimento foi obtido (HU-08). */

@@ -1,7 +1,6 @@
 import type {
   AlaMedica,
   LoteHemocomponente,
-  PessoaNecessitada,
   RequisicaoRecebida,
   TipoComponente,
   TipoSanguineo,
@@ -104,36 +103,6 @@ export function loteDaRequisicaoRecebida(requisicao: RequisicaoRecebida): LoteHe
     temperaturaAtual: (faixa.minima + faixa.maxima) / 2,
     temperaturaIdeal: faixa,
     localizacao: "Recebimento · triagem",
-  };
-}
-
-export interface DadosCampanha
-{
-  nome: string;
-  sexo: PessoaNecessitada["sexo"];
-  idade: number;
-  tipoSanguineo: TipoSanguineo;
-  componente: TipoComponente;
-  causa: string;
-  gravidade: PessoaNecessitada["status"];
-}
-
-/** Paciente publicado por uma campanha de doação (HU-06). */
-export function pacienteDaCampanha(dados: DadosCampanha, id: string): PessoaNecessitada
-{
-  return {
-    id,
-    nome: dados.nome.trim(),
-    sexo: dados.sexo,
-    idade: dados.idade,
-    tipoSanguineo: dados.tipoSanguineo,
-    componente: dados.componente,
-    // A campanha não pergunta o volume clínico: assume uma bolsa, ajustável na
-    // conclusão do procedimento (HU-08).
-    unidadesNecessarias: 1,
-    distanciaKm: 0,
-    status: dados.gravidade,
-    causa: dados.causa.trim(),
   };
 }
 
