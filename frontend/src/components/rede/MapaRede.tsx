@@ -8,6 +8,11 @@ import type { RotaCalculada } from "@/lib/roteirizacao";
 
 type Posicao = [number, number];
 
+const RECIFE_BOUNDS = L.latLngBounds(
+  [-7.93, -34.79],
+  [-8.16, -35.08],
+);
+
 /** Marcador desenhado em HTML — evita depender das imagens padrão do Leaflet. */
 function iconePonto(cor: string, tamanho: number, formato: "circulo" | "quadrado" = "circulo")
 {
@@ -38,7 +43,11 @@ function AjustarEnquadramento({ pontos }: Readonly<{ pontos: Posicao[] }>)
     if (pontos.length >= 2)
     {
       mapa.fitBounds(L.latLngBounds(pontos), { padding: [44, 44] });
+      return;
     }
+
+    mapa.fitBounds(RECIFE_BOUNDS, { padding: [24, 24] });
+    mapa.setZoom(11);
     // Reenquadra apenas quando a rota muda de origem/destino.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chave]);
@@ -81,10 +90,14 @@ export function MapaRede({ selecionado, rota, calculando, onSelecionar, altura =
 
       <MapContainer
         center={centro}
-        zoom={13}
+        zoom={12}
+        minZoom={10}
+        maxZoom={18}
         zoomControl={false}
         scrollWheelZoom={false}
         attributionControl={false}
+        bounds={RECIFE_BOUNDS}
+        maxBounds={RECIFE_BOUNDS}
         style={{ height: "100%", width: "100%" }}
       >
         {/* Tiles do OpenStreetMap — abertos, sem chave de API. O tom neutro do
@@ -105,6 +118,8 @@ export function MapaRede({ selecionado, rota, calculando, onSelecionar, altura =
           </>
         )}
 
+        {!tracado.length && <AjustarEnquadramento pontos={[]} />}
+
         <Marker position={posicao(hemocentro)} icon={ICONE_ORIGEM} title={hemocentro.nome} />
 
         {hospitais.map((hospital) => (
@@ -119,7 +134,7 @@ export function MapaRede({ selecionado, rota, calculando, onSelecionar, altura =
       </MapContainer>
 
       <p className="absolute bottom-2 right-2 z-[998] bg-white/90 px-1.5 py-0.5 font-mono text-[9px] text-gray-500">
-        © OpenStreetMap
+        Recife · PE
       </p>
     </div>
   );
