@@ -93,6 +93,7 @@ export default function PaginaRede()
       {transacaoAberta && (
         <ModalTransacaoHemocomponentes
           hospital={selecionado}
+          rota={rota}
           onClose={() => setTransacaoAberta(false)}
         />
       )}
