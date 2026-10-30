@@ -3,7 +3,7 @@ import { CheckCircle2, HeartHandshake, Package, TriangleAlert, X } from "lucide-
 import type {
   LoteHemocomponente,
   OrigemAtendimento,
-  PessoaNecessitada,
+  PacienteNaFila,
   ProcedimentoConcluido,
 } from "@/types";
 import { lotesCompativeis, unidadesDisponiveis } from "@/lib/pacientes";
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utilitarios";
 
 interface Props
 {
-  paciente: PessoaNecessitada;
+  paciente: PacienteNaFila;
   lotes: LoteHemocomponente[];
   onConfirmar: (origem: OrigemAtendimento) => ProcedimentoConcluido | undefined;
   onClose: () => void;

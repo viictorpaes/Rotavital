@@ -7,6 +7,9 @@ import type {
   AgendamentoDTO,
   CampanhaDTO,
   CampanhaPayloadDTO,
+  FiltrosPacientesDTO,
+  PacienteDTO,
+  PacientePayloadDTO,
   StatusAgendamentoBackend,
   StatusCampanhaBackend,
   LoginPayloadDTO,
@@ -81,6 +84,34 @@ export async function calcularRota(origemId: string, destinoId: string, partida?
   return clienteHttp.get<RotaCalculadaDTO>("/rotas", {
     params: { origemId, destinoId, partida },
   });
+}
+
+// ----------------------------------------------------------------------
+// Pacientes (PI3-194). Consultar é livre; cadastrar, editar e remover exigem um médico
+// (header X-Usuario-Id, mandado pelo clienteHttp). Silenciosas: a tela mostra o erro perto da ação.
+// ----------------------------------------------------------------------
+
+/** Pacientes com os filtros informados, na ordem da fila clínica (mais grave e mais antigo primeiro). */
+export async function listarPacientes(filtros: FiltrosPacientesDTO = {}): Promise<PacienteDTO[]>
+{
+  return clienteHttp.get<PacienteDTO[]>("/pacientes", { params: { ...filtros }, silencioso: true });
+}
+
+export async function cadastrarPaciente(dados: PacientePayloadDTO): Promise<PacienteDTO>
+{
+  return clienteHttp.post<PacienteDTO>("/pacientes", dados, { silencioso: true });
+}
+
+/** Troca os dados clínicos (só paciente aguardando). */
+export async function editarPaciente(id: string, dados: PacientePayloadDTO): Promise<PacienteDTO>
+{
+  return clienteHttp.put<PacienteDTO>(`/pacientes/${encodeURIComponent(id)}`, dados, { silencioso: true });
+}
+
+/** Remove um cadastro feito por engano; paciente com campanha, procedimento ou requisição fica (422). */
+export async function removerPaciente(id: string): Promise<void>
+{
+  return clienteHttp.delete<void>(`/pacientes/${encodeURIComponent(id)}`, { silencioso: true });
 }
 
 // ----------------------------------------------------------------------

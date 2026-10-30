@@ -24,7 +24,8 @@ export type TipoComponente =
   | "Concentrado de Plaquetas"
   | "Crioprecipitado";
 
-export interface PessoaNecessitada
+/** Paciente aguardando hemocomponente, como as telas de Pacientes mostram (HU-08, PI3-195). */
+export interface PacienteNaFila
 {
   id: string;
   nome: string;
@@ -38,6 +39,11 @@ export interface PessoaNecessitada
   hospital: string;
   status: UrgenciaNecessidade;
   causa: string;
+}
+
+/** Paciente divulgado numa campanha de doação (HU-06, HU-09): o da fila, mais a campanha. */
+export interface PessoaNecessitada extends PacienteNaFila
+{
   /** Campanha de doação que divulga o paciente (HU-06). */
   campanhaId: string;
   /** Quando a campanha foi publicada (ISO 8601). */

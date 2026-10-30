@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type {
   LoteHemocomponente,
   OrigemAtendimento,
+  PacienteNaFila,
   PessoaNecessitada,
   ProcedimentoConcluido,
   RequisicaoRecebida,
@@ -38,9 +39,9 @@ interface ValorContextoDados
   procedimentosConcluidos: ProcedimentoConcluido[];
   /** Encerra o atendimento do paciente e dá a baixa correspondente (HU-08). */
   concluirProcedimento: (
-    pacienteId: string,
+    paciente: PacienteNaFila,
     origem: OrigemAtendimento,
-  ) => ProcedimentoConcluido | undefined;
+  ) => ProcedimentoConcluido;
 }
 
 const ContextoDados = createContext<ValorContextoDados | undefined>(undefined);
@@ -128,11 +129,9 @@ export function ProvedorDados({ children }: { children: ReactNode })
      * o atendimento pelo estoque interno baixa as unidades por FEFO. Em ambos
      * os casos o paciente sai da fila de necessidades ativas.
      */
-    function concluirProcedimento(pacienteId: string, origem: OrigemAtendimento)
+    // Recebe o paciente (não só o id): a tela de Pacientes lê de /pacientes, que inclui quem não tem campanha.
+    function concluirProcedimento(paciente: PacienteNaFila, origem: OrigemAtendimento)
     {
-      const paciente = pacientes.find((item) => item.id === pacienteId);
-      if (!paciente) return undefined;
-
       const baixa =
         origem === "estoque-interno"
           ? reservarPorFefo(
@@ -157,7 +156,7 @@ export function ProvedorDados({ children }: { children: ReactNode })
         unidadesFaltantes: baixa?.unidadesFaltantes ?? 0,
       };
 
-      setPacientesAtendidos((atuais) => [...atuais, pacienteId]);
+      setPacientesAtendidos((atuais) => [...atuais, paciente.id]);
       setProcedimentos((atuais) => [registro, ...atuais]);
       return registro;
     }

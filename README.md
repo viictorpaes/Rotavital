@@ -496,6 +496,7 @@ Rotavital🩸/
 │       │       │   ├── AcessoController.java <img src="https://img.shields.io/badge/-POST_%2Facessos-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑01-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── EstoqueController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Festoque_·_%2Fresumo-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/-GET·POST_%2Fhemocomponentes_·_GET_%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑03-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── MovimentacaoDeBolsaController.java <img src="https://img.shields.io/badge/-PATCH_%2Fhemocomponentes%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑08-111827?style=flat-square&logoColor=white" height="18"/>
+│       │       │   ├── PacienteController.java <img src="https://img.shields.io/badge/-GET·POST_%2Fpacientes_·_GET·PUT·DELETE_%2F%7Bid%7D-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑08-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── RotaController.java <img src="https://img.shields.io/badge/-GET_%2Fpontos_·_%2Fconexoes_·_%2Frotas-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑07-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── SugestaoDeLoteController.java <img src="https://img.shields.io/badge/-GET_%2Fbancos%2F%7BbancoId%7D%2Fsugestao--lote-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/> <img src="https://img.shields.io/badge/HU‑04-111827?style=flat-square&logoColor=white" height="18"/>
 │       │       │   ├── TratadorDeErros.java <img src="https://img.shields.io/badge/-Erros_RFC_7807_·_400_·_404_·_422-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
@@ -517,6 +518,9 @@ Rotavital🩸/
 │       │       │       │   ├── SugestaoDeLoteDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── TotalPorComponenteDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   └── TotalPorTipoSanguineoDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
+│       │       │       ├── paciente <img src="https://img.shields.io/badge/-Paciente-111827?style=flat-square&logo=openjdk&logoColor=22C55E" height="18"/>
+│       │       │       │   ├── DadosDoPaciente.java <img src="https://img.shields.io/badge/Interface-111827?style=flat&logo=openjdk&logoColor=3B82F6" height="18"/>
+│       │       │       │   └── PacienteRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       ├── requisicao <img src="https://img.shields.io/badge/-Requisicao-111827?style=flat-square&logo=hospitalfederation&logoColor=E0234E" height="18"/>/
 │       │       │       │   ├── AlocacaoDTO.java <img src="https://img.shields.io/badge/Response-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
 │       │       │       │   ├── AtualizarStatusRequisicaoRequest.java <img src="https://img.shields.io/badge/Request-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="18"/>
@@ -578,6 +582,7 @@ Rotavital🩸/
 │       │       │   ├── BancoDeSangueRepository.java <img src="https://img.shields.io/badge/-JpaRepository-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       │   ├── BolsaHemocomponenteRepository.java <img src="https://img.shields.io/badge/-JpaRepository-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       │   ├── ConexaoRepository.java <img src="https://img.shields.io/badge/-JpaRepository-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │       │   ├── PacienteRepository.java <img src="https://img.shields.io/badge/-JpaRepository_·_filtros_·_vínculos-111827?style=flat&logo=spring&logoColor=6DB33F" height="18"/>
 │       │       │   ├── PontoDeRedeRepository.java <img src="https://img.shields.io/badge/-JpaRepository-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │       │   └── ResumoEstoqueRepository.java <img src="https://img.shields.io/badge/-Consultas_às_views_do_painel-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 │       │       └── servico <img src="https://img.shields.io/badge/-Service-111827?style=flat-square&logo=springboot&logoColor=6DB33F" height="18"/>/
@@ -585,11 +590,13 @@ Rotavital🩸/
 │       │           ├── DadosInvalidosException.java <img src="https://img.shields.io/badge/-Exceção_·_400-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/>
 │       │           ├── EstoqueService.java <img src="https://img.shields.io/badge/-%40Transactional_·_estoque_·_bolsa_·_validação-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │           ├── MovimentacaoDeBolsaService.java <img src="https://img.shields.io/badge/-%40Transactional_·_baixa_da_bolsa-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │           ├── PacienteService.java <img src="https://img.shields.io/badge/-%40Transactional_·_cadastro_de_pacientes-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │           ├── RecursoNaoEncontradoException.java <img src="https://img.shields.io/badge/-Exceção_·_404-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/>
 │       │           ├── RedeDistribuicaoService.java <img src="https://img.shields.io/badge/-%40Transactional_·_rede_do_banco-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
 │       │           ├── RegraDeNegocioException.java <img src="https://img.shields.io/badge/-Exceção_·_422-111827?style=flat&logo=openjdk&logoColor=E0234E" height="18"/>
 │       │           ├── ResumoEstoqueService.java <img src="https://img.shields.io/badge/-%40Transactional_·_totais_do_estoque-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
-│       │           └── SugestaoDeLoteService.java <img src="https://img.shields.io/badge/-%40Transactional_·_sugestão_de_lote-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │           ├── SugestaoDeLoteService.java <img src="https://img.shields.io/badge/-%40Transactional_·_sugestão_de_lote-111827?style=flat&logo=springboot&logoColor=6DB33F" height="18"/>
+│       │           └── ValidadorPaciente.java <img src="https://img.shields.io/badge/-Dados_do_paciente_·_cadastro_e_campanha-111827?style=flat&logo=openjdk&logoColor=FF6F00" height="18"/>
 │       └── test <img src="https://img.shields.io/badge/-JUnit_5-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/> <img src="https://img.shields.io/badge/-Testcontainers-111827?style=flat-square&logo=testcontainers&logoColor=9B489A" height="18"/> <img src="https://img.shields.io/badge/-Cucumber-111827?style=flat-square&logo=cucumber&logoColor=23D96C" height="18"/>/
 │           ├── resources/features <img src="https://img.shields.io/badge/-Gherkin_em_português_·_1_por_história-111827?style=flat-square&logo=cucumber&logoColor=23D96C" height="18"/>/
 │           │   ├── hu02_alertas_do_painel.feature
@@ -604,7 +611,8 @@ Rotavital🩸/
 │           │   ├── EstoqueIT.java · BaixaDaBolsaIT.java <img src="https://img.shields.io/badge/-API_+_JPA_+_Postgres_17-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 │           │   └── PostgresDeTeste.java · RelogioDeTeste.java · DadosDeTeste.java
 │           ├── api <img src="https://img.shields.io/badge/-API_(MockMvc)-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
-│           │   └── ErrosDoEstoqueTest.java <img src="https://img.shields.io/badge/-%40Test_·_respostas_de_erro_400_·_404_·_422-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│           │   ├── ErrosDoEstoqueTest.java <img src="https://img.shields.io/badge/-%40Test_·_respostas_de_erro_400_·_404_·_422-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│           │   └── PacienteApiTest.java <img src="https://img.shields.io/badge/-%40Test_·_%2Fpacientes_201_·_204_·_401_·_403_·_404_·_422-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           ├── benchmark <img src="https://img.shields.io/badge/-Benchmark-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
 │           │   └── AuditoriaTelemetriaTest.java <img src="https://img.shields.io/badge/-%40Test_·_concorrência-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           ├── dominio <img src="https://img.shields.io/badge/-Domínio-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
@@ -621,6 +629,7 @@ Rotavital🩸/
 │           │   └── TesteFluxoTest.java <img src="https://img.shields.io/badge/-%40Test_·_fluxo_FEFO_+_ABO%2FRh-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │           └── servico <img src="https://img.shields.io/badge/-Service-111827?style=flat-square&logo=junit5&logoColor=25A162" height="18"/>/
 │               ├── EstoqueServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_estoque_e_busca_de_bolsa-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
+│               ├── PacienteServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_cadastro_fila_edição_e_remoção-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │               ├── RedeDistribuicaoServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_montagem_da_rede-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │               ├── RepositorioFalso.java <img src="https://img.shields.io/badge/-Repositório_falso_(sem_banco)-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
 │               ├── ResumoEstoqueServiceTest.java <img src="https://img.shields.io/badge/-%40Test_·_totais_do_resumo-111827?style=flat&logo=junit5&logoColor=25A162" height="18"/>
@@ -691,8 +700,11 @@ Rotavital🩸/
 │       │   │   ├── PlanoTransporte.tsx <img src="https://img.shields.io/badge/-Plano-111827?style=flat&logo=react&logoColor=34A853" height="18"/>
 │       │   │   └── PrioridadeEnvio.tsx <img src="https://img.shields.io/badge/-FEFO-111827?style=flat&logo=react&logoColor=34A853" height="18"/>
 │       │   ├── pacientes <img src="https://img.shields.io/badge/-Pacientes-111827?style=flat-square&logo=react&logoColor=22C55E" height="18"/> <img src="https://img.shields.io/badge/HU‑08-111827?style=flat-square&logoColor=white" height="18"/>/
+│       │   │   ├── CamposPaciente.tsx <img src="https://img.shields.io/badge/-Campos_·_paciente_e_campanha-111827?style=flat&logo=react&logoColor=22C55E" height="18"/>
 │       │   │   ├── CartaoPaciente.tsx <img src="https://img.shields.io/badge/-Card-111827?style=flat&logo=react&logoColor=22C55E" height="18"/>
-│       │   │   └── ModalConcluirProcedimento.tsx <img src="https://img.shields.io/badge/-Modal-111827?style=flat&logo=react&logoColor=22C55E" height="18"/>
+│       │   │   ├── ModalConcluirProcedimento.tsx <img src="https://img.shields.io/badge/-Modal-111827?style=flat&logo=react&logoColor=22C55E" height="18"/>
+│       │   │   ├── ModalPaciente.tsx <img src="https://img.shields.io/badge/-Cadastro_·_edição-111827?style=flat&logo=react&logoColor=22C55E" height="18"/>
+│       │   │   └── ModalRemoverPaciente.tsx <img src="https://img.shields.io/badge/-Remoção-111827?style=flat&logo=react&logoColor=22C55E" height="18"/>
 │       │   ├── donations <img src="https://img.shields.io/badge/-Doações-111827?style=flat-square&logo=react&logoColor=E0234E" height="18"/> <img src="https://img.shields.io/badge/HU‑09_·_HU‑10-111827?style=flat-square&logoColor=white" height="18"/>/
 │       │   │   ├── CartaoPessoa.tsx <img src="https://img.shields.io/badge/-Card-111827?style=flat&logo=react&logoColor=E0234E" height="18"/>
 │       │   │   ├── FiltroTipoSanguineo.tsx <img src="https://img.shields.io/badge/-Filtro-111827?style=flat&logo=react&logoColor=E0234E" height="18"/>
@@ -726,6 +738,7 @@ Rotavital🩸/
 │       │   ├── redeMock.ts <img src="https://img.shields.io/badge/-Rede-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │       │   └── requisicoesMock.ts <img src="https://img.shields.io/badge/-Requisições-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
 │       ├── hooks <img src="https://img.shields.io/badge/-Hooks-111827?style=flat-square&logo=react&logoColor=61DAFB" height="18"/>/
+│       │   ├── useHospitais.ts <img src="https://img.shields.io/badge/-Hospitais_da_rede-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/>
 │       │   └── useRotasDaRede.ts <img src="https://img.shields.io/badge/-Rotas_via_OSRM-111827?style=flat&logo=openstreetmap&logoColor=7EBC6F" height="18"/> <img src="https://img.shields.io/badge/HU‑07-111827?style=flat-square&logoColor=white" height="18"/>
 │       ├── lib <img src="https://img.shields.io/badge/-Regras_de_tela-111827?style=flat-square&logo=typescript&logoColor=3178C6" height="18"/>/
 │       │   ├── estoque.ts <img src="https://img.shields.io/badge/-Estoque-111827?style=flat&logo=typescript&logoColor=3178C6" height="18"/>
@@ -1343,21 +1356,29 @@ export default function PaginaRede()
 <summary>🩸 <a href="./frontend/src/pages/Pacientes/PaginaPacientes.tsx"><code>frontend/src/pages/Pacientes/PaginaPacientes.tsx</code></a></summary>
 
 ```tsx
-/**
- * HU-08 — Fila clínica de pacientes com necessidade ativa. A conclusão do
- * procedimento tira o paciente da fila e, quando atendido pelo estoque interno,
- * baixa as unidades por FEFO.
- */
+// PI3-175: a fila vem de GET /api/v1/pacientes — todos os pacientes, com ou sem campanha de doação.
+const carregar = useCallback(async () =>
+{
+  setLista(await listarPacientes({ status: "AGUARDANDO" }));   // mais grave e mais antigo primeiro
+}, []);
+
+// O procedimento ainda não é gravado: quem foi atendido nesta sessão sai da fila só aqui.
+const pacientes = useMemo(() =>
+{
+  const atendidos = new Set(procedimentosConcluidos.map((procedimento) => procedimento.pacienteId));
+  return lista.filter((paciente) => !atendidos.has(paciente.id)).map(pessoaDoPaciente);
+}, [lista, procedimentosConcluidos]);
+
 function handleConfirmar(origem: OrigemAtendimento)
 {
-  if (!selecionado) 
-  {
-    return undefined;
-  }
-
-  return concluirProcedimento(selecionado.id, origem);
+  if (!selecionado) return undefined;
+  return concluirProcedimento(selecionado, origem);   // HU-08: baixa por FEFO ou doação externa
 }
 ```
+
+O médico vê **Novo paciente** e, em cada cartão, **Editar** e **Remover** (`ModalPaciente` e
+`ModalRemoverPaciente`, por `POST`, `PUT` e `DELETE /api/v1/pacientes`). Os campos do formulário são os
+mesmos da campanha de doação (`CamposPaciente`), e o erro da API aparece dentro do modal. Admin só consulta.
 </details>
 
 <h4 align="left">❤️ HU‑09 — Doações (lista de pessoas que precisam)</h4>
@@ -1566,7 +1587,7 @@ pegou, em cada atividade, a regra cujo erro machuca mais.
 | | 🔐 Entrar | 📊 Painel | 📦 Estoque | 🏥 Requisitar | 🚚 Transportar | 🩺 Atender | ❤️ Doar |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Backbone** | entrar com o perfil | ver números e alertas | ver lotes por tipo | pedir hemocomponente | planejar a rota | concluir o procedimento | agendar a doação |
-| ✅ **Fora do TDD** | HU‑01 · login no Supabase Auth (PI3‑183/184) | totais por tipo | HU‑03 · listagem e cadastro (PI3‑179/187) | — | HU‑07 rota (Dijkstra) | — | HU‑09/10 (mock) |
+| ✅ **Fora do TDD** | HU‑01 · login no Supabase Auth (PI3‑183/184) | totais por tipo | HU‑03 · listagem e cadastro (PI3‑179/187) | — | HU‑07 rota (Dijkstra) | cadastro de pacientes (PI3‑175) | HU‑09/10 (mock) |
 | 🟢 **Release 1 (TDD)** | — | **HU‑02** alertas | HU‑03 (caracterização) | **HU‑04** sugestão de lote | — | **HU‑08** baixa da bolsa | — |
 | 🔵 **Release 2** | bloquear por perfil na API | HU‑F03 notificar alerta | HU‑05 recebimento | gravar alocação · HU‑06 | HU‑F04 rastreio · telemetria | ligar a baixa ao paciente | HU‑F06 elegibilidade |
 

@@ -1,12 +1,22 @@
 import type {
   ConsumoDeLote,
   LoteHemocomponente,
-  PessoaNecessitada,
+  PacienteNaFila,
+  Sexo,
   TipoComponente,
   TipoSanguineo,
   UrgenciaNecessidade,
 } from "@/types";
-import { diasAteVencer } from "@/lib/estoque";
+import type { PacienteDTO, PacientePayloadDTO } from "@/types/dtos";
+import { converterTipoComponente, converterTipoSanguineo, diasAteVencer } from "@/lib/estoque";
+import {
+  componenteParaBackend,
+  gravidadeDoBackend,
+  gravidadeParaBackend,
+  sexoDoBackend,
+  sexoParaBackend,
+  tipoSanguineoParaBackend,
+} from "@/lib/doacoes";
 
 /** Resultado de uma baixa FEFO no estoque (HU-08). */
 export interface ResultadoBaixa
@@ -100,16 +110,99 @@ export function reservarPorFefo
 const PESO_STATUS: Record<UrgenciaNecessidade, number> = { critico: 0, atencao: 1, estavel: 2 };
 
 /** Ordena a fila clínica: crítico antes de atenção, atenção antes de estável. */
-export function ordenarPorUrgencia(pacientes: PessoaNecessitada[])
+export function ordenarPorUrgencia(pacientes: PacienteNaFila[])
 {
   return [...pacientes].sort((a, b) => PESO_STATUS[a.status] - PESO_STATUS[b.status]);
 }
 
 /** Quantos pacientes há em cada nível de urgência. */
-export function contarPorUrgencia(pacientes: PessoaNecessitada[]): Record<UrgenciaNecessidade, number>
+export function contarPorUrgencia(pacientes: PacienteNaFila[]): Record<UrgenciaNecessidade, number>
 {
   return pacientes.reduce(
     (total, paciente) => ({ ...total, [paciente.status]: total[paciente.status] + 1 }),
     { critico: 0, atencao: 0, estavel: 0 },
   );
+}
+// ----------------------------------------------------------------------
+// Cadastro de pacientes (PI3-195): o rascunho do formulário e as conversões com a API.
+// ----------------------------------------------------------------------
+
+/** O que o formulário de paciente edita, no formato da tela. Unidades fica em texto, como no input. */
+export interface RascunhoPaciente
+{
+  hospitalId: string;
+  nome: string;
+  /** AAAA-MM-DD */
+  dataNascimento: string;
+  sexo: Sexo;
+  tipoSanguineo: TipoSanguineo;
+  componente: TipoComponente;
+  unidades: string;
+  causa: string;
+  gravidade: UrgenciaNecessidade;
+}
+
+/** Formulário em branco (cadastro novo). O hospital é escolhido quando a lista de hospitais chega. */
+export function rascunhoVazio(): RascunhoPaciente
+{
+  return {
+    hospitalId: "",
+    nome: "",
+    dataNascimento: "",
+    sexo: "Feminino",
+    tipoSanguineo: "O-",
+    componente: "Concentrado de Hemácias",
+    unidades: "1",
+    causa: "",
+    gravidade: "atencao",
+  };
+}
+
+/** Formulário preenchido com o paciente que a API devolveu (edição). */
+export function rascunhoDoPaciente(paciente: PacienteDTO): RascunhoPaciente
+{
+  return {
+    hospitalId: paciente.hospitalId,
+    nome: paciente.nome,
+    dataNascimento: paciente.dataNascimento,
+    sexo: sexoDoBackend(paciente.sexo),
+    tipoSanguineo: converterTipoSanguineo(paciente.tipoSanguineo),
+    componente: converterTipoComponente(paciente.tipoComponente),
+    unidades: String(paciente.unidadesNecessarias),
+    causa: paciente.causa,
+    gravidade: gravidadeDoBackend(paciente.gravidade),
+  };
+}
+
+/** Corpo do POST/PUT de /pacientes e de /campanhas. A validação fica na API. */
+export function payloadDoRascunho(rascunho: RascunhoPaciente): PacientePayloadDTO
+{
+  return {
+    hospitalId: rascunho.hospitalId,
+    nome: rascunho.nome,
+    sexo: sexoParaBackend(rascunho.sexo),
+    dataNascimento: rascunho.dataNascimento,
+    tipoSanguineo: tipoSanguineoParaBackend(rascunho.tipoSanguineo),
+    tipoComponente: componenteParaBackend(rascunho.componente),
+    unidadesNecessarias: Number(rascunho.unidades),
+    causa: rascunho.causa,
+    gravidade: gravidadeParaBackend(rascunho.gravidade),
+  };
+}
+
+/** Paciente da API no formato dos cartões da tela de Pacientes. */
+export function pessoaDoPaciente(paciente: PacienteDTO): PacienteNaFila
+{
+  return {
+    id: paciente.id,
+    nome: paciente.nome,
+    sexo: sexoDoBackend(paciente.sexo),
+    idade: paciente.idade,
+    tipoSanguineo: converterTipoSanguineo(paciente.tipoSanguineo),
+    componente: converterTipoComponente(paciente.tipoComponente),
+    unidadesNecessarias: paciente.unidadesNecessarias,
+    hospital: paciente.hospitalNome,
+    status: gravidadeDoBackend(paciente.gravidade),
+    causa: paciente.causa,
+  };
 }

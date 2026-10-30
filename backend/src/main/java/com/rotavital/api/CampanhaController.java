@@ -23,7 +23,6 @@ import com.rotavital.api.dto.doacao.CampanhaDTO;
 import com.rotavital.api.dto.doacao.CampanhaRequest;
 import com.rotavital.api.dto.doacao.PacienteDTO;
 import com.rotavital.dominio.CampanhaDoacao;
-import com.rotavital.dominio.Paciente;
 import com.rotavital.dominio.StatusCampanha;
 import com.rotavital.servico.CampanhaService;
 
@@ -99,22 +98,7 @@ public class CampanhaController
 
     private CampanhaDTO paraDTO(CampanhaDoacao campanha, long agendamentosEmAberto)
     {
-        Paciente paciente = campanha.getPaciente();
-        PacienteDTO pacienteDTO = new PacienteDTO(
-                paciente.getId(),
-                paciente.getNome(),
-                paciente.getSexo(),
-                paciente.getDataNascimento(),
-                paciente.idadeEm(LocalDate.now(relogio)),
-                paciente.getTipoSanguineo(),
-                paciente.getTipoComponente(),
-                paciente.getUnidadesNecessarias(),
-                paciente.getCausa(),
-                paciente.getGravidade(),
-                paciente.getStatus(),
-                paciente.getHospital().getId(),
-                paciente.getHospital().getNome()
-        );
+        PacienteDTO pacienteDTO = PacienteDTO.de(campanha.getPaciente(), LocalDate.now(relogio));
 
         return new CampanhaDTO(
                 campanha.getId(),
