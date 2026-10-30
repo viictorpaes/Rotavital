@@ -55,6 +55,10 @@ tags:
     description: Telemetria simulada da cadeia fria durante o transporte.
   - name: Benchmark
     description: Auditoria de telemetria sequencial x paralela (atividade de paralelismo).
+  - name: Pacientes
+    description: >
+      Cadastro de pacientes (PI3-175): consultar é livre; cadastrar, editar e remover
+      exigem um médico no header X-Usuario-Id.
   - name: Doacoes
     description: >
       Campanhas de doação (HU-06, PI3-191) e agendamentos de doação dentro de cada
@@ -845,6 +849,128 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  # -- Pacientes (PI3-175) -----------------------------------------------
+  /pacientes:
+    get:
+      tags: [Pacientes]
+      summary: Lista os pacientes na ordem da fila clínica
+      description: >
+        Filtros opcionais e combináveis. A lista vem do mais grave para o menos grave
+        (CRITICO, ATENCAO, ESTAVEL) e, na mesma gravidade, do mais antigo para o mais novo.
+        Inclui os pacientes publicados por campanha de doação.
+      operationId: listarPacientes
+      parameters:
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/StatusPaciente' } }
+        - { name: tipoSanguineo, in: query, schema: { $ref: '#/components/schemas/TipoSanguineo' } }
+        - { name: gravidade, in: query, schema: { $ref: '#/components/schemas/Gravidade' } }
+        - { name: hospitalId, in: query, schema: { type: string }, example: HOSP-01 }
+      responses:
+        '200':
+          description: Pacientes (lista vazia se nenhum bater com os filtros).
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Paciente' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Pacientes]
+      summary: Cadastra um paciente aguardando atendimento (só médico)
+      description: Campos ausentes ou mal preenchidos saem todos juntos no detail do 400.
+      operationId: cadastrarPaciente
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PacienteRequest' }
+      responses:
+        '201':
+          description: Paciente cadastrado. O header Location aponta para /pacientes/{id}.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Paciente' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /pacientes/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [Pacientes]
+      summary: Detalhe de um paciente
+      operationId: consultarPaciente
+      responses:
+        '200':
+          description: Paciente encontrado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Paciente' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Pacientes]
+      summary: Edita os dados clínicos (só médico, só paciente AGUARDANDO)
+      description: Se o paciente estiver numa campanha de doação, a campanha passa a mostrar os dados novos.
+      operationId: editarPaciente
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PacienteRequest' }
+      responses:
+        '200':
+          description: Paciente atualizado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Paciente' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Pacientes]
+      summary: Remove um cadastro feito por engano (só médico)
+      description: Paciente com campanha de doação, procedimento ou requisição não é removido (422).
+      operationId: removerPaciente
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+      responses:
+        '204':
+          description: Paciente removido.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
   # -- Doações: campanhas e agendamentos ----------------------------------
   /campanhas:
     get:
@@ -1568,6 +1694,21 @@ components:
     CampanhaRequest:
       type: object
       description: Dados do paciente divulgado, no POST e no PUT de /campanhas.
+      properties:
+        hospitalId: { type: string, example: HOSP-01 }
+        nome: { type: string }
+        sexo: { $ref: '#/components/schemas/Sexo' }
+        dataNascimento: { type: string, format: date }
+        tipoSanguineo: { $ref: '#/components/schemas/TipoSanguineo' }
+        tipoComponente: { $ref: '#/components/schemas/TipoComponente' }
+        unidadesNecessarias: { type: integer, minimum: 1, maximum: 50 }
+        causa: { type: string }
+        gravidade: { $ref: '#/components/schemas/Gravidade' }
+      required: [hospitalId, nome, sexo, dataNascimento, tipoSanguineo, tipoComponente, unidadesNecessarias, causa, gravidade]
+
+    PacienteRequest:
+      type: object
+      description: Dados clínicos do paciente, no POST e no PUT de /pacientes. Os mesmos campos de CampanhaRequest.
       properties:
         hospitalId: { type: string, example: HOSP-01 }
         nome: { type: string }

@@ -1,10 +1,8 @@
 package com.rotavital.servico;
 
 import java.time.Clock;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,13 +36,12 @@ import com.rotavital.repositorio.PacienteRepository;
 public class CampanhaService
 {
     private static final DateTimeFormatter DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final LocalDate NASCIMENTO_MINIMO = LocalDate.of(1900, 1, 2);
 
     private final CampanhaDoacaoRepository campanhas;
     private final PacienteRepository pacientes;
-    private final HospitalRepository hospitais;
     private final AgendamentoDoacaoRepository agendamentos;
     private final IdentificacaoService identificacao;
+    private final ValidadorPaciente validador;
     private final Clock relogio;
 
     public CampanhaService(CampanhaDoacaoRepository campanhas, PacienteRepository pacientes,
@@ -53,9 +50,10 @@ public class CampanhaService
     {
         this.campanhas = campanhas;
         this.pacientes = pacientes;
-        this.hospitais = hospitais;
         this.agendamentos = agendamentos;
         this.identificacao = identificacao;
+        // A mesma conferência do cadastro de pacientes (PI3-194): uma campanha publica um paciente.
+        this.validador = new ValidadorPaciente(hospitais, relogio);
         this.relogio = relogio;
     }
 
@@ -90,7 +88,7 @@ public class CampanhaService
     public CampanhaDoacao publicar(UUID usuarioId, CampanhaRequest dados)
     {
         Usuario medico = identificacao.exigir(usuarioId, "publicar campanha de doação", PapelUsuario.MEDICO);
-        Hospital hospital = validar(dados);
+        Hospital hospital = validador.validar(dados);
         OffsetDateTime agora = OffsetDateTime.now(relogio);
 
         Paciente paciente = new Paciente(hospital, dados.nome(), dados.sexo(), dados.dataNascimento(),
@@ -107,7 +105,7 @@ public class CampanhaService
     {
         identificacao.exigir(usuarioId, "editar campanha de doação", PapelUsuario.MEDICO);
         CampanhaDoacao campanha = buscar(id);
-        Hospital hospital = validar(dados);
+        Hospital hospital = validador.validar(dados);
 
         if (!campanha.estaAtiva())
         {
@@ -149,92 +147,5 @@ public class CampanhaService
         }
 
         return campanha;
-    }
-
-    /**
-     * Confere os dados do paciente. Campo ausente ou mal preenchido lança DadosInvalidosException (400),
-     * com todos os problemas de uma vez. Devolve o hospital informado.
-     */
-    private Hospital validar(CampanhaRequest dados)
-    {
-        if (dados == null)
-        {
-            throw new DadosInvalidosException("O corpo da requisição está vazio.");
-        }
-
-        List<String> problemas = new ArrayList<>();
-        LocalDate hoje = LocalDate.now(relogio);
-
-        if (vazio(dados.hospitalId()))
-        {
-            problemas.add("O campo 'hospitalId' é obrigatório.");
-        }
-        if (vazio(dados.nome()))
-        {
-            problemas.add("O campo 'nome' é obrigatório.");
-        }
-        if (dados.sexo() == null)
-        {
-            problemas.add("O campo 'sexo' é obrigatório.");
-        }
-        if (dados.dataNascimento() == null)
-        {
-            problemas.add("O campo 'dataNascimento' é obrigatório.");
-        }
-        else if (dados.dataNascimento().isAfter(hoje))
-        {
-            problemas.add("A data de nascimento (" + DATA.format(dados.dataNascimento())
-                    + ") não pode ser depois de hoje (" + DATA.format(hoje) + ").");
-        }
-        else if (dados.dataNascimento().isBefore(NASCIMENTO_MINIMO))
-        {
-            problemas.add("A data de nascimento precisa ser depois de 01/01/1900.");
-        }
-        if (dados.tipoSanguineo() == null)
-        {
-            problemas.add("O campo 'tipoSanguineo' é obrigatório.");
-        }
-        if (dados.tipoComponente() == null)
-        {
-            problemas.add("O campo 'tipoComponente' é obrigatório.");
-        }
-        if (dados.unidadesNecessarias() == null)
-        {
-            problemas.add("O campo 'unidadesNecessarias' é obrigatório.");
-        }
-        else if (dados.unidadesNecessarias() < 1 || dados.unidadesNecessarias() > 50)
-        {
-            problemas.add("O campo 'unidadesNecessarias' deve ficar entre 1 e 50.");
-        }
-        if (vazio(dados.causa()))
-        {
-            problemas.add("O campo 'causa' é obrigatório.");
-        }
-        if (dados.gravidade() == null)
-        {
-            problemas.add("O campo 'gravidade' é obrigatório.");
-        }
-
-        Hospital hospital = null;
-        if (!vazio(dados.hospitalId()))
-        {
-            hospital = hospitais.findById(dados.hospitalId()).orElse(null);
-            if (hospital == null)
-            {
-                problemas.add("Nenhum hospital encontrado com id " + dados.hospitalId() + ".");
-            }
-        }
-
-        if (!problemas.isEmpty())
-        {
-            throw new DadosInvalidosException(String.join(" ", problemas));
-        }
-
-        return hospital;
-    }
-
-    private static boolean vazio(String texto)
-    {
-        return texto == null || texto.isBlank();
     }
 }

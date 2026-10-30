@@ -2,6 +2,7 @@ package com.rotavital.api.dto.doacao;
 
 import java.time.LocalDate;
 
+import com.rotavital.api.dto.paciente.DadosDoPaciente;
 import com.rotavital.dominio.Gravidade;
 import com.rotavital.dominio.Sexo;
 import com.rotavital.dominio.TipoComponente;
@@ -19,6 +20,6 @@ public record CampanhaRequest(
         Integer unidadesNecessarias,
         String causa,
         Gravidade gravidade
-)
+) implements DadosDoPaciente
 {
 }

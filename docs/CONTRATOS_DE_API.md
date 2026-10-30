@@ -29,6 +29,7 @@
     - 2.3 [Endpoints REST do MVP, por recurso](#2-3-endpoints)
     - 2.4 [Os 6 endpoints principais, em detalhe](#2-4-principais)
     - 2.5 [Campanhas e agendamentos de doação (PI3-174)](#2-5-doacoes)
+    - 2.6 [Cadastro de pacientes (PI3-175)](#2-6-pacientes)
 3. [Módulo de Acesso (HU-01)](#3-acesso)
 4. [Módulo de Estoque e Hemocomponentes (PI3-46)](#4-estoque)
 5. [Módulo de Requisições Hospitalares e Alocação (PI3-47)](#5-requisicoes)
@@ -189,6 +190,12 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | **🌡️ Entregas → Leituras** | *`EntregaController` (planejado)* | | | | |
 | `POST` | `/api/v1/entregas/{id}/leituras` | 🕓 Registra uma leitura simulada (GPS + °C) | Nenhuma no MVP (alvo: médico) | `LeituraTelemetria` | `201` · `400` · `404` · `422` |
 | `GET` | `/api/v1/entregas/{id}/leituras` | 🕓 Histórico de leituras da entrega, em ordem cronológica | Nenhuma no MVP (alvo: médico) | `MonitoramentoEntrega` | `200` · `404` |
+| **🩺 Pacientes** | *`PacienteController`* | | | | |
+| `GET` | `/api/v1/pacientes?status=&tipoSanguineo=&gravidade=&hospitalId=` | ✅ Pacientes na ordem da fila clínica (mais grave e mais antigo primeiro) | Nenhuma | `Paciente[]` | `200` · `400` |
+| `GET` | `/api/v1/pacientes/{id}` | ✅ Detalhe de um paciente | Nenhuma | `Paciente` | `200` · `404` |
+| `POST` | `/api/v1/pacientes` | ✅ Cadastra o paciente (status `AGUARDANDO`) | `X-Usuario-Id` (médico) | `Paciente` | `201` · `400` · `401` · `403` |
+| `PUT` | `/api/v1/pacientes/{id}` | ✅ Edita os dados clínicos (só paciente `AGUARDANDO`) | `X-Usuario-Id` (médico) | `Paciente` | `200` · `400` · `401` · `403` · `404` · `422` |
+| `DELETE` | `/api/v1/pacientes/{id}` | ✅ Remove cadastro feito por engano (sem campanha, procedimento ou requisição) | `X-Usuario-Id` (médico) | *(sem corpo)* | `204` · `401` · `403` · `404` · `422` |
 | **❤️ Campanhas de doação** | *`CampanhaController`* | | | | |
 | `GET` | `/api/v1/campanhas?status=` | ✅ Campanhas da mais recente para a mais antiga, com o paciente e os agendamentos em aberto | Nenhuma | `Campanha[]` | `200` · `400` |
 | `GET` | `/api/v1/campanhas/{id}` | ✅ Detalhe de uma campanha | Nenhuma | `Campanha` | `200` · `404` |
@@ -330,6 +337,24 @@ Content-Type: application/json
 | `403` | Médico ou admin tentando agendar | `Erro`: `"Só doador pode agendar doação."` |
 | `404` | Campanha inexistente | `Erro`: `"Nenhuma campanha encontrada com id …"` |
 | `422` | Campanha encerrada, domingo, fora das 07h–19h, no passado ou doador já com agendamento em aberto | `Erro`: `"Você já tem uma doação agendada. Remarque ou cancele essa antes de marcar outra."` |
+
+<h3 align="left" id="2-6-pacientes">🩺 2.6 Cadastro de pacientes (PI3-175)</h3>
+
+O médico cadastra, consulta, edita e remove pacientes na tela de Pacientes. É a mesma tabela `paciente` que a
+campanha de doação usa: a campanha publica um paciente, e o paciente publicado aparece em `GET /pacientes`.
+Os dois fluxos conferem os dados com o mesmo `ValidadorPaciente` (o corpo é o mesmo nos dois, pela interface
+`DadosDoPaciente`). Consultar é livre; gravar exige um médico no `X-Usuario-Id`, como nas campanhas.
+
+| Situação | Resposta |
+|---|---|
+| Campo ausente, nascimento no futuro ou antes de 1900, unidades fora de 1 a 50, hospital inexistente | `400`, com todos os problemas no `detail` |
+| Sem `X-Usuario-Id` · usuário que não é médico | `401` · `403` |
+| Paciente inexistente | `404` com `"Nenhum paciente encontrado com id …"` |
+| Editar paciente `ATENDIDO` ou `CANCELADO` | `422` (já é histórico) |
+| Remover paciente com campanha de doação, procedimento ou requisição | `422`, dizendo quantos registros apontam para ele |
+
+Editar um paciente que está numa campanha muda o que a campanha mostra aos doadores. A remoção é para
+cadastro lançado por engano: o histórico (campanha, procedimento, requisição) não é apagado.
 
 <h2 align="left" id="3-acesso">🔑 3. Módulo de Acesso (HU-01)</h2>
 

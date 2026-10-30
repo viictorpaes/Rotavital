@@ -264,8 +264,8 @@ export interface CampanhaDTO
   paciente: PacienteDTO;
 }
 
-/** Corpo do POST e do PUT de /campanhas. */
-export interface CampanhaPayloadDTO
+/** Corpo do POST e do PUT de /pacientes (PI3-194) e de /campanhas: os dados clínicos do paciente. */
+export interface PacientePayloadDTO
 {
   hospitalId: string;
   nome: string;
@@ -276,6 +276,18 @@ export interface CampanhaPayloadDTO
   unidadesNecessarias: number;
   causa: string;
   gravidade: GravidadeBackend;
+}
+
+/** A campanha publica um paciente: o corpo é o mesmo do cadastro de pacientes. */
+export type CampanhaPayloadDTO = PacientePayloadDTO;
+
+/** Filtros opcionais e combináveis de GET /pacientes. */
+export interface FiltrosPacientesDTO
+{
+  status?: StatusPacienteBackend;
+  tipoSanguineo?: TipoSanguineoBackend;
+  gravidade?: GravidadeBackend;
+  hospitalId?: string;
 }
 
 export interface AgendamentoDTO

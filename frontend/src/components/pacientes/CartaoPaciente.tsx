@@ -1,18 +1,21 @@
-import { CheckCircle2, Package, TriangleAlert } from "lucide-react";
-import type { PessoaNecessitada } from "@/types";
+import { CheckCircle2, Package, Pencil, Trash2, TriangleAlert } from "lucide-react";
+import type { PacienteNaFila } from "@/types";
 import { SeloTipoSanguineo } from "@/components/ui/SeloTipoSanguineo";
 import { PontoStatus } from "@/components/ui/PontoStatus";
 import { cn } from "@/lib/utilitarios";
 
 interface Props
 {
-  paciente: PessoaNecessitada;
+  paciente: PacienteNaFila;
   /** Unidades compatíveis em estoque — define o aviso de cobertura do cartão. */
   disponiveis: number;
-  onConcluir: (paciente: PessoaNecessitada) => void;
+  onConcluir: (paciente: PacienteNaFila) => void;
+  /** Editar e remover (PI3-195); sem eles, o cartão não mostra esses botões (ex.: perfil sem permissão). */
+  onEditar?: (paciente: PacienteNaFila) => void;
+  onRemover?: (paciente: PacienteNaFila) => void;
 }
 
-export function CartaoPaciente({ paciente, disponiveis, onConcluir }: Readonly<Props>)
+export function CartaoPaciente({ paciente, disponiveis, onConcluir, onEditar, onRemover }: Readonly<Props>)
 {
   const cobreOPedido = disponiveis >= paciente.unidadesNecessarias;
 
@@ -64,6 +67,33 @@ export function CartaoPaciente({ paciente, disponiveis, onConcluir }: Readonly<P
         <CheckCircle2 className="h-4 w-4" />
         Concluir procedimento
       </button>
+
+      {(onEditar || onRemover) && (
+        <div className="flex gap-2">
+          {onEditar && (
+            <button
+              type="button"
+              onClick={() => onEditar(paciente)}
+              aria-label={`Editar ${paciente.nome}`}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-rota-border px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Editar
+            </button>
+          )}
+          {onRemover && (
+            <button
+              type="button"
+              onClick={() => onRemover(paciente)}
+              aria-label={`Remover ${paciente.nome}`}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Remover
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
