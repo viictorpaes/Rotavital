@@ -5,7 +5,13 @@ export { clienteHttp, ErroHttp };
 export * from "@/types/dtos";
 import type {
   AgendamentoDTO,
+  AtualizarPerfilDoadorPayloadDTO,
+  CadastroDoadorDTO,
   CampanhaDTO,
+  DoadorDTO,
+  HemocentroDTO,
+  HorarioDTO,
+  NovoDoadorPayloadDTO,
   CampanhaPayloadDTO,
   FiltrosPacientesDTO,
   PacienteDTO,
@@ -150,8 +156,8 @@ export async function listarAgendamentosDaCampanha(campanhaId: string): Promise<
   return clienteHttp.get<AgendamentoDTO[]>(`/campanhas/${campanhaId}/agendamentos`, { silencioso: true });
 }
 
-/** O doador da sessão marca uma doação na campanha. */
-export async function agendarDoacao(campanhaId: string, agendadoPara: string, bancoId: string = "BS-01"): Promise<AgendamentoDTO>
+/** O doador da sessão marca uma doação na campanha, no hemocentro e horário escolhidos. */
+export async function agendarDoacao(campanhaId: string, agendadoPara: string, bancoId: string): Promise<AgendamentoDTO>
 {
   return clienteHttp.post<AgendamentoDTO>(
     `/campanhas/${campanhaId}/agendamentos`,
@@ -179,6 +185,42 @@ export async function mudarStatusAgendamento(
 ): Promise<AgendamentoDTO>
 {
   return clienteHttp.patch<AgendamentoDTO>(`/agendamentos/${id}/status`, { status }, { silencioso: true });
+}
+
+// ----------------------------------------------------------------------
+// Portal do Doador (PI3-203, PI3-204, PI3-205). Cadastrar e consultar hemocentros e horários
+// é livre; o perfil é o do doador da sessão (header X-Usuario-Id). Silenciosas, como as acima.
+// ----------------------------------------------------------------------
+
+/** Cria a conta do doador; com o acesso na resposta, o portal já entra. */
+export async function cadastrarDoador(dados: NovoDoadorPayloadDTO): Promise<CadastroDoadorDTO>
+{
+  return clienteHttp.post<CadastroDoadorDTO>("/doadores", dados, { silencioso: true });
+}
+
+export async function buscarMeuPerfil(): Promise<DoadorDTO>
+{
+  return clienteHttp.get<DoadorDTO>("/doadores/eu", { silencioso: true });
+}
+
+export async function atualizarMeuPerfil(dados: AtualizarPerfilDoadorPayloadDTO): Promise<DoadorDTO>
+{
+  return clienteHttp.put<DoadorDTO>("/doadores/eu", dados, { silencioso: true });
+}
+
+/** Hemocentros com endereço, posição no mapa e expediente. */
+export async function listarHemocentros(): Promise<HemocentroDTO[]>
+{
+  return clienteHttp.get<HemocentroDTO[]>("/hemocentros", { silencioso: true });
+}
+
+/** Horários de um dia (AAAA-MM-DD) no hemocentro, com as vagas; vazio no domingo. */
+export async function listarHorarios(hemocentroId: string, data: string): Promise<HorarioDTO[]>
+{
+  return clienteHttp.get<HorarioDTO[]>(`/hemocentros/${encodeURIComponent(hemocentroId)}/horarios`, {
+    params: { data },
+    silencioso: true,
+  });
 }
 
 /**
