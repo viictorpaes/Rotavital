@@ -1,20 +1,25 @@
 package com.rotavital.servico;
 
 import java.time.Clock;
-import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rotavital.api.dto.doacao.NovoAgendamentoRequest;
 import com.rotavital.config.RelogioConfig;
+import com.rotavital.dominio.AgendaDoHemocentro;
 import com.rotavital.dominio.AgendamentoDoacao;
 import com.rotavital.dominio.BancoDeSangue;
 import com.rotavital.dominio.CampanhaDoacao;
@@ -34,9 +39,6 @@ import com.rotavital.repositorio.CampanhaDoacaoRepository;
 public class AgendamentoService
 {
     private static final DateTimeFormatter DATA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm");
-    // Horário do hemocentro, o mesmo do modal "Agende sua doação": segunda a sábado, das 07h às 19h.
-    private static final LocalTime ABRE = LocalTime.of(7, 0);
-    private static final LocalTime FECHA = LocalTime.of(19, 0);
 
     private final AgendamentoDoacaoRepository agendamentos;
     private final CampanhaDoacaoRepository campanhas;
@@ -69,6 +71,55 @@ public class AgendamentoService
     {
         Usuario doador = identificacao.exigir(usuarioId, "ver os seus agendamentos", PapelUsuario.DOADOR);
         return agendamentos.findByDoadorIdOrderByAgendadoParaDesc(doador.getId());
+    }
+
+    // Hemocentros onde o doador pode marcar a doação (PI3-205), em ordem alfabética.
+    @Transactional(readOnly = true)
+    public List<BancoDeSangue> listarHemocentros()
+    {
+        return bancos.findAll().stream().sorted(Comparator.comparing(BancoDeSangue::getNome)).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public BancoDeSangue buscarHemocentro(String bancoId)
+    {
+        return bancos.findById(bancoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Nenhum hemocentro encontrado com id " + bancoId + "."));
+    }
+
+    /**
+     * Os horários de um dia no hemocentro (PI3-204), com as vagas que sobram. Domingo devolve a lista
+     * vazia; horário que já passou ou sem vaga vem com disponivel = false. Consultar é livre.
+     */
+    @Transactional(readOnly = true)
+    public List<HorarioDaAgenda> horariosDoDia(String bancoId, LocalDate dia)
+    {
+        if (dia == null)
+        {
+            throw new DadosInvalidosException("O parâmetro 'data' é obrigatório, no formato AAAA-MM-DD.");
+        }
+        buscarHemocentro(bancoId);
+
+        List<LocalTime> horarios = AgendaDoHemocentro.horariosDo(dia);
+        if (horarios.isEmpty())
+        {
+            return List.of();
+        }
+
+        OffsetDateTime inicioDoDia = dia.atStartOfDay(RelogioConfig.FUSO).toOffsetDateTime();
+        Map<OffsetDateTime, Long> ocupados = agendamentos.findByBancoIdAndStatusAndAgendadoParaBetween(bancoId,
+                        StatusAgendamento.AGENDADO, inicioDoDia, inicioDoDia.plusDays(1))
+                .stream()
+                .collect(Collectors.groupingBy(agendamento -> noFuso(agendamento.getAgendadoPara()), Collectors.counting()));
+
+        OffsetDateTime agora = OffsetDateTime.now(relogio);
+        Function<LocalTime, HorarioDaAgenda> paraHorario = hora ->
+        {
+            OffsetDateTime inicio = dia.atTime(hora).atZone(RelogioConfig.FUSO).toOffsetDateTime();
+            int vagas = (int) Math.max(0, AgendaDoHemocentro.VAGAS_POR_HORARIO - ocupados.getOrDefault(inicio, 0L));
+            return new HorarioDaAgenda(inicio, vagas, vagas > 0 && inicio.isAfter(agora));
+        };
+        return horarios.stream().map(paraHorario).toList();
     }
 
     @Transactional
@@ -108,6 +159,7 @@ public class AgendamentoService
         {
             throw new RegraDeNegocioException("Você já tem uma doação agendada. Remarque ou cancele essa antes de marcar outra.");
         }
+        exigirVaga(banco, dados.agendadoPara(), 0);
 
         return agendamentos.save(new AgendamentoDoacao(doador, banco, campanha, dados.agendadoPara(), agora));
     }
@@ -122,6 +174,8 @@ public class AgendamentoService
         exigirDono(agendamento, doador);
         exigirEmAberto(agendamento);
         validarHorario(novoHorario, OffsetDateTime.now(relogio));
+        // Remarcar para o mesmo horário não ocupa uma vaga a mais: o próprio agendamento já conta.
+        exigirVaga(agendamento.getBanco(), novoHorario, novoHorario.isEqual(agendamento.getAgendadoPara()) ? 1 : 0);
 
         agendamento.remarcar(novoHorario);
         return agendamentos.save(agendamento);
@@ -204,7 +258,7 @@ public class AgendamentoService
         }
     }
 
-    // Horário no futuro e dentro do expediente do hemocentro, no fuso de Recife.
+    // Horário no futuro, dentro do expediente do hemocentro e no começo de um horário da agenda, no fuso de Recife.
     private static void validarHorario(OffsetDateTime horario, OffsetDateTime agora)
     {
         if (horario == null)
@@ -217,12 +271,34 @@ public class AgendamentoService
         }
 
         ZonedDateTime local = horario.atZoneSameInstant(RelogioConfig.FUSO);
-        LocalTime hora = local.toLocalTime();
-        if (local.getDayOfWeek() == DayOfWeek.SUNDAY || hora.isBefore(ABRE) || hora.isAfter(FECHA))
+        if (!AgendaDoHemocentro.dentroDoExpediente(local))
         {
             throw new RegraDeNegocioException("O horário escolhido (" + formatar(horario)
-                    + ") está fora do atendimento do hemocentro: segunda a sábado, das 07h às 19h.");
+                    + ") está fora do atendimento do hemocentro: " + AgendaDoHemocentro.DESCRICAO.toLowerCase() + ".");
         }
+        if (!AgendaDoHemocentro.ehInicioDeHorario(local))
+        {
+            throw new RegraDeNegocioException("O horário escolhido (" + formatar(horario)
+                    + ") não está na agenda do hemocentro: escolha um horário de meia em meia hora, como 09:00 ou 09:30.");
+        }
+    }
+
+    // Cada horário recebe até VAGAS_POR_HORARIO doadores. jaContados desconta o próprio agendamento na remarcação.
+    private void exigirVaga(BancoDeSangue banco, OffsetDateTime horario, long jaContados)
+    {
+        long ocupados = agendamentos.countByBancoIdAndStatusAndAgendadoPara(banco.getId(), StatusAgendamento.AGENDADO, horario)
+                - jaContados;
+        if (ocupados >= AgendaDoHemocentro.VAGAS_POR_HORARIO)
+        {
+            throw new RegraDeNegocioException("O horário " + formatar(horario) + " já está lotado no " + banco.getNome()
+                    + ". Escolha outro horário.");
+        }
+    }
+
+    // O mesmo instante no fuso de Recife: chave para juntar os agendamentos de cada horário.
+    private static OffsetDateTime noFuso(OffsetDateTime horario)
+    {
+        return horario.atZoneSameInstant(RelogioConfig.FUSO).toOffsetDateTime();
     }
 
     private static String formatar(OffsetDateTime horario)
