@@ -1,12 +1,20 @@
 # ===================================================================
 # Rota Vital — sobe o sistema inteiro do zero, com um comando:
 #
-#   cp .env.example .env          # uma vez, e troque a senha
+#   cp .env.example .env          # uma vez, e preencha as variáveis
 #   docker compose up -d --build
 #
 # db (Postgres 17) → backend (Spring Boot) → frontend (Nginx com o build do React).
 # Cada serviço só sobe depois que o anterior passa no healthcheck.
 # Os serviços se encontram pelo nome (db, backend) na rede padrão que o Compose cria.
+#
+# O banco é o Postgres local; o login confere a senha no Supabase Auth (precisa de
+# SUPABASE_KEY no .env e de internet). Para usar o banco do Supabase em vez do local:
+#
+#   docker compose -f compose.yaml -f compose.supabase.yaml up -d --build
+#
+# As migrations só rodam com o volume vazio: depois de uma migration nova, recrie o banco
+# com "docker compose down -v" (apaga os dados locais) antes do "up".
 # ===================================================================
 name: rotavital
 
@@ -25,9 +33,12 @@ services:
     volumes:
       # Volume nomeado: os dados sobrevivem ao "docker compose down" (só somem com "down -v").
       - dados-postgres:/var/lib/postgresql/data
-      # Na primeira subida (volume vazio), db/00_rotavital.sh aplica estas migrations e o seed.
+      # Na primeira subida (volume vazio), db/00_rotavital.sh aplica estas migrations, o seed
+      # e liga os usuários de teste (médico, doador e admin) às contas do Supabase Auth.
       - ./supabase/migrations:/rotavital/migrations:ro
       - ./supabase/seed.sql:/rotavital/seed.sql:ro
+      - ./supabase/usuarios_de_teste.sql:/rotavital/usuarios_de_teste.sql:ro
+      - ./db/usuarios_de_teste_local.sql:/rotavital/usuarios_de_teste_local.sql:ro
     # Sem "ports": o banco só é alcançável pela rede interna do Compose (pelo backend).
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
@@ -43,15 +54,19 @@ services:
     environment:
       # Sobrescreve a conexão do application.properties (Supabase) pelo Postgres do Compose:
       # "db" é o nome do serviço acima, resolvido pelo DNS da rede do Compose.
-      # Conex�o direta com o banco do Supabase na nuvem:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require
-      SPRING_DATASOURCE_USERNAME: postgres.gilyfswvezmvtmlxgvrd
-      SPRING_DATASOURCE_PASSWORD: ${SUPABASE_DB_PASSWORD}
+      # O compose.supabase.yaml troca estas três pelo banco do Supabase.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME:-rotavital}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-rotavital}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_JPA_SHOW_SQL: "false"
+      # Chave publicável do Supabase Auth: sem ela, login e cadastro de doador respondem 503.
       SUPABASE_KEY: ${SUPABASE_KEY:-}
       TZ: America/Recife
     ports:
       - "${API_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       # O /actuator/health também consulta o banco: só fica UP com a API e o Postgres respondendo.
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
@@ -70,6 +85,9 @@ services:
       API_UPSTREAM: http://backend:8080
     ports:
       - "${WEB_PORT:-80}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ > /dev/null"]
       interval: 10s
