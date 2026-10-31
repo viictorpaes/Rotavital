@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import com.rotavital.api.dto.doacao.NovoAgendamentoRequest;
 import com.rotavital.config.RelogioConfig;
+import com.rotavital.dominio.AgendaDoHemocentro;
 import com.rotavital.dominio.AgendamentoDoacao;
 import com.rotavital.dominio.BancoDeSangue;
 import com.rotavital.dominio.CampanhaDoacao;
@@ -53,6 +54,9 @@ public class AgendamentoServiceTest
     private CampanhaDoacao campanha;
     private AgendamentoDoacao agendamentoExistente;
     private boolean doadorJaTemAgendamento;
+    // Doadores já marcados no horário consultado (vagas) e os agendamentos do dia (lista de horários).
+    private long ocupadosNoHorario;
+    private List<AgendamentoDoacao> agendamentosDoDia = List.of();
     private AgendamentoService servico;
 
     @BeforeEach
@@ -75,7 +79,9 @@ public class AgendamentoServiceTest
                 "save", argumentos -> argumentos[0],
                 "findById", argumentos -> Optional.of(agendamentoExistente),
                 "existsByDoadorIdAndStatus", argumentos -> doadorJaTemAgendamento,
-                "findByCampanhaIdOrderByAgendadoParaAsc", argumentos -> List.of(agendamentoExistente)));
+                "findByCampanhaIdOrderByAgendadoParaAsc", argumentos -> List.of(agendamentoExistente),
+                "countByBancoIdAndStatusAndAgendadoPara", argumentos -> ocupadosNoHorario,
+                "findByBancoIdAndStatusAndAgendadoParaBetween", argumentos -> agendamentosDoDia));
 
         servico = new AgendamentoService(agendamentos, campanhas, bancos, new IdentificacaoService(usuarios),
                 Clock.fixed(AGORA.toInstant(), RelogioConfig.FUSO));
@@ -243,5 +249,80 @@ public class AgendamentoServiceTest
         Assertions.assertThrows(AcessoNegadoException.class,
                 () -> servico.listarDaCampanha(doador.getId(), UUID.randomUUID()));
         Assertions.assertEquals(List.of(agendamentoExistente), servico.listarDaCampanha(admin.getId(), UUID.randomUUID()));
+    }
+
+    @Test
+    public void horarioForaDaAgendaDeMeiaEmMeiaHoraERecusado()
+    {
+        OffsetDateTime quebrado = OffsetDateTime.of(2026, 11, 4, 9, 10, 0, 0, RECIFE);
+
+        RegraDeNegocioException erro = Assertions.assertThrows(RegraDeNegocioException.class,
+                () -> servico.agendar(doador.getId(), UUID.randomUUID(), new NovoAgendamentoRequest("BS-01", quebrado)));
+
+        Assertions.assertEquals("O horário escolhido (04/11/2026 às 09:10) não está na agenda do hemocentro: "
+                + "escolha um horário de meia em meia hora, como 09:00 ou 09:30.", erro.getMessage());
+    }
+
+    @Test
+    public void horarioLotadoNaoRecebeMaisDoador()
+    {
+        ocupadosNoHorario = AgendaDoHemocentro.VAGAS_POR_HORARIO;
+
+        RegraDeNegocioException erro = Assertions.assertThrows(RegraDeNegocioException.class,
+                () -> servico.agendar(doador.getId(), UUID.randomUUID(), new NovoAgendamentoRequest("BS-01", QUARTA)));
+
+        Assertions.assertEquals("O horário 04/11/2026 às 09:30 já está lotado no Hemope Central. Escolha outro horário.",
+                erro.getMessage());
+    }
+
+    @Test
+    public void remarcarParaOMesmoHorarioLotadoNaoContaODoadorDuasVezes()
+    {
+        // As 3 vagas de quarta 09h30 incluem a do próprio doador.
+        ocupadosNoHorario = AgendaDoHemocentro.VAGAS_POR_HORARIO;
+
+        AgendamentoDoacao mesmo = servico.remarcar(doador.getId(), UUID.randomUUID(), QUARTA);
+        Assertions.assertEquals(QUARTA, mesmo.getAgendadoPara());
+
+        Assertions.assertThrows(RegraDeNegocioException.class,
+                () -> servico.remarcar(doador.getId(), UUID.randomUUID(), QUARTA.plusMinutes(30)));
+    }
+
+    @Test
+    public void horariosDoDiaMostramAsVagasQueSobram()
+    {
+        agendamentosDoDia = List.of(
+                new AgendamentoDoacao(doador, banco, campanha, QUARTA, AGORA),
+                // Mesmo instante em UTC: conta no horário das 09h30 de Recife.
+                new AgendamentoDoacao(outroDoador, banco, campanha, QUARTA.withOffsetSameInstant(ZoneOffset.UTC), AGORA));
+
+        List<HorarioDaAgenda> horarios = servico.horariosDoDia("BS-01", QUARTA.toLocalDate());
+
+        Assertions.assertEquals(25, horarios.size());
+        Assertions.assertEquals(OffsetDateTime.of(2026, 11, 4, 7, 0, 0, 0, RECIFE), horarios.get(0).inicio());
+        Assertions.assertEquals(OffsetDateTime.of(2026, 11, 4, 19, 0, 0, 0, RECIFE), horarios.get(24).inicio());
+
+        HorarioDaAgenda nove = horarios.get(5);
+        Assertions.assertEquals(new HorarioDaAgenda(QUARTA, 1, true), nove);
+        Assertions.assertEquals(AgendaDoHemocentro.VAGAS_POR_HORARIO, horarios.get(4).vagasRestantes());
+    }
+
+    @Test
+    public void horariosQueJaPassaramOuNoDomingoNaoSaoOferecidos()
+    {
+        // Hoje (segunda, 10h): 07h às 10h já passaram; 10h30 em diante, não.
+        List<HorarioDaAgenda> hoje = servico.horariosDoDia("BS-01", AGORA.toLocalDate());
+
+        Assertions.assertFalse(hoje.get(6).disponivel(), "10:00");
+        Assertions.assertTrue(hoje.get(7).disponivel(), "10:30");
+        Assertions.assertEquals(List.of(), servico.horariosDoDia("BS-01", LocalDate.of(2026, 11, 8)));
+    }
+
+    @Test
+    public void horariosDeHemocentroInexistenteOuSemDataSaoRecusados()
+    {
+        Assertions.assertThrows(RecursoNaoEncontradoException.class,
+                () -> servico.horariosDoDia("BS-99", QUARTA.toLocalDate()));
+        Assertions.assertThrows(DadosInvalidosException.class, () -> servico.horariosDoDia("BS-01", null));
     }
 }

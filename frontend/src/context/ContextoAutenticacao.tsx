@@ -17,6 +17,8 @@ interface ValorContextoAutenticacao
   /** Guarda a sessão devolvida pelo POST /acessos. */
   login: (acesso: RespostaAcesso) => Usuario;
   logout: () => void;
+  /** Troca o nome da sessão depois que o doador corrige o perfil. */
+  atualizarNome: (nome: string) => void;
 }
 
 const ContextoAutenticacao = createContext<ValorContextoAutenticacao | undefined>(undefined);
@@ -83,8 +85,13 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode })
     setUsuario(null);
   }
 
+  function atualizarNome(nome: string)
+  {
+    setUsuario((atual) => (atual ? { ...atual, nome } : atual));
+  }
+
   return (
-    <ContextoAutenticacao.Provider value={{ usuario, login, logout }}>
+    <ContextoAutenticacao.Provider value={{ usuario, login, logout, atualizarNome }}>
       {children}
     </ContextoAutenticacao.Provider>
   );

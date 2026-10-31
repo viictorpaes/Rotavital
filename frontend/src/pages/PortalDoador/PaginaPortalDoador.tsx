@@ -4,21 +4,24 @@ import { Droplet, Search } from "lucide-react";
 import { useAutenticacao } from "@/context/ContextoAutenticacao";
 import { useDados } from "@/context/ContextoDados";
 import type { PessoaNecessitada, TipoSanguineo } from "@/types";
-import type { AgendamentoDTO } from "@/types/dtos";
-import { agendamentoEmAberto } from "@/lib/doacoes";
-import { listarMeusAgendamentos } from "@/services/api";
+import type { AgendamentoDTO, DoadorDTO } from "@/types/dtos";
+import { agendamentoEmAberto, mensagemDeErro } from "@/lib/doacoes";
+import { buscarMeuPerfil, listarMeusAgendamentos } from "@/services/api";
 import { FiltroTipoSanguineo } from "@/components/donations/FiltroTipoSanguineo";
 import { CartaoPessoa } from "@/components/donations/CartaoPessoa";
 import { ModalAgendarDoacao } from "@/components/donations/ModalAgendarDoacao";
 import { MinhasDoacoes } from "@/components/donations/MinhasDoacoes";
+import { CartaoPerfilDoador } from "@/components/donations/CartaoPerfilDoador";
+import { ModalEditarPerfil } from "@/components/donations/ModalEditarPerfil";
 
 /**
- * HU-10 · PI3-192 — Portal do doador: pacientes das campanhas ativas, agendamento da
- * doação e acompanhamento (remarcar ou cancelar) dos próprios agendamentos.
+ * HU-10 · PI3-192, PI3-203 a PI3-205 — Portal do doador: o perfil dele, os pacientes das campanhas
+ * ativas, o agendamento da doação e o acompanhamento (remarcar ou cancelar) dos próprios agendamentos.
+ * Tudo vem do backend: perfil, campanhas, hemocentros e horários livres.
  */
 export default function PaginaPortalDoador()
 {
-  const { usuario, logout } = useAutenticacao();
+  const { usuario, logout, atualizarNome } = useAutenticacao();
   const navigate = useNavigate();
   const { pacientes: pessoasNecessitadas, situacaoCampanhas, erroCampanhas } = useDados();
   const [busca, setBusca] = useState("");
@@ -26,8 +29,24 @@ export default function PaginaPortalDoador()
   const [selecionada, setSelecionada] = useState<PessoaNecessitada | null>(null);
   const [remarcando, setRemarcando] = useState<AgendamentoDTO | null>(null);
   const [meusAgendamentos, setMeusAgendamentos] = useState<AgendamentoDTO[]>([]);
+  const [perfil, setPerfil] = useState<DoadorDTO | null>(null);
+  const [erroPerfil, setErroPerfil] = useState<string | null>(null);
+  const [editandoPerfil, setEditandoPerfil] = useState(false);
 
   const ehDoador = usuario?.papel === "doador";
+
+  const carregarPerfil = useCallback(async () =>
+  {
+    try
+    {
+      setPerfil(await buscarMeuPerfil());
+      setErroPerfil(null);
+    }
+    catch (e)
+    {
+      setErroPerfil(mensagemDeErro(e));
+    }
+  }, []);
 
   const carregarMeusAgendamentos = useCallback(async () =>
   {
@@ -41,10 +60,17 @@ export default function PaginaPortalDoador()
     }
   }, []);
 
+  // Agendar, remarcar ou cancelar muda a próxima doação do perfil: os dois são lidos de novo.
+  const recarregarDoador = useCallback(() =>
+  {
+    carregarMeusAgendamentos();
+    carregarPerfil();
+  }, [carregarMeusAgendamentos, carregarPerfil]);
+
   useEffect(() =>
   {
-    if (ehDoador) carregarMeusAgendamentos();
-  }, [ehDoador, carregarMeusAgendamentos]);
+    if (ehDoador) recarregarDoador();
+  }, [ehDoador, recarregarDoador]);
 
   const emAberto = agendamentoEmAberto(meusAgendamentos);
 
@@ -106,17 +132,25 @@ export default function PaginaPortalDoador()
             <p className="font-mono text-xs font-semibold uppercase tracking-widest text-gray-400">
               Doações · Pessoas que precisam
             </p>
-            <h1 className="mt-1 text-3xl font-extrabold text-gray-900">Olá, {usuario.nome}</h1>
+            <h1 className="mt-1 text-3xl font-extrabold text-gray-900">Olá, {perfil?.nome ?? usuario.nome}</h1>
           </div>
           <span className="rounded-full border border-rota-border bg-white px-3 py-1.5 text-xs font-medium text-gray-600">
             {pessoasFiltradas.length} pessoas encontradas
           </span>
         </div>
 
+        {perfil ? (
+          <CartaoPerfilDoador perfil={perfil} onEditar={() => setEditandoPerfil(true)} />
+        ) : erroPerfil ? (
+          <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            Não foi possível carregar o seu perfil: {erroPerfil}
+          </p>
+        ) : null}
+
         <MinhasDoacoes
           agendamentos={meusAgendamentos}
           onRemarcar={setRemarcando}
-          onAlterado={carregarMeusAgendamentos}
+          onAlterado={recarregarDoador}
         />
 
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -169,7 +203,7 @@ export default function PaginaPortalDoador()
         <ModalAgendarDoacao
           pessoa={selecionada}
           onClose={() => setSelecionada(null)}
-          onConcluido={carregarMeusAgendamentos}
+          onConcluido={recarregarDoador}
         />
       )}
 
@@ -177,7 +211,19 @@ export default function PaginaPortalDoador()
         <ModalAgendarDoacao
           agendamento={remarcando}
           onClose={() => setRemarcando(null)}
-          onConcluido={carregarMeusAgendamentos}
+          onConcluido={recarregarDoador}
+        />
+      )}
+
+      {editandoPerfil && perfil && (
+        <ModalEditarPerfil
+          perfil={perfil}
+          onClose={() => setEditandoPerfil(false)}
+          onSalvo={(novo) =>
+          {
+            setPerfil(novo);
+            atualizarNome(novo.nome);
+          }}
         />
       )}
     </div>

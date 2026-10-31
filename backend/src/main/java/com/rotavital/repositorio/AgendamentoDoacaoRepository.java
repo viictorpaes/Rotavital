@@ -1,5 +1,6 @@
 package com.rotavital.repositorio;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,4 +25,11 @@ public interface AgendamentoDoacaoRepository extends JpaRepository<AgendamentoDo
     List<UUID> campanhasDosAgendamentosEmAberto();
 
     boolean existsByDoadorIdAndStatus(UUID doadorId, StatusAgendamento status);
+
+    // Vagas da agenda do hemocentro (PI3-204): quantos doadores já vêm naquele horário.
+    long countByBancoIdAndStatusAndAgendadoPara(String bancoId, StatusAgendamento status, OffsetDateTime agendadoPara);
+
+    // Os agendamentos de um dia inteiro no hemocentro, para montar a lista de horários livres.
+    List<AgendamentoDoacao> findByBancoIdAndStatusAndAgendadoParaBetween(String bancoId, StatusAgendamento status,
+            OffsetDateTime inicio, OffsetDateTime fim);
 }

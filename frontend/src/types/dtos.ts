@@ -307,6 +307,76 @@ export interface AgendamentoDTO
 }
 
 // ======================================================================
+// DTOs - PORTAL DO DOADOR (PI3-203, PI3-204, PI3-205)
+// ======================================================================
+
+/** Perfil do doador: os dados do cadastro e o resumo das doações dele. */
+export interface DoadorDTO
+{
+  id: string;
+  nome: string;
+  email: string | null;
+  /** AAAA-MM-DD */
+  dataNascimento: string | null;
+  idade: number | null;
+  /** Nulo para quem ainda não sabe o tipo (descobre na primeira doação). */
+  tipoSanguineo: TipoSanguineoBackend | null;
+  /** Só dígitos, com DDD. */
+  telefone: string | null;
+  doacoesRealizadas: number;
+  ultimaDoacao: string | null;
+  proximaDoacao: string | null;
+}
+
+/** Corpo do POST /doadores. */
+export interface NovoDoadorPayloadDTO
+{
+  nome: string;
+  email: string;
+  senha: string;
+  dataNascimento: string;
+  tipoSanguineo: TipoSanguineoBackend | null;
+  telefone: string | null;
+}
+
+/** Corpo do PUT /doadores/eu: e-mail e senha ficam de fora (são o login). */
+export type AtualizarPerfilDoadorPayloadDTO = Omit<NovoDoadorPayloadDTO, "email" | "senha">;
+
+/** Resposta do POST /doadores. Sem acesso quando o Supabase exige confirmar o e-mail antes do 1º login. */
+export interface CadastroDoadorDTO
+{
+  doador: DoadorDTO;
+  acesso: RespostaAcesso | null;
+  precisaConfirmarEmail: boolean;
+}
+
+/** Hemocentro onde o doador marca a doação. */
+export interface HemocentroDTO
+{
+  id: string;
+  nome: string;
+  logradouro: string;
+  cidade: string | null;
+  uf: string | null;
+  latitude: number;
+  longitude: number;
+  /** Ex.: "Segunda a sábado, das 07h às 19h". */
+  atendimento: string;
+  vagasPorHorario: number;
+}
+
+/** Um horário da agenda do hemocentro num dia. */
+export interface HorarioDTO
+{
+  /** "09:30", no fuso de Recife. */
+  hora: string;
+  /** Data e hora com fuso (ISO 8601): é o que vai no agendamento. */
+  inicio: string;
+  vagasRestantes: number;
+  disponivel: boolean;
+}
+
+// ======================================================================
 // DTOs - DIAGNÓSTICO & AUDITORIA HTTP
 // ======================================================================
 

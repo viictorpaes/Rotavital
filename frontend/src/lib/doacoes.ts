@@ -1,8 +1,11 @@
 import type { PessoaNecessitada, Sexo, TipoComponente, TipoSanguineo, UrgenciaNecessidade } from "@/types";
 import type {
   AgendamentoDTO,
+  AtualizarPerfilDoadorPayloadDTO,
   CampanhaDTO,
+  DoadorDTO,
   GravidadeBackend,
+  HemocentroDTO,
   SexoBackend,
   StatusAgendamentoBackend,
   TipoComponenteBackend,
@@ -114,12 +117,6 @@ export function formatarHorario(iso: string)
   return `${dia} às ${hora}`;
 }
 
-/** Data (AAAA-MM-DD) e hora (HH:MM) de Recife para o formato que o backend aceita. */
-export function horarioParaBackend(data: string, hora: string)
-{
-  return `${data}T${hora}:00-03:00`;
-}
-
 /** Separa um horário do backend em data e hora de Recife, para preencher o formulário de remarcação. */
 export function horarioDoBackend(iso: string): { data: string; hora: string }
 {
@@ -136,24 +133,67 @@ export function horarioDoBackend(iso: string): { data: string; hora: string }
   return { data: `${valor("year")}-${valor("month")}-${valor("day")}`, hora: `${valor("hour")}:${valor("minute")}` };
 }
 
-/** Horários do hemocentro (segunda a sábado, 07h às 19h), de meia em meia hora. */
-export const HORARIOS_ATENDIMENTO: string[] = Array.from({ length: 25 }, (_, i) =>
+/**
+ * Hoje em Recife, no formato do input de data — o primeiro dia que o formulário oferece.
+ * Os horários de hoje que já passaram vêm do backend como indisponíveis (PI3-204).
+ */
+export function hojeEmRecife()
 {
-  const minutos = 7 * 60 + i * 30;
-  return `${String(Math.floor(minutos / 60)).padStart(2, "0")}:${String(minutos % 60).padStart(2, "0")}`;
-});
-
-/** Amanhã, no formato do input de data — o primeiro dia que o formulário oferece. */
-export function amanha()
-{
-  const data = new Date();
-  data.setDate(data.getDate() + 1);
-  return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}-${String(data.getDate()).padStart(2, "0")}`;
+  return horarioDoBackend(new Date().toISOString()).data;
 }
 
-export function ehDomingo(data: string)
+/** "14/03/1992", a partir de AAAA-MM-DD (sem passar por fuso). */
+export function formatarData(data: string)
 {
-  return new Date(`${data}T12:00:00`).getDay() === 0;
+  const [ano, mes, dia] = data.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
+/** "(81) 99876-5432" para celular e "(81) 3333-4444" para fixo, a partir dos dígitos com DDD. */
+export function formatarTelefone(digitos: string)
+{
+  const meio = digitos.length === 11 ? 7 : 6;
+  return `(${digitos.slice(0, 2)}) ${digitos.slice(2, meio)}-${digitos.slice(meio)}`;
+}
+
+/** "Av. Central, 100 — Recife/PE": cidade e UF são opcionais no cadastro do ponto. */
+export function enderecoDoHemocentro(hemocentro: HemocentroDTO)
+{
+  const local = [hemocentro.cidade, hemocentro.uf].filter(Boolean).join("/");
+  return local ? `${hemocentro.logradouro} — ${local}` : hemocentro.logradouro;
+}
+
+/** Dados do doador como o formulário edita: tipo vazio é "ainda não sei" (PI3-203). */
+export interface RascunhoDoador
+{
+  nome: string;
+  /** AAAA-MM-DD */
+  dataNascimento: string;
+  tipoSanguineo: TipoSanguineo | "";
+  telefone: string;
+}
+
+export const RASCUNHO_DOADOR_VAZIO: RascunhoDoador = { nome: "", dataNascimento: "", tipoSanguineo: "", telefone: "" };
+
+export function rascunhoDoPerfil(perfil: DoadorDTO): RascunhoDoador
+{
+  return {
+    nome: perfil.nome,
+    dataNascimento: perfil.dataNascimento ?? "",
+    tipoSanguineo: perfil.tipoSanguineo ? converterTipoSanguineo(perfil.tipoSanguineo) : "",
+    telefone: perfil.telefone ? formatarTelefone(perfil.telefone) : "",
+  };
+}
+
+/** O backend confere e limpa o telefone (só dígitos); vazio vai como nulo. */
+export function rascunhoDoadorParaBackend(rascunho: RascunhoDoador): AtualizarPerfilDoadorPayloadDTO
+{
+  return {
+    nome: rascunho.nome,
+    dataNascimento: rascunho.dataNascimento,
+    tipoSanguineo: rascunho.tipoSanguineo ? tipoSanguineoParaBackend(rascunho.tipoSanguineo) : null,
+    telefone: rascunho.telefone.trim() || null,
+  };
 }
 
 /** O agendamento em aberto do doador, se houver (o backend aceita só um por vez). */

@@ -11,4 +11,7 @@ import com.rotavital.dominio.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID>
 {
     Optional<Usuario> findByAuthUserId(UUID authUserId);
+
+    // O cadastro do doador recusa um e-mail que já tem conta (PI3-203).
+    boolean existsByEmailIgnoreCase(String email);
 }

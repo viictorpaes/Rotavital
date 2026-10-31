@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { AlertCircle, Droplet, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAutenticacao } from "@/context/ContextoAutenticacao";
 import { autenticarUsuario, ErroHttp } from "@/services/api";
@@ -191,7 +191,14 @@ export default function PaginaLogin()
           </button>
         </form>
 
-        <p className="mt-6 text-center font-mono text-xs text-gray-400">
+        <p className="mt-6 text-center text-sm text-gray-500">
+          Quer doar sangue?{" "}
+          <Link to="/cadastro-doador" className="font-semibold text-rota-red hover:underline">
+            Crie sua conta de doador
+          </Link>
+        </p>
+
+        <p className="mt-4 text-center font-mono text-xs text-gray-400">
           HEMOPE · Recife — PE · Atualizado em tempo real
         </p>
       </div>
