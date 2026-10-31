@@ -26,7 +26,11 @@ export default function PaginaRequisicao()
   const [aba, setAba] = useState<Aba>(parametros.get("aba") === "campanha" ? "campanha" : "solicitar");
 
   const vencendo = useMemo(
-    () => lotes.filter((lote) => diasAteVencer(lote) <= JANELA_VENCIMENTO_DIAS).length,
+    () =>
+      lotes.filter((lote) => {
+        const d = diasAteVencer(lote);
+        return d >= 0 && d <= JANELA_VENCIMENTO_DIAS;
+      }).length,
     [lotes],
   );
 

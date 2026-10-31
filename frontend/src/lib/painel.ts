@@ -34,12 +34,23 @@ function inicioDeHoje()
   return data;
 }
 
-/** Rotina automática de conferência de estoque — roda às 6h de cada dia. */
+/** Rotina automática de conferência de estoque — usa o último ciclo executado (6h de hoje ou 18h de ontem). */
 function rotinaDeHoje()
 {
-  const data = inicioDeHoje();
-  data.setHours(6, 0, 0, 0);
-  return data;
+  const agora = new Date();
+  const hojeAsSeis = inicioDeHoje();
+  hojeAsSeis.setHours(6, 0, 0, 0);
+
+  if (agora >= hojeAsSeis)
+  {
+    return hojeAsSeis;
+  }
+
+  // Se agora for antes das 6h (madrugada), a última rotina de conferência ocorreu às 18h de ontem
+  const ontemAsDezoito = new Date(hojeAsSeis);
+  ontemAsDezoito.setDate(ontemAsDezoito.getDate() - 1);
+  ontemAsDezoito.setHours(18, 0, 0, 0);
+  return ontemAsDezoito;
 }
 
 function avisoDePaciente(pessoa: PessoaNecessitada): AvisoPainel
@@ -72,14 +83,38 @@ function avisoDeLote(lote: LoteHemocomponente): AvisoPainel
 {
   const dias = diasAteVencer(lote);
   const foraDaFaixa = temperaturaForaDaFaixa(lote);
+
+  let titulo: string;
+  let detalheValidade: string;
+
+  if (dias < 0)
+  {
+    const vencidoHa = Math.abs(dias);
+    titulo = `Hemocomponente ${lote.codigo} (${lote.componente}) vencido`;
+    detalheValidade = `vencido há ${vencidoHa} ${vencidoHa === 1 ? "dia" : "dias"}`;
+  }
+  else if (dias === 0)
+  {
+    titulo = `Hemocomponente ${lote.codigo} (${lote.componente}) vence hoje`;
+    detalheValidade = "vence hoje";
+  }
+  else if (foraDaFaixa)
+  {
+    titulo = `Hemocomponente ${lote.codigo} (${lote.componente}) fora da faixa de temperatura`;
+    detalheValidade = `vence em ${dias} ${dias === 1 ? "dia" : "dias"}`;
+  }
+  else
+  {
+    titulo = `Hemocomponente ${lote.codigo} (${lote.componente}) próximo do vencimento`;
+    detalheValidade = `vence em ${dias} ${dias === 1 ? "dia" : "dias"}`;
+  }
+
   return {
     id: `validade-${lote.id}`,
     origem: "validade",
     severidade: statusLote(lote),
-    titulo: foraDaFaixa
-      ? `Hemocomponente ${lote.codigo} (${lote.componente}) fora da faixa de temperatura`
-      : `Hemocomponente ${lote.codigo} (${lote.componente}) próximo do vencimento`,
-    detalhe: `${lote.tipoSanguineo} · vence em ${dias} ${dias === 1 ? "dia" : "dias"} · local ${lote.localizacao}`,
+    titulo,
+    detalhe: `${lote.tipoSanguineo} · ${detalheValidade} · local ${lote.localizacao}`,
     registradoEm: rotinaDeHoje(),
     destino: "/estoque",
   };
@@ -119,9 +154,10 @@ export function montarIndicadores(
   const tiposEmRisco = unidadesPorTipo(lotesEstoque).filter(
     (grupo) => grupo.unidades < NIVEL_SEGURANCA,
   ).length;
-  const vencendo = lotesEstoque.filter(
-    (lote) => diasAteVencer(lote) <= JANELA_VENCIMENTO_DIAS,
-  ).length;
+  const vencendo = lotesEstoque.filter((lote) => {
+    const d = diasAteVencer(lote);
+    return d >= 0 && d <= JANELA_VENCIMENTO_DIAS;
+  }).length;
   const criticos = avisos.filter((aviso) => aviso.severidade === "critico").length;
 
   return [
@@ -178,12 +214,32 @@ export function ordenarAvisos(avisos: AvisoPainel[], ordenacao: OrdenacaoAvisos)
   });
 }
 
-/** "há 4 min", "há 3 h", "hoje" ou "há 2 dias". */
+/** "agora mesmo", "há 4 min", "há 3 h", "ontem", ou "há 2 dias". */
 export function formatarTempoRelativo(data: Date)
 {
-  const minutos = Math.max(0, Math.round((Date.now() - data.getTime()) / 60_000));
+  const agora = Date.now();
+  const diferencaMs = agora - data.getTime();
+  if (diferencaMs < 0) return "agora mesmo";
+
+  const minutos = Math.floor(diferencaMs / 60_000);
+  if (minutos < 1) return "agora mesmo";
   if (minutos < 60) return `há ${minutos} min`;
-  if (data >= inicioDeHoje()) return "hoje";
+
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24 && data >= inicioDeHoje())
+  {
+    return `há ${horas} ${horas === 1 ? "h" : "h"}`;
+  }
+
+  // Se o registro ocorreu ontem
+  const ontem = inicioDeHoje();
+  ontem.setDate(ontem.getDate() - 1);
+  if (data >= ontem && data < inicioDeHoje())
+  {
+    return "ontem";
+  }
+
   const dias = Math.floor(minutos / 1_440);
-  return `há ${dias} ${dias === 1 ? "dia" : "dias"}`;
+  const diasCorrigidos = Math.max(1, dias);
+  return `há ${diasCorrigidos} ${diasCorrigidos === 1 ? "dia" : "dias"}`;
 }
