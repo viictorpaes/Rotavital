@@ -768,6 +768,126 @@ docker compose down             # derruba os containers (os dados ficam no volum
 > `/api/` para o container do backend (`frontend/nginx/default.conf.template`), então no Docker a API também
 > responde em `http://localhost/api/v1`.
 
+<h2 align="center" id="api">🌐 Catálogo da API <br>
+<img src="https://img.shields.io/badge/REST_·_%2Fapi%2Fv1-111827?style=flat&logo=springboot&logoColor=6DB33F" height="22"/>
+<img src="https://img.shields.io/badge/-Swagger-111827?style=flat&logo=swagger&logoColor=85EA2D" height="22"/>
+</h2>
+
+<p align="center">
+Base <code>http://localhost:8080/api/v1</code>, JSON nos dois sentidos. Os erros vêm no formato RFC 7807, com o motivo no
+<code>detail</code>: 400 dado inválido · 401 sem login · 403 perfil sem permissão · 404 inexistente · 409 conflito ·
+422 regra de negócio · 503 Supabase Auth fora.
+</p>
+
+**📖 Swagger:** abra o [`docs/openapi.yaml`](./docs/openapi.yaml) no [editor.swagger.io](https://editor.swagger.io)
+(*File → Import URL* → `https://raw.githubusercontent.com/viictorpaes/Rotavital/main/docs/openapi.yaml`), no
+Postman/Insomnia (*Import → File*) ou na sua máquina:
+
+```bash
+docker run --rm -p 8081:8080 -e SWAGGER_JSON=/spec/openapi.yaml -v "$(pwd)/docs:/spec" swaggerapi/swagger-ui
+# abre em http://localhost:8081 — no PowerShell, troque $(pwd) por ${PWD}
+```
+
+<sub>O contrato ainda não descreve <code>/doadores</code>, <code>/hemocentros</code> e <code>/diagnostico</code>; a lista abaixo é a completa.</sub>
+
+**🔐 Quem pode chamar:** os endpoints com 🔒 exigem o header `X-Usuario-Id` com o `id` que o login devolve (o site
+manda sozinho). Sem o header → `401`; perfil errado → `403`.
+
+<details>
+<summary>▶️🔑 <b>Acesso e Doador</b> — <code>/acessos</code>, <code>/doadores</code></summary>
+
+| Método | Endpoint | Quem | Para quê |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/acessos` | livre | Login: `{email, senha}` → `{id, nome, tipoAcesso, telaInicial, menu, accessToken}` (HU‑01) |
+| `POST` | `/doadores` | livre | Cadastro do doador: cria a conta no Supabase Auth e o perfil |
+| `GET` · `PUT` | `/doadores/eu` | 🔒 doador | Ver e alterar o próprio perfil (HU‑10) |
+</details>
+
+<details>
+<summary>▶️📦 <b>Estoque, Bolsas e Sugestão de Lote</b> — <code>/bancos/{bancoId}/…</code>, <code>/hemocomponentes</code></summary>
+
+| Método | Endpoint | Quem | Para quê |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/bancos/{bancoId}/estoque?tipoSanguineo=` | livre | Estoque do banco, com as bolsas (HU‑03) |
+| `GET` | `/bancos/{bancoId}/estoque/resumo` | livre | Totais por tipo sanguíneo e por componente |
+| `GET` | `/bancos/{bancoId}/alertas` | livre | Bolsas vencidas, perto de vencer ou fora da temperatura (HU‑02) |
+| `GET` | `/bancos/{bancoId}/sugestao-lote?tipoComponente=&tipoSanguineo=&quantidade=` | livre | Lotes ABO/Rh compatíveis que vencem primeiro (HU‑04) |
+| `GET` | `/hemocomponentes?bancoId=&tipoSanguineo=&tipoComponente=&status=&page=&size=` | livre | Lista paginada com filtros (20 por página) |
+| `GET` | `/hemocomponentes/{id}` | livre | Uma bolsa |
+| `POST` | `/hemocomponentes` | livre | Cadastra uma bolsa; `400`/`422` dizem o campo ou a regra |
+| `PATCH` | `/hemocomponentes/{id}` | livre | Muda o status (`{"status":"RESERVADA"}`), só pelas transições permitidas (HU‑08) |
+</details>
+
+<details>
+<summary>▶️🩺 <b>Pacientes</b> — <code>/pacientes</code></summary>
+
+| Método | Endpoint | Quem | Para quê |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/pacientes?status=&tipoSanguineo=&gravidade=&hospitalId=` | livre | Fila clínica: mais grave e mais antigo primeiro |
+| `GET` | `/pacientes/{id}` | livre | Um paciente |
+| `POST` · `PUT` · `DELETE` | `/pacientes` · `/pacientes/{id}` | 🔒 médico | Cadastrar, editar e remover |
+</details>
+
+<details>
+<summary>▶️❤️ <b>Campanhas, Agendamentos e Hemocentros</b> — <code>/campanhas</code>, <code>/agendamentos</code>, <code>/hemocentros</code></summary>
+
+| Método | Endpoint | Quem | Para quê |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/campanhas?status=` | livre | Campanhas de doação (`ATIVA` ou `ENCERRADA`) |
+| `GET` | `/campanhas/{id}` | livre | Uma campanha |
+| `POST` · `PUT` | `/campanhas` · `/campanhas/{id}` | 🔒 médico | Publicar e editar (HU‑06) |
+| `PATCH` | `/campanhas/{id}/encerramento` | 🔒 médico | Encerrar |
+| `GET` | `/campanhas/{id}/agendamentos` | 🔒 médico ou admin | Quem agendou para a campanha |
+| `POST` | `/campanhas/{id}/agendamentos` | 🔒 doador | Agendar `{bancoId, agendadoPara}`; um agendamento em aberto por doador (HU‑09) |
+| `GET` | `/agendamentos/meus` | 🔒 doador | Minhas doações |
+| `PATCH` | `/agendamentos/{id}` | 🔒 doador | Remarcar |
+| `PATCH` | `/agendamentos/{id}/status` | 🔒 médico ou doador | `REALIZADO`, `CANCELADO` ou `FALTOU` |
+| `GET` | `/hemocentros` · `/hemocentros/{id}` | livre | Hemocentros onde doar |
+| `GET` | `/hemocentros/{id}/horarios?data=AAAA-MM-DD` | livre | Horários e vagas do dia |
+</details>
+
+<details>
+<summary>▶️🚚 <b>Rede e Rotas</b> — <code>/pontos</code>, <code>/conexoes</code>, <code>/rotas</code></summary>
+
+| Método | Endpoint | Quem | Para quê |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/pontos` | livre | Hemocentro e hospitais da rede |
+| `GET` | `/conexoes` | livre | Ligações entre os pontos, com distância e tempo |
+| `GET` | `/rotas?origemId=&destinoId=&janelaEntregaLimite=` | livre | Menor caminho pelo grafo (Dijkstra) (HU‑07) |
+</details>
+
+<details>
+<summary>▶️🛠️ <b>Admin e Infraestrutura</b> — <code>/diagnostico</code>, <code>/benchmarks</code>, <code>/actuator</code></summary>
+
+| Método | Endpoint | Quem | Para quê |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/diagnostico` | livre (a tela é só do admin) | Conexão com o banco e últimas requisições HTTP |
+| `GET` · `POST` | `/benchmarks/auditoria-telemetria` | livre | Auditoria de telemetria sequencial × paralela (Infraestrutura de Software) |
+| `GET` | `/actuator/health` · `/actuator/info` | livre | Saúde (inclui o banco) e versão — fora do `/api/v1` |
+</details>
+
+<h4 align="left" id="usuarios-teste">👤 Usuários de teste</h4>
+
+| Perfil | E-mail | Senha | Abre em |
+| :--- | :--- | :--- | :--- |
+| 🩺 Médico | `medico@rotavital.test` | `paguetti911` | `/painel` |
+| ❤️ Doador | `doador@rotavital.test` | `franca911` | `/portal-doador` |
+| 🛠️ Admin | `admin@rotavital.test` | `helema911` | `/admin` |
+
+<sub>A senha é conferida no Supabase Auth, então o login precisa da <code>SUPABASE_KEY</code> no <code>.env</code>. Para criar outro doador, use <code>/cadastro-doador</code>.</sub>
+
+**🧪 Chamadas prontas** (dados do [`seed.sql`](./supabase/seed.sql): banco `BS-01`, hospital `HOSP-01`, bolsas `CH-1042`, `CH-1061`, …):
+
+```bash
+curl localhost:8080/api/v1/bancos/BS-01/estoque
+curl "localhost:8080/api/v1/bancos/BS-01/sugestao-lote?tipoComponente=HEMACIAS&tipoSanguineo=A_NEGATIVO&quantidade=2"
+curl "localhost:8080/api/v1/rotas?origemId=BS-01&destinoId=HOSP-01"
+curl -X POST localhost:8080/api/v1/acessos -H 'Content-Type: application/json' \
+     -d '{"email":"medico@rotavital.test","senha":"paguetti911"}'
+```
+
+<sub>No Windows, use <code>curl.exe</code>. Mais exemplos, com status esperado × obtido, em <a href="./docs/evidencias/PI3-14_endpoints_rest.md"><code>docs/evidencias/</code></a>.</sub>
+
 <h2 align="center" id="figma-vs-real">🖼️ Figma × Sistema Real <br>
 <img src="https://img.shields.io/badge/Protótipo-111827?style=flat&logo=figma&logoColor=orange" height="22"/> vs <img src="https://img.shields.io/badge/Sistema_real-111827?style=flat&logo=react&logoColor=61DAFB" height="22"/>
 </h2>
