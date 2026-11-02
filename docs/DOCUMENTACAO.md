@@ -36,6 +36,7 @@
 ```mermaid
 flowchart TD
     R["README.md"] --> IDX["docs/DOCUMENTACAO.md<br/>(este arquivo)"]
+    IDX --> ARQ["ARQUITETURA.md<br/>componentes, camadas e fluxos"]
     IDX --> DOM["MODELO_DE_DOMINIO.md<br/>classes Java (POO)"]
     IDX --> API["CONTRATOS_DE_API.md<br/>endpoints REST"]
     IDX --> MOD["MODULOS.md<br/>catálogo dos 4 módulos"]
@@ -60,6 +61,7 @@ flowchart TD
 
 | Documento | Formato | Conteúdo | Leia quando... |
 | :--- | :--- | :--- | :--- |
+| [`ARQUITETURA.md`](ARQUITETURA.md) | Markdown + Mermaid | Componentes, ambientes, camadas (MVC), pacotes do backend, rotas do frontend e fluxos de dados (login, bolsa, agendamento, deploy) | chegar no projeto ou for mexer em mais de uma camada |
 | [`MODELO_DE_DOMINIO.md`](MODELO_DE_DOMINIO.md) | Markdown + Mermaid | Diagrama de classes, composição/herança, enums, fluxo de `TesteFluxo` | se for mexer nas classes de `com.rotavital.dominio` |
 | [`CONTRATOS_DE_API.md`](CONTRATOS_DE_API.md) | Markdown + Mermaid | Os 4 módulos REST, padrão de erro (RFC 7807), diagramas de sequência, gaps | se for desenhar ou consumir um endpoint |
 | [`openapi.yaml`](openapi.yaml) | OpenAPI 3.0.3 | Fonte da verdade do contrato — schemas, exemplos, respostas | se for importar no Swagger/Postman/Insomnia |
@@ -85,7 +87,7 @@ Documenta o pacote `com.rotavital.dominio` (`backend/src/main/java/com/rotavital
 POO da sprint **W04**. Cobre `PontoDeRede`, `Endereco`, `Hospital`, `BancoDeSangue`, `Estoque`,
 `BolsaHemocomponente`, `RequisicaoHospitalar`, `Conexao`, `RedeDistribuicao` (grafo + Dijkstra),
 `RotaCalculada` e os enums do domínio, além do fluxo manual de
-[`TesteFluxo.java`](../backend/src/test/java/com/rotavital/dominio/TesteFluxo.java).
+[`TesteFluxoTest.java`](../backend/src/test/java/com/rotavital/dominio/TesteFluxoTest.java).
 
 <h2 align="left" id="3-api">🌐 3. Contratos de API</h2>
 
@@ -151,7 +153,7 @@ docker run -p 8081:8080 -e SWAGGER_JSON=/spec/openapi.yaml \
 Acesse `http://localhost:8081`.
 
 **Postman / Insomnia:** `Importar → File → docs/openapi.yaml`. Os `examples` de cada operação já vêm
-populados com os dados de [`TesteFluxo.java`](../backend/src/test/java/com/rotavital/dominio/TesteFluxo.java)
+populados com os dados de [`TesteFluxoTest.java`](../backend/src/test/java/com/rotavital/dominio/TesteFluxoTest.java)
 (`BS-01`/Hemope Central, `BOLSA-001`, `HOSP-01`/Hospital das Clínicas), prontos para teste manual sem
 backend.
 
