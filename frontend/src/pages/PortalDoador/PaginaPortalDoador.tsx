@@ -13,10 +13,12 @@ import { ModalAgendarDoacao } from "@/components/donations/ModalAgendarDoacao";
 import { MinhasDoacoes } from "@/components/donations/MinhasDoacoes";
 import { CartaoPerfilDoador } from "@/components/donations/CartaoPerfilDoador";
 import { ModalEditarPerfil } from "@/components/donations/ModalEditarPerfil";
+import { ModalComoChegar } from "@/components/donations/ModalComoChegar";
 
 /**
  * HU-10 · PI3-192, PI3-203 a PI3-205 — Portal do doador: o perfil dele, os pacientes das campanhas
  * ativas, o agendamento da doação e o acompanhamento (remarcar ou cancelar) dos próprios agendamentos.
+ * PI3-237: "Como chegar" traça a rota até o hospital do paciente no Google Maps ou no Waze.
  * Tudo vem do backend: perfil, campanhas, hemocentros e horários livres.
  */
 export default function PaginaPortalDoador()
@@ -32,6 +34,7 @@ export default function PaginaPortalDoador()
   const [perfil, setPerfil] = useState<DoadorDTO | null>(null);
   const [erroPerfil, setErroPerfil] = useState<string | null>(null);
   const [editandoPerfil, setEditandoPerfil] = useState(false);
+  const [comoChegar, setComoChegar] = useState<PessoaNecessitada | null>(null);
 
   const ehDoador = usuario?.papel === "doador";
 
@@ -192,6 +195,7 @@ export default function PaginaPortalDoador()
                 key={pessoa.id}
                 pessoa={pessoa}
                 onDoar={setSelecionada}
+                onComoChegar={setComoChegar}
                 desabilitado={emAberto !== undefined}
               />
             ))}
@@ -212,6 +216,15 @@ export default function PaginaPortalDoador()
           agendamento={remarcando}
           onClose={() => setRemarcando(null)}
           onConcluido={recarregarDoador}
+        />
+      )}
+
+      {comoChegar && (
+        <ModalComoChegar
+          campanhaId={comoChegar.campanhaId}
+          nomePaciente={comoChegar.nome}
+          nomeHospital={comoChegar.hospital}
+          onClose={() => setComoChegar(null)}
         />
       )}
 
