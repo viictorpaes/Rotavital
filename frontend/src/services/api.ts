@@ -11,6 +11,8 @@ import type {
   DoadorDTO,
   HemocentroDTO,
   HorarioDTO,
+  OrigemPayloadDTO,
+  RotaAteHospitalDTO,
   NovoDoadorPayloadDTO,
   CampanhaPayloadDTO,
   FiltrosPacientesDTO,
@@ -221,6 +223,15 @@ export async function listarHorarios(hemocentroId: string, data: string): Promis
     params: { data },
     silencioso: true,
   });
+}
+
+/**
+ * Rota até o hospital do paciente da campanha (PI3-262). Sem origem, devolve só o destino.
+ * A posição vai no corpo (POST), não na URL, para não ficar nos logs de acesso.
+ */
+export async function calcularRotaAteHospital(campanhaId: string, origem?: OrigemPayloadDTO): Promise<RotaAteHospitalDTO>
+{
+  return clienteHttp.post<RotaAteHospitalDTO>(`/campanhas/${campanhaId}/rota`, origem, { silencioso: true });
 }
 
 /**

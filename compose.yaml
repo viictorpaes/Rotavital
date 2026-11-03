@@ -61,6 +61,8 @@ services:
       SPRING_JPA_SHOW_SQL: "false"
       # Chave publicável do Supabase Auth: sem ela, login e cadastro de doador respondem 503.
       SUPABASE_KEY: ${SUPABASE_KEY:-}
+      # Routes API do Google (PI3-262): sem ela, a rota até o hospital sai da estimativa em linha reta.
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
       TZ: America/Recife
     ports:
       - "${API_PORT:-8080}:8080"
