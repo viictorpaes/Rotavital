@@ -686,13 +686,46 @@ http://localhost:8080/actuator/health.
 | `.env` (raiz) | `DB_NAME` · `DB_USER` · `DB_PASSWORD` | Banco do container (o exemplo já funciona) |
 | | `SUPABASE_KEY` | Chave publicável do Supabase Auth; sem ela, login e cadastro de doador respondem `503` |
 | | `SUPABASE_DB_PASSWORD` | Senha do banco do Supabase, só para o `docker:cloud` |
+| | `GOOGLE_MAPS_API_KEY` | Opcional: Routes API do Google para o "Como chegar" ([como criar](#google-maps)); sem ela, a distância é estimada |
 | | `API_PORT` · `WEB_PORT` | Portas na sua máquina (padrão `8080` e `80`) |
 | | `COMPOSE_FILE` | Banco do `docker compose up` sem `-f` (`compose.yaml` ou `compose.yaml:compose.supabase.yaml`) |
-| `backend/.env` | `SUPABASE_DB_PASSWORD` · `SUPABASE_KEY` | As mesmas, para o modo desenvolvimento ([modelo](./backend/.env.example)) |
+| `backend/.env` | `SUPABASE_DB_PASSWORD` · `SUPABASE_KEY` · `GOOGLE_MAPS_API_KEY` | As mesmas, para o modo desenvolvimento ([modelo](./backend/.env.example)) |
 | `frontend/.env.local` | `VITE_API_URL` · `VITE_API_TIMEOUT_MS` | Opcional: base da API (`/api/v1`) e timeout (`10000` ms) ([modelo](./frontend/.env.example)) |
 
 > [!WARNING]
 > O `.env` fica fora do Git. A chave **`service_role`** do Supabase ignora o RLS: nunca vai para commit ou frontend.
+
+<details id="google-maps">
+<summary>▶️🗺️ <b>Google Maps — rota do doador até o hospital (PI3-237)</b> — chave opcional da Routes API</summary>
+
+No Portal do Doador, o botão **Como chegar** do cartão do paciente pede a localização do doador (com
+consentimento, pela Geolocation API do navegador), mostra a distância de carro e o tempo de chegada com o trânsito
+de agora e abre a navegação GPS no **Google Maps** ou no **Waze**. O destino são as coordenadas cadastradas do hospital
+do paciente, resolvidas pelo backend (`POST /api/v1/campanhas/{id}/rota`).
+
+| Peça | Onde |
+| :--- | :--- |
+| Localização do doador (PI3-261) | [`useGeolocalizacao.ts`](./frontend/src/hooks/useGeolocalizacao.ts) · [`geolocalizacao.ts`](./frontend/src/lib/geolocalizacao.ts) |
+| Distância e tempo pela Routes API (PI3-262) | [`GoogleRoutes.java`](./backend/src/main/java/com/rotavital/google/GoogleRoutes.java) · [`RotaAteHospitalService.java`](./backend/src/main/java/com/rotavital/servico/RotaAteHospitalService.java) |
+| Links do Google Maps e do Waze (PI3-263) | [`navegacao.ts`](./frontend/src/lib/navegacao.ts) · [`BotoesNavegacao.tsx`](./frontend/src/components/donations/BotoesNavegacao.tsx) |
+| Modal "Como chegar" (PI3-237) | [`ModalComoChegar.tsx`](./frontend/src/components/donations/ModalComoChegar.tsx) |
+
+**Criar a chave** (uma vez, por quem administra o projeto no Google Cloud):
+
+1. [console.cloud.google.com](https://console.cloud.google.com) → crie ou escolha um projeto e ative o faturamento
+   (a Routes API tem cota gratuita mensal; com trânsito, conta como SKU *Pro*).
+2. *APIs e serviços → Biblioteca* → ative a **Routes API**.
+3. *APIs e serviços → Credenciais → Criar credenciais → Chave de API* → em *Restrições de API*, deixe só a Routes API.
+4. Coloque a chave em `GOOGLE_MAPS_API_KEY` no `.env` (Docker), no `backend/.env` (modo desenvolvimento) ou nas
+   variáveis secretas do Render (produção). Ela fica só no backend e nunca chega ao navegador.
+
+Sem a chave, ou se o Google não responder em 4 s, o "Como chegar" continua funcionando: a distância vira a linha reta
+× 1,3 a 25 km/h e a tela avisa que é uma estimativa. Os botões do Google Maps e do Waze não usam a chave.
+
+> [!NOTE]
+> O navegador só libera a localização em **HTTPS** ou em `localhost`. Para testar no celular, use o site publicado
+> (Vercel) ou um túnel HTTPS; pelo IP da rede (`http://192.168…`) a localização é recusada e só os botões funcionam.
+</details>
 
 <details>
 <summary>▶️💻 <b>Modo desenvolvimento (sem Docker)</b> — backend em <code>localhost:8080</code> e frontend em <code>localhost:5173</code></summary>
@@ -728,6 +761,8 @@ No Windows (PowerShell), troque `cp` por `Copy-Item` e `&&` por `;`.
 | A mudança no código não aparece | `npm run docker:build` antes do `docker:local` |
 | Migration nova não aparece no banco local | `npm run docker:down:v` e suba de novo (apaga os dados locais) |
 | Erro no `compose.supabase.yaml` | Atualize o Docker Desktop (Compose 2.24+) |
+| "Como chegar" mostra "Estimativa pela distância em linha reta" | Preencha a `GOOGLE_MAPS_API_KEY` com a Routes API ativa; o log do backend diz o motivo (ex.: `403 PERMISSION_DENIED`) |
+| "Como chegar" não pede a localização no celular | A página precisa estar em HTTPS ([detalhes](#google-maps)) |
 </details>
 
 <h2 align="center" id="api">🌐 Catálogo da API <br>
@@ -801,6 +836,7 @@ manda sozinho). Sem o header → `401`; perfil errado → `403`.
 | `PATCH` | `/campanhas/{id}/encerramento` | 🔒 médico | Encerrar |
 | `GET` | `/campanhas/{id}/agendamentos` | 🔒 médico ou admin | Quem agendou para a campanha |
 | `POST` | `/campanhas/{id}/agendamentos` | 🔒 doador | Agendar `{bancoId, agendadoPara}`; um agendamento em aberto por doador (HU‑09) |
+| `POST` | `/campanhas/{id}/rota` | 🔒 qualquer perfil | Hospital do paciente e, com `{latitude, longitude}`, distância e tempo pela Routes API do Google (PI3‑237) |
 | `GET` | `/agendamentos/meus` | 🔒 doador | Minhas doações |
 | `PATCH` | `/agendamentos/{id}` | 🔒 doador | Remarcar |
 | `PATCH` | `/agendamentos/{id}/status` | 🔒 médico ou doador | `REALIZADO`, `CANCELADO` ou `FALTOU` |

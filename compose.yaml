@@ -61,6 +61,12 @@ services:
       SPRING_JPA_SHOW_SQL: "false"
       # Chave publicável do Supabase Auth: sem ela, login e cadastro de doador respondem 503.
       SUPABASE_KEY: ${SUPABASE_KEY:-}
+      # Routes API do Google (PI3-262): sem ela, a rota até o hospital sai da estimativa em linha reta.
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      # Páginas que podem chamar a API (CORS). Além do localhost em qualquer porta, aceita o site aberto
+      # pelo IP do computador na rede local (192.168.x, 10.x, 172.x): é assim que o celular testa o
+      # "Como chegar". Vale só no Compose; o Render usa a lista do application.properties.
+      CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-http://localhost:[*],http://127.0.0.1:[*],http://192.168.*,http://10.*,http://172.*}"
       TZ: America/Recife
     ports:
       - "${API_PORT:-8080}:8080"

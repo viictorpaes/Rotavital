@@ -1,4 +1,4 @@
-import { CalendarClock, Pencil, Square, Users } from "lucide-react";
+import { CalendarClock, Navigation, Pencil, Square, Users } from "lucide-react";
 import type { CampanhaDTO } from "@/types/dtos";
 import { pessoaDaCampanha } from "@/lib/doacoes";
 import { SeloTipoSanguineo } from "@/components/ui/SeloTipoSanguineo";
@@ -13,10 +13,19 @@ interface Props
   onEditar: (campanha: CampanhaDTO) => void;
   onEncerrar: (campanha: CampanhaDTO) => void;
   onVerAgendamentos: (campanha: CampanhaDTO) => void;
+  /** Rota até o hospital do paciente (PI3-237): o médico confere o destino que o doador vai receber. */
+  onComoChegar: (campanha: CampanhaDTO) => void;
 }
 
 /** Campanha de doação na tela de Doações (PI3-191): paciente, situação e agendamentos em aberto. */
-export function CartaoCampanha({ campanha, podeGerenciar, onEditar, onEncerrar, onVerAgendamentos }: Readonly<Props>)
+export function CartaoCampanha({
+  campanha,
+  podeGerenciar,
+  onEditar,
+  onEncerrar,
+  onVerAgendamentos,
+  onComoChegar,
+}: Readonly<Props>)
 {
   const pessoa = pessoaDaCampanha(campanha);
   const ativa = campanha.status === "ATIVA";
@@ -69,6 +78,17 @@ export function CartaoCampanha({ campanha, podeGerenciar, onEditar, onEncerrar, 
           <Users className="h-4 w-4" />
           Agendamentos ({campanha.agendamentosEmAberto})
         </button>
+        {ativa && (
+          <button
+            type="button"
+            onClick={() => onComoChegar(campanha)}
+            aria-label={`Como chegar ao ${pessoa.hospital}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-rota-border px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-400"
+          >
+            <Navigation className="h-4 w-4" />
+            Como chegar
+          </button>
+        )}
         {podeGerenciar && ativa && (
           <>
             <button

@@ -11,6 +11,7 @@ import { FiltroTipoSanguineo } from "@/components/donations/FiltroTipoSanguineo"
 import { CartaoCampanha } from "@/components/donations/CartaoCampanha";
 import { ModalAgendamentosCampanha } from "@/components/donations/ModalAgendamentosCampanha";
 import { ModalEncerrarCampanha } from "@/components/donations/ModalEncerrarCampanha";
+import { ModalComoChegar } from "@/components/donations/ModalComoChegar";
 import { FormularioCampanha } from "@/components/requisicao/FormularioCampanha";
 import { Modal } from "@/components/ui/Modal";
 
@@ -39,6 +40,7 @@ export default function PaginaDoacoes()
   const [editando, setEditando] = useState<CampanhaDTO | null>(null);
   const [encerrando, setEncerrando] = useState<CampanhaDTO | null>(null);
   const [vendoAgendamentos, setVendoAgendamentos] = useState<CampanhaDTO | null>(null);
+  const [comoChegar, setComoChegar] = useState<CampanhaDTO | null>(null);
 
   const ehMedico = usuario?.papel === "medico";
 
@@ -159,6 +161,7 @@ export default function PaginaDoacoes()
               onEditar={setEditando}
               onEncerrar={setEncerrando}
               onVerAgendamentos={setVendoAgendamentos}
+              onComoChegar={setComoChegar}
             />
           ))}
         </div>
@@ -175,6 +178,15 @@ export default function PaginaDoacoes()
       )}
 
       {encerrando && <ModalEncerrarCampanha campanha={encerrando} onClose={() => setEncerrando(null)} />}
+
+      {comoChegar && (
+        <ModalComoChegar
+          campanhaId={comoChegar.id}
+          nomePaciente={comoChegar.paciente.nome}
+          nomeHospital={comoChegar.paciente.hospitalNome}
+          onClose={() => setComoChegar(null)}
+        />
+      )}
 
       {vendoAgendamentos && (
         <ModalAgendamentosCampanha

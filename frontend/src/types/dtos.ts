@@ -377,6 +377,49 @@ export interface HorarioDTO
 }
 
 // ======================================================================
+// DTOs - ROTA ATÉ O HOSPITAL DA CAMPANHA (PI3-237, PI3-262)
+// ======================================================================
+
+/** GOOGLE_ROUTES: ruas e trânsito do Google · ESTIMATIVA: linha reta × 1,3 a 25 km/h (sem o Google). */
+export type FonteDoTrajetoBackend = "GOOGLE_ROUTES" | "ESTIMATIVA";
+
+/** Corpo do POST /campanhas/{id}/rota: onde o doador está agora. */
+export interface OrigemPayloadDTO
+{
+  latitude: number;
+  longitude: number;
+}
+
+/** Hospital do paciente, com as coordenadas cadastradas: é o destino do Google Maps e do Waze. */
+export interface DestinoHospitalDTO
+{
+  hospitalId: string;
+  nome: string;
+  logradouro: string;
+  cidade: string | null;
+  uf: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+export interface TrajetoDTO
+{
+  /** De carro, com uma casa decimal. */
+  distanciaKm: number;
+  /** Tempo estimado de chegada, arredondado para cima. */
+  duracaoMinutos: number;
+  fonte: FonteDoTrajetoBackend;
+}
+
+export interface RotaAteHospitalDTO
+{
+  campanhaId: string;
+  destino: DestinoHospitalDTO;
+  /** Nulo quando o doador não mandou a localização. */
+  trajeto: TrajetoDTO | null;
+}
+
+// ======================================================================
 // DTOs - DIAGNÓSTICO & AUDITORIA HTTP
 // ======================================================================
 

@@ -192,7 +192,7 @@ export default function PaginaLogin()
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-500">
-          Quer doar sangue?{" "}
+          Quer ser Doador de sangue? 🩸{" "}
           <Link to="/cadastro-doador" className="font-semibold text-rota-red hover:underline">
             Crie sua conta de doador
           </Link>
