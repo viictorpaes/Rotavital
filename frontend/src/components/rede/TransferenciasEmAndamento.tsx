@@ -1,7 +1,11 @@
 import { PackageCheck } from "lucide-react";
 import type { TransferenciaDTO } from "@/types/dtos";
 import type { SituacaoCarga } from "@/context/ContextoDados";
+import { useAgora } from "@/hooks/useAgora";
 import { converterTipoComponente, converterTipoSanguineo } from "@/lib/estoque";
+import { LinhaDoTempoTransferencia } from "@/components/rede/LinhaDoTempoTransferencia";
+
+const INTERVALO_DO_PROGRESSO_MS = 5_000;
 
 interface Props
 {
@@ -14,7 +18,7 @@ interface Props
   onReceber: (transferencia: TransferenciaDTO) => void;
 }
 
-/** Bolsas a caminho dos hospitais, com a confirmação de chegada (PI3-236). */
+/** Bolsas a caminho dos hospitais, com a linha do tempo (PI3-260) e a confirmação de chegada (PI3-236). */
 export function TransferenciasEmAndamento({
   transferencias,
   situacao,
@@ -24,6 +28,8 @@ export function TransferenciasEmAndamento({
   onReceber,
 }: Readonly<Props>)
 {
+  const agora = useAgora(INTERVALO_DO_PROGRESSO_MS);
+
   return (
     <section className="space-y-4 rounded-xl border border-rota-border bg-white p-5">
       <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-gray-400">
@@ -65,6 +71,8 @@ export function TransferenciasEmAndamento({
                 </button>
               )}
             </div>
+
+            <LinhaDoTempoTransferencia transferencia={transferencia} agora={agora} />
           </li>
         ))}
       </ul>

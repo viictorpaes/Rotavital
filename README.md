@@ -744,6 +744,12 @@ Sem essa chave, ou se o Google recusá-la, a tela de Rede usa o mapa do OpenStre
 traçado (polyline), a distância e o tempo com trânsito. Usa a chave do backend, então não precisa de nada novo. Sem ela,
 os números são os das conexões e o traçado vem do OSRM, sem trânsito; a tela mostra de onde vieram.
 
+**Envio e rastreamento (PI3-236, PI3-260):** a tela lista as bolsas do estoque real por FEFO. O médico confirma o envio
+(`POST /api/v1/transferencias`): a bolsa fica `EM_TRANSITO`, com a localização "Em transporte refrigerado → hospital", e
+ganha uma linha do tempo (Origem, Em trânsito, Chegada estimada, Destino) que se atualiza sozinha a cada 15 s. As maletas
+não têm GPS: o progresso é estimado pelo tempo da rota. A chegada só vale quando o médico confirma o recebimento, e aí
+a bolsa fica `ENTREGUE`, com `hospital_atual_id` no hospital de destino.
+
 > [!NOTE]
 > O navegador só libera a localização em **HTTPS** ou em `localhost`. Para testar no celular, use o site publicado
 > (Vercel) ou um túnel HTTPS; pelo IP da rede (`http://192.168…`) a localização é recusada e só os botões funcionam.
