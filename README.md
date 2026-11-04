@@ -41,7 +41,7 @@ roteirização de entregas, telemetria da cadeia fria e campanhas de doação qu
 ```bash
 git clone https://github.com/viictorpaes/Rotavital.git && cd Rotavital
 cp .env.example .env        # Windows (PowerShell): Copy-Item .env.example .env
-npm run docker:local        # banco + API + site → http://localhost
+npm run docker:local        # banco + API + site → http://localhost:8080
 ```
 
 **📑 Sumário**
@@ -657,19 +657,22 @@ nuvem, também a `SUPABASE_DB_PASSWORD` (peça os valores ao líder do grupo).
 | **Use para** | desenvolver e testar sem medo | conferir com os dados reais |
 
 ```bash
-npm run docker:build        # 1ª vez e sempre que o código mudar
 npm run docker:local        # ou: npm run docker:cloud
 ```
 
-**4. Conferir:** `npm run docker:status` deve mostrar os containers `(healthy)`. O **site** abre em http://localhost
-(entre com um dos [usuários de teste](#usuarios-teste)), a **API** em http://localhost:8080/api/v1 e a saúde em
-http://localhost:8080/actuator/health.
+O `up` reconstrói sozinho as imagens do que mudou no código (`pull_policy: build`), então o que sobe é sempre o que está na
+pasta. Não precisa rodar `docker:build` antes.
+
+**4. Conferir:** `npm run docker:status` deve mostrar os containers `(healthy)`. Tudo passa por uma porta só: o **site** abre
+em http://localhost:8080 (entre com um dos [usuários de teste](#usuarios-teste)), a **API** responde em
+http://localhost:8080/api/v1 e a saúde em http://localhost:8080/actuator/health. A versão no ar aparece em
+http://localhost:8080/versao.json.
 
 <h4 align="left" id="comandos-npm">🧰 Comandos npm</h4>
 
 | Comando | O que faz | Equivale a |
 | :--- | :--- | :--- |
-| `npm run docker:build` | Gera as imagens (o build do backend roda os testes) | `docker compose build` |
+| `npm run docker:build` | Só gera as imagens, sem subir (o build do backend roda os testes) | `docker compose build` |
 | `npm run docker:local` | Sobe db → backend → frontend | `docker compose -f compose.yaml up -d` |
 | `npm run docker:cloud` | Sobe backend → frontend ligados ao Supabase | `docker compose -f compose.yaml -f compose.supabase.yaml up -d` |
 | `npm run docker:status` | Lista os containers e se estão `(healthy)` | `docker compose ps` |
@@ -687,7 +690,7 @@ http://localhost:8080/actuator/health.
 | | `SUPABASE_KEY` | Chave publicável do Supabase Auth; sem ela, login e cadastro de doador respondem `503` |
 | | `SUPABASE_DB_PASSWORD` | Senha do banco do Supabase, só para o `docker:cloud` |
 | | `GOOGLE_MAPS_API_KEY` | Opcional: Routes API do Google para o "Como chegar" ([como criar](#google-maps)); sem ela, a distância é estimada |
-| | `API_PORT` · `WEB_PORT` | Portas na sua máquina (padrão `8080` e `80`) |
+| | `WEB_PORT` · `API_PORT` | Portas na sua máquina: o site, com a API em `/api/` (padrão `8080`), e o acesso direto ao backend, só para depurar (padrão `8082`) |
 | | `COMPOSE_FILE` | Banco do `docker compose up` sem `-f` (`compose.yaml` ou `compose.yaml:compose.supabase.yaml`) |
 | `backend/.env` | `SUPABASE_DB_PASSWORD` · `SUPABASE_KEY` · `GOOGLE_MAPS_API_KEY` | As mesmas, para o modo desenvolvimento ([modelo](./backend/.env.example)) |
 | `frontend/.env.local` | `VITE_API_URL` · `VITE_API_TIMEOUT_MS` | Opcional: base da API (`/api/v1`) e timeout (`10000` ms) ([modelo](./frontend/.env.example)) |
@@ -758,7 +761,7 @@ No Windows (PowerShell), troque `cp` por `Copy-Item` e `&&` por `;`.
 | `Defina DB_PASSWORD no arquivo .env` | Faltou o `cp .env.example .env` |
 | Login ou cadastro de doador responde `503` | Preencha a `SUPABASE_KEY` e rode `npm run docker:local` de novo |
 | `port is already allocated` | Mude `WEB_PORT` ou `API_PORT` no `.env` |
-| A mudança no código não aparece | `npm run docker:build` antes do `docker:local` |
+| A tela parece de uma versão antiga | `npm run docker:local` reconstrói o que mudou; `curl localhost:8080/versao.json` mostra de quando é o build no ar. Se ele estiver certo, recarregue sem cache (`Cmd+Shift+R` · `Ctrl+Shift+R`) |
 | Migration nova não aparece no banco local | `npm run docker:down:v` e suba de novo (apaga os dados locais) |
 | Erro no `compose.supabase.yaml` | Atualize o Docker Desktop (Compose 2.24+) |
 | "Como chegar" mostra "Estimativa pela distância em linha reta" | Preencha a `GOOGLE_MAPS_API_KEY` com a Routes API ativa; o log do backend diz o motivo (ex.: `403 PERMISSION_DENIED`) |
@@ -952,7 +955,7 @@ sem pedir ajuda a ninguém?"</i>
 
 | Entrega | Resumo | Status |
 | :--- | :--- | :---: |
-| 🐳 [**E1 · Container**](#cdt-como-rodar) | `docker compose up -d --build` sobe banco + API + site; o Dockerfile roda os testes antes de gerar a imagem | ✅ |
+| 🐳 [**E1 · Container**](#cdt-como-rodar) | `docker compose up -d` sobe banco + API + site; o Dockerfile roda os testes antes de gerar a imagem | ✅ |
 | 🧪 [**E2 · TDD**](#cdt-testes) | 3 histórias, 13 tarefas, 9 pares `test:` 🔴 → `feat:` 🟢; 208 unitários, 7 de integração e 13 cenários Gherkin | ✅ |
 | 🚀 [**E3 · Deploy**](#cdt-pipeline) | GitHub Actions: testes → imagem → deploy (API no Render, site na Vercel), só na `main` e só com tudo verde | ⏳ falta ligar as contas |
 
@@ -978,15 +981,15 @@ Só precisa de **Git** e **Docker**. Java, Maven, Node e Postgres ficam dentro d
 ```bash
 git clone https://github.com/viictorpaes/Rotavital.git && cd Rotavital
 cp .env.example .env            # no Windows: Copy-Item .env.example .env — depois troque DB_PASSWORD
-docker compose up -d --build    # compila, roda os testes e sobe db → backend → frontend
+docker compose up -d            # compila o que mudou, roda os testes e sobe db → backend → frontend
 docker compose ps               # os três precisam aparecer como (healthy)
 ```
 
 | Serviço | O que é | Healthcheck · só sobe depois de | Endereço |
 | :--- | :--- | :--- | :--- |
 | 🐘 `db` | Postgres 17 com as migrations de `supabase/migrations` e o seed ([`db/`](./db/)), dados no volume `dados-postgres` | `pg_isready` | só na rede interna |
-| ☕ `backend` | API Spring Boot ([`backend/Dockerfile`](./backend/Dockerfile), 2 estágios) | `/actuator/health` = `UP` (inclui o banco) · `db` | `localhost:8080` |
-| 🖥️ `frontend` | React no Nginx, com proxy `/api/` → `backend` ([`frontend/Dockerfile`](./frontend/Dockerfile)) | `GET /` · `backend` | `localhost` |
+| ☕ `backend` | API Spring Boot ([`backend/Dockerfile`](./backend/Dockerfile), 2 estágios) | `/actuator/health` = `UP` (inclui o banco) · `db` | `localhost:8080/api/` (pelo Nginx) · `localhost:8082` (direto) |
+| 🖥️ `frontend` | React no Nginx, com proxy `/api/` → `backend` ([`frontend/Dockerfile`](./frontend/Dockerfile)) | `GET /` · `backend` | `localhost:8080` |
 
 `docker compose down` mantém os dados no volume; `docker compose down -v` apaga, e a próxima subida recria o banco com o seed.
 Os mesmos passos têm atalhos `npm run docker:*` (ver [Como Executar](#como-executar)).

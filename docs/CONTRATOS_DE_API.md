@@ -159,8 +159,8 @@ Trocar o header pelo token do Supabase fica para quando a decisão 6 for impleme
 <h3 align="left" id="2-3-endpoints">🧾 2.3 Endpoints REST do MVP, por recurso</h3>
 
 São **19 endpoints**, mais de 15. Por isso a tabela está agrupada por recurso, e os 6 principais estão detalhados na
-[seção 2.4](#2-4-principais). Caminhos relativos a `http://localhost:8080` (backend direto) ou a
-`http://localhost` (via Nginx). ✅ = implementado e respondendo · 🕓 = só no contrato (a rota dá 404
+[seção 2.4](#2-4-principais). Caminhos relativos a `http://localhost:8080`: o backend direto no modo
+desenvolvimento, ou o Nginx, que repassa para ele, no Docker. ✅ = implementado e respondendo · 🕓 = só no contrato (a rota dá 404
 até o controller existir). Toda operação também pode devolver `500` (RFC 7807), que foi omitido nas linhas.
 
 | Método | Caminho | Descrição | Autenticação | Resposta | Status |
