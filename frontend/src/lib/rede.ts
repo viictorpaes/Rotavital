@@ -1,4 +1,4 @@
-import type { LoteHemocomponente, TipoComponente } from "@/types";
+import type { Coordenada, LoteHemocomponente, TipoComponente } from "@/types";
 import type { PontoRedeDTO } from "@/types/dtos";
 import { lotesEstoque, FAIXAS_IDEAIS } from "@/data/estoqueMock";
 import { diasAteVencer } from "@/lib/estoque";
@@ -30,6 +30,44 @@ export function formatarFaixa(componente: TipoComponente)
 {
   const faixa = FAIXAS_IDEAIS[componente];
   return `${faixa.minima} a ${faixa.maxima} °C`;
+}
+
+/**
+ * Traçado do Google em coordenadas: o formato "encoded polyline" guarda cada ponto como a diferença
+ * para o anterior, em blocos de 5 bits (developers.google.com/maps/documentation/utilities/polylinealgorithm).
+ */
+export function decodificarPolyline(polyline: string): Coordenada[]
+{
+  const pontos: Coordenada[] = [];
+  let indice = 0;
+  let latitude = 0;
+  let longitude = 0;
+
+  function proximaDiferenca()
+  {
+    let valor = 0;
+    let deslocamento = 0;
+    let bloco: number;
+
+    do
+    {
+      bloco = polyline.charCodeAt(indice++) - 63;
+      valor |= (bloco & 0x1f) << deslocamento;
+      deslocamento += 5;
+    }
+    while (bloco >= 0x20);
+
+    return valor & 1 ? ~(valor >> 1) : valor >> 1;
+  }
+
+  while (indice < polyline.length)
+  {
+    latitude += proximaDiferenca();
+    longitude += proximaDiferenca();
+    pontos.push({ latitude: latitude / 1e5, longitude: longitude / 1e5 });
+  }
+
+  return pontos;
 }
 
 /**

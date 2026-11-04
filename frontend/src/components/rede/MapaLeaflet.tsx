@@ -46,7 +46,7 @@ function centroDe(pontos: PontoRedeDTO[]): Posicao
  * Plano B do mapa da rede: tiles abertos do OpenStreetMap, sem chave, para a tela funcionar
  * quando o Google Maps não está configurado ou recusa a chave (ver `MapaRede`).
  */
-export function MapaLeaflet({ pontos, selecionadoId, tracado, onSelecionar }: Readonly<PropsDoMapa>)
+export function MapaLeaflet({ pontos, destaques, tracado, onSelecionar }: Readonly<PropsDoMapa>)
 {
   const linha = tracado.map(posicao);
 
@@ -78,7 +78,7 @@ export function MapaLeaflet({ pontos, selecionadoId, tracado, onSelecionar }: Re
           <Marker
             key={ponto.id}
             position={posicao(ponto)}
-            icon={iconeDoPonto(ponto.tipo, ponto.id === selecionadoId ? "selecionado" : "normal")}
+            icon={iconeDoPonto(ponto.tipo, destaques[ponto.id] ?? "normal")}
             title={ponto.nome}
             eventHandlers={{ click: () => onSelecionar(ponto) }}
           />

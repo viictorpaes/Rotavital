@@ -28,6 +28,7 @@ import type {
   NovaBolsaHemocomponenteDTO,
   PontoRedeDTO,
   RotaCalculadaDTO,
+  RotaNoMapaDTO,
   DiagnosticoDados,
 } from "@/types/dtos";
 
@@ -85,14 +86,19 @@ export async function listarPontosRede(): Promise<PontoRedeDTO[]>
   return clienteHttp.get<PontoRedeDTO[]>("/pontos", { silencioso: true });
 }
 
-/**
- * Calcula a rota ótima entre dois pontos da rede com previsão de chegada.
- */
-export async function calcularRota(origemId: string, destinoId: string, partida?: string): Promise<RotaCalculadaDTO>
+/** Menor caminho entre dois pontos da rede (Dijkstra). Silencioso: sem caminho, a lista mostra "sem rota". */
+export async function calcularRota(origemId: string, destinoId: string): Promise<RotaCalculadaDTO>
 {
-  return clienteHttp.get<RotaCalculadaDTO>("/rotas", {
-    params: { origemId, destinoId, partida },
-  });
+  return clienteHttp.get<RotaCalculadaDTO>("/rotas", { params: { origemId, destinoId }, silencioso: true });
+}
+
+/**
+ * Rota para desenhar no mapa (PI3-259): o caminho do Dijkstra levado para as ruas pelo Google.
+ * Cada chamada consome a cota da Routes API: é pedida só para o destino selecionado.
+ */
+export async function calcularRotaNoMapa(origemId: string, destinoId: string): Promise<RotaNoMapaDTO>
+{
+  return clienteHttp.get<RotaNoMapaDTO>("/rotas/trajeto", { params: { origemId, destinoId }, silencioso: true });
 }
 
 // ----------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import type { PontoRedeDTO } from "@/types/dtos";
 import type { RotasDaRede } from "@/hooks/useRotasDaRede";
+import { formatarDistancia, formatarDuracao } from "@/lib/rotaAteHospital";
 import { cn } from "@/lib/utilitarios";
 
 interface Props
@@ -35,7 +36,9 @@ export function ListaHospitais({ hospitais, selecionadoId, rotas, onSelecionar }
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold text-gray-900">{hospital.nome}</span>
                 <span className="block font-mono text-xs text-gray-500">
-                  {rota ? `${rota.distanciaKm} km · ${rota.tempoMin} min` : "sem rota"}
+                  {rota
+                    ? `${formatarDistancia(rota.distanciaTotalKm)} · ${formatarDuracao(Math.ceil(rota.tempoEstimadoMin))}`
+                    : "sem rota"}
                 </span>
               </span>
               {ativo && <ArrowRight className="h-4 w-4 shrink-0 text-rota-red" aria-hidden />}

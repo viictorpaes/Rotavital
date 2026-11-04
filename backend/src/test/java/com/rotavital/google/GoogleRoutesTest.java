@@ -1,5 +1,6 @@
 package com.rotavital.google;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -60,6 +61,32 @@ public class GoogleRoutesTest
 
         // 1094 s = 18,2 min: arredonda para 19.
         Assertions.assertEquals(Optional.of(new Trajeto(9.412, 19, FonteDoTrajeto.GOOGLE_ROUTES)), trajeto);
+        google.verify();
+    }
+
+    @Test
+    public void pedeOTracadoPassandoPelasParadasDoCaminho()
+    {
+        Coordenada parada = new Coordenada(-8.0432, -34.9331);
+
+        google.expect(MockRestRequestMatchers.requestTo(URL))
+                .andExpect(MockRestRequestMatchers.header("X-Goog-FieldMask",
+                        "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline"))
+                .andExpect(pedido -> Assertions.assertEquals(json.readTree("""
+                        {"origin": {"location": {"latLng": {"latitude": -8.0578, "longitude": -34.8829}}},
+                         "destination": {"location": {"latLng": {"latitude": -8.0512, "longitude": -34.9478}}},
+                         "intermediates": [{"location": {"latLng": {"latitude": -8.0432, "longitude": -34.9331}}}],
+                         "travelMode": "DRIVE", "routingPreference": "TRAFFIC_AWARE",
+                         "languageCode": "pt-BR", "units": "METRIC"}
+                        """), json.readTree(((MockClientHttpRequest) pedido).getBodyAsString())))
+                .andRespond(MockRestResponseCreators.withSuccess("""
+                        {"routes": [{"distanceMeters": 9412, "duration": "1094s",
+                                     "polyline": {"encodedPolyline": "abc~d@"}}]}
+                        """, MediaType.APPLICATION_JSON));
+
+        Optional<Trajeto> trajeto = routes.calcularComTracado(List.of(DOADOR, parada, HOSPITAL));
+
+        Assertions.assertEquals(Optional.of(new Trajeto(9.412, 19, FonteDoTrajeto.GOOGLE_ROUTES, "abc~d@")), trajeto);
         google.verify();
     }
 

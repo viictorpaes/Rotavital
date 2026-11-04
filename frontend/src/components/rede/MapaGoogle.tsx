@@ -59,7 +59,7 @@ interface Props extends PropsDoMapa
 }
 
 /** Mapa interativo da rede na Maps JavaScript API do Google (PI3-258). */
-export function MapaGoogle({ chave, onFalha, pontos, selecionadoId, tracado, onSelecionar }: Readonly<Props>)
+export function MapaGoogle({ chave, onFalha, pontos, destaques, tracado, onSelecionar }: Readonly<Props>)
 {
   useEffect(() =>
   {
@@ -100,7 +100,7 @@ export function MapaGoogle({ chave, onFalha, pontos, selecionadoId, tracado, onS
             {/* HTML fixo, montado em `marcadorDoPonto`: nenhum dado vindo da API entra nele. */}
             <div
               dangerouslySetInnerHTML={{
-                __html: marcadorDoPonto(ponto.tipo, ponto.id === selecionadoId ? "selecionado" : "normal").html,
+                __html: marcadorDoPonto(ponto.tipo, destaques[ponto.id] ?? "normal").html,
               }}
             />
           </AdvancedMarker>

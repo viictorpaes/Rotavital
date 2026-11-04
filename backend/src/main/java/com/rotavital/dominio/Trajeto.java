@@ -3,8 +3,10 @@ package com.rotavital.dominio;
 /**
  * Quanto falta do doador até o hospital da campanha (PI3-262): distância de carro, tempo
  * estimado de chegada e de onde vieram esses números.
+ *
+ * tracado é a polyline do Google para desenhar no mapa (PI3-259); nulo quando ninguém a calculou.
  */
-public record Trajeto(double distanciaKm, int duracaoMinutos, FonteDoTrajeto fonte)
+public record Trajeto(double distanciaKm, int duracaoMinutos, FonteDoTrajeto fonte, String tracado)
 {
     /**
      * As ruas não seguem a linha reta: em cidade, o caminho de carro costuma ser 20% a 40% maior.
@@ -25,6 +27,11 @@ public record Trajeto(double distanciaKm, int duracaoMinutos, FonteDoTrajeto fon
         {
             throw new IllegalArgumentException("Informe a fonte do trajeto.");
         }
+    }
+
+    public Trajeto(double distanciaKm, int duracaoMinutos, FonteDoTrajeto fonte)
+    {
+        this(distanciaKm, duracaoMinutos, fonte, null);
     }
 
     /**

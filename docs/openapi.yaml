@@ -743,6 +743,51 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  /rotas/trajeto:
+    get:
+      tags: [Rotas]
+      summary: Rota de transporte para desenhar no mapa, pelo caminho do Dijkstra (PI3-259)
+      description: >
+        O Dijkstra decide por quais pontos passar e o Google leva esse caminho
+        para as ruas, com o trânsito do momento (Routes API, chave só no backend).
+        Sem o Google, valem a distância e o tempo das conexões cadastradas, e
+        polyline vem nula. Fica fora de GET /rotas porque cada chamada consome a
+        cota da Routes API; por isso exige médico ou admin no header X-Usuario-Id.
+      operationId: calcularRotaNoMapa
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+        - name: origemId
+          in: query
+          required: true
+          schema: { type: string }
+          example: BS-01
+        - name: destinoId
+          in: query
+          required: true
+          schema: { type: string }
+          example: hc-pe
+      responses:
+        '200':
+          description: Rota calculada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RotaNoMapa' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Não existe caminho entre origem e destino no grafo.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
   # -- Telemetria --------------------------------------------------------
   /entregas/{id}/leituras:
     post:
@@ -1661,6 +1706,26 @@ components:
         tempoEstimadoMin: { type: number, format: double }
         dentroDaJanela: { type: boolean }
       required: [origemId, destinoId, nos, distanciaTotalKm, tempoEstimadoMin]
+
+    RotaNoMapa:
+      type: object
+      properties:
+        origemId: { type: string }
+        destinoId: { type: string }
+        nos:
+          type: array
+          items: { type: string }
+          description: Pontos do menor caminho (Dijkstra), na ordem.
+        distanciaKm: { type: number, format: double }
+        duracaoMinutos: { type: integer }
+        fonte:
+          type: string
+          enum: [GOOGLE_ROUTES, ESTIMATIVA, CONEXOES_DA_REDE]
+        polyline:
+          type: string
+          nullable: true
+          description: Traçado do Google no formato encoded polyline; nulo quando a rota não passou por ele.
+      required: [origemId, destinoId, nos, distanciaKm, duracaoMinutos, fonte]
 
     # ---- Telemetria ----
     RegistrarTelemetriaRequest:

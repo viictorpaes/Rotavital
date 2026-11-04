@@ -1,26 +1,29 @@
 import type { TipoPontoRedeBackend } from "@/types/dtos";
 
-/** Papel do ponto na rota mostrada: muda a cor do marcador. */
-export type DestaqueDoPonto = "selecionado" | "normal";
+/** Papel do ponto na rota mostrada: muda a cor e o tamanho do marcador. */
+export type DestaqueDoPonto = "origem" | "destino" | "parada" | "normal";
 
 const GOTA = '<path d="M12 2.5s-6.5 7.4-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 9.9 12 2.5 12 2.5z" fill="#fff"/>';
 const CRUZ = '<path d="M10 4.5h4V10h5.5v4H14v5.5h-4V14H4.5v-4H10z" fill="#fff"/>';
 
-const COR_DO_HOSPITAL: Record<DestaqueDoPonto, string> =
+export const COR_DO_DESTAQUE: Record<DestaqueDoPonto, string> =
 {
-  selecionado: "#111827",
+  origem: "#c1272d",
+  destino: "#111827",
+  parada: "#d97706",
   normal: "#6b7280",
 };
 
 /**
  * Marcador da rede (PI3-258) em HTML, para sair igual no Google Maps e no OpenStreetMap:
- * hemocentro é um quadrado vermelho com uma gota; hospital, um círculo com uma cruz.
+ * hemocentro é um quadrado vermelho com uma gota; hospital, um círculo com uma cruz, na cor do
+ * papel dele na rota (PI3-259).
  */
 export function marcadorDoPonto(tipo: TipoPontoRedeBackend, destaque: DestaqueDoPonto)
 {
   const hemocentro = tipo === "BANCO_DE_SANGUE";
   const tamanho = hemocentro ? 30 : destaque === "normal" ? 22 : 28;
-  const fundo = hemocentro ? "#c1272d" : COR_DO_HOSPITAL[destaque];
+  const fundo = hemocentro ? COR_DO_DESTAQUE.origem : COR_DO_DESTAQUE[destaque];
   const icone = Math.round(tamanho * 0.62);
 
   return {

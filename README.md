@@ -738,6 +738,11 @@ uma **segunda chave**, feita para ficar exposta no site: a do backend nunca vai 
 
 Sem essa chave, ou se o Google recusá-la, a tela de Rede usa o mapa do OpenStreetMap, com os mesmos marcadores.
 
+**Rota no mapa (PI3-259):** o **Dijkstra** (`GET /api/v1/rotas`) decide por onde passar, sobre as conexões cadastradas. O
+`GET /api/v1/rotas/trajeto` leva esse caminho para as ruas pela Routes API, com as paradas na ordem do Dijkstra, e devolve o
+traçado (polyline), a distância e o tempo com trânsito. Usa a chave do backend, então não precisa de nada novo. Sem ela,
+os números são os das conexões e o traçado vem do OSRM, sem trânsito; a tela mostra de onde vieram.
+
 > [!NOTE]
 > O navegador só libera a localização em **HTTPS** ou em `localhost`. Para testar no celular, use o site publicado
 > (Vercel) ou um túnel HTTPS; pelo IP da rede (`http://192.168…`) a localização é recusada e só os botões funcionam.

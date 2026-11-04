@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import type { Coordenada } from "@/types";
 import type { PontoRedeDTO } from "@/types/dtos";
+import type { DestaqueDoPonto } from "@/lib/marcadoresDaRede";
 import { MapaGoogle } from "@/components/rede/MapaGoogle";
 import { MapaLeaflet } from "@/components/rede/MapaLeaflet";
 
@@ -8,7 +9,8 @@ export interface PropsDoMapa
 {
   /** Hemocentros e hospitais da rede (GET /pontos). */
   pontos: PontoRedeDTO[];
-  selecionadoId: string;
+  /** Papel de cada ponto na rota; quem não está aqui é um ponto comum. */
+  destaques: Record<string, DestaqueDoPonto>;
   /** Linha da rota a desenhar; com menos de 2 pontos, nada é desenhado. */
   tracado: Coordenada[];
   onSelecionar: (ponto: PontoRedeDTO) => void;

@@ -47,4 +47,5 @@ export const DESCRICAO_FONTE: Record<FonteDoTrajetoBackend, string> =
 {
   GOOGLE_ROUTES: "Google Maps · pelas ruas, com o trânsito de agora",
   ESTIMATIVA: "Estimativa pela distância em linha reta · o Google Maps não respondeu",
+  CONEXOES_DA_REDE: "Conexões cadastradas na rede · sem o trânsito do Google Maps",
 };

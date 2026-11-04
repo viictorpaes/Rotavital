@@ -117,31 +117,11 @@ export interface AvisoPainel
   destino: string;
 }
 
-/** Ponto da rede de distribuição (HU-07) — hemocentro ou hospital conectado. */
-export interface PontoDeRede
-{
-  id: string;
-  nome: string;
-  endereco: string;
-  latitude: number;
-  longitude: number;
-  /** `true` para o hemocentro de origem (Cesar Life). */
-  origem?: boolean;
-}
-
 /** Coordenada geográfica de um vértice do trajeto. */
 export interface Coordenada
 {
   latitude: number;
   longitude: number;
-}
-
-export interface Conexao
-{
-  hospitalId: string;
-  distanciaKm: number;
-  tempoMin: number;
-  status: UrgenciaNecessidade;
 }
 
 /** Ala médica de destino de uma requisição (HU-04). */
