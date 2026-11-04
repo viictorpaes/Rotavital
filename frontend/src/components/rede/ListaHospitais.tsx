@@ -1,32 +1,23 @@
 import { ArrowRight } from "lucide-react";
-import type { PontoDeRede, UrgenciaNecessidade } from "@/types";
-import { hospitais } from "@/data/redeMock";
-import { conexaoDe } from "@/lib/rede";
+import type { PontoRedeDTO } from "@/types/dtos";
 import type { RotasDaRede } from "@/hooks/useRotasDaRede";
 import { cn } from "@/lib/utilitarios";
 
-const COR_STATUS: Record<UrgenciaNecessidade, string> =
-{
-  critico: "bg-rota-red",
-  atencao: "bg-amber-500",
-  estavel: "bg-emerald-600",
-};
-
 interface Props
 {
+  hospitais: PontoRedeDTO[];
   selecionadoId: string;
   rotas: RotasDaRede;
-  onSelecionar: (hospital: PontoDeRede) => void;
+  onSelecionar: (hospital: PontoRedeDTO) => void;
 }
 
-/** Hospitais conectados, com distância/tempo e o status do estoque local. */
-export function ListaHospitais({ selecionadoId, rotas, onSelecionar }: Readonly<Props>)
+/** Hospitais conectados, com a distância e o tempo a partir da origem. */
+export function ListaHospitais({ hospitais, selecionadoId, rotas, onSelecionar }: Readonly<Props>)
 {
   return (
     <ul className="divide-y divide-rota-border overflow-hidden rounded-xl border border-rota-border bg-white">
       {hospitais.map((hospital) =>
       {
-        const conexao = conexaoDe(hospital.id);
         const rota = rotas[hospital.id];
         const ativo = hospital.id === selecionadoId;
 
@@ -41,12 +32,6 @@ export function ListaHospitais({ selecionadoId, rotas, onSelecionar }: Readonly<
                 ativo && "bg-rota-surface2",
               )}
             >
-              <span
-                className={cn(
-                  "h-2 w-2 shrink-0 rounded-full",
-                  COR_STATUS[conexao?.status ?? "estavel"],
-                )}
-              />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold text-gray-900">{hospital.nome}</span>
                 <span className="block font-mono text-xs text-gray-500">

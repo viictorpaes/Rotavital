@@ -78,10 +78,11 @@ export async function cadastrarHemocomponente(dados: NovaBolsaHemocomponenteDTO)
 
 /**
  * Lista todos os pontos cadastrados na rede hospitalar (bancos de sangue e hospitais).
+ * Silencioso: as telas que usam a lista mostram o erro no próprio corpo.
  */
 export async function listarPontosRede(): Promise<PontoRedeDTO[]>
 {
-  return clienteHttp.get<PontoRedeDTO[]>("/pontos");
+  return clienteHttp.get<PontoRedeDTO[]>("/pontos", { silencioso: true });
 }
 
 /**

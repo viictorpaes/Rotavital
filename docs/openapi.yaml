@@ -1634,7 +1634,10 @@ components:
         tipo: { $ref: '#/components/schemas/TipoPontoRede' }
         latitude: { type: number, format: double }
         longitude: { type: number, format: double }
-      required: [id, nome, tipo, latitude, longitude]
+        logradouro: { type: string }
+        cidade: { type: string, nullable: true }
+        uf: { type: string, nullable: true }
+      required: [id, nome, tipo, latitude, longitude, logradouro]
 
     Conexao:
       type: object

@@ -57,7 +57,8 @@ flowchart LR
 | ☕ Backend | Spring Boot 3.3, Java 21, Spring Data JPA, Actuator | `8080` | API REST `/api/v1`; única peça que fala com o banco |
 | 🐘 Banco | PostgreSQL 17 (container `db`) ou Supabase | `5432` | Dados; o schema vem só de [`supabase/migrations`](../supabase/migrations) |
 | 🔑 Supabase Auth | Serviço do Supabase | HTTPS | Confere e-mail e senha no login e cria a conta do doador que se cadastra |
-| 🗺️ OSRM + OpenStreetMap | Serviços públicos | HTTPS | Rota real e mapa da HU-07, chamados direto pelo navegador, com valores de exemplo se não responderem |
+| 🗺️ Google Maps Platform | Maps JavaScript API (navegador) | HTTPS | Mapa interativo da tela de Rede (PI3-258), com chave própria para o navegador |
+| 🗺️ OSRM + OpenStreetMap | Serviços públicos | HTTPS | Plano B do mapa e do traçado da tela de Rede, chamados direto pelo navegador quando o Google não está configurado |
 
 <h2 align="left" id="2-ambientes">🌍 2. Ambientes de execução</h2>
 

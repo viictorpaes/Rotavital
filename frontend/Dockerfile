@@ -6,8 +6,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# tsc -b (checagem de tipos) + vite build: erro de tipo derruba o build da imagem
+# tsc -b (checagem de tipos) + vite build: erro de tipo derruba o build da imagem.
+# O Vite grava os VITE_* dentro do JavaScript no build: trocar a chave do mapa exige reconstruir a imagem.
 COPY . .
+ARG VITE_GOOGLE_MAPS_KEY=
 RUN npm run build
 
 # Versão (sha do commit) gravada pela esteira em /versao.json; o smoke test do deploy confere por ela.

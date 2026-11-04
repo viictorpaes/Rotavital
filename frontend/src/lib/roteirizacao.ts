@@ -1,4 +1,4 @@
-import type { Conexao, Coordenada, PontoDeRede } from "@/types";
+import type { Conexao, Coordenada } from "@/types";
 
 /** Resultado da roteirização entre o hemocentro e um hospital (HU-07). */
 export interface RotaCalculada
@@ -15,7 +15,7 @@ const OSRM = "https://router.project-osrm.org/route/v1/driving";
 const TEMPO_LIMITE_MS = 8_000;
 
 /** Rota de referência do mock: linha reta e os números previstos na conexão. */
-export function rotaDeReferencia(conexao: Conexao, destino: PontoDeRede, origem: Coordenada): RotaCalculada
+export function rotaDeReferencia(conexao: Conexao, destino: Coordenada, origem: Coordenada): RotaCalculada
 {
   return {
     pontos: [origem, destino],
@@ -32,7 +32,7 @@ export function rotaDeReferencia(conexao: Conexao, destino: PontoDeRede, origem:
  */
 export async function calcularRota(
   origem: Coordenada,
-  destino: PontoDeRede,
+  destino: Coordenada,
   referencia: RotaCalculada,
   signal?: AbortSignal,
 ): Promise<RotaCalculada>

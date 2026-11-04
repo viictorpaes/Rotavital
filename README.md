@@ -690,16 +690,17 @@ http://localhost:8080/versao.json.
 | | `SUPABASE_KEY` | Chave publicável do Supabase Auth; sem ela, login e cadastro de doador respondem `503` |
 | | `SUPABASE_DB_PASSWORD` | Senha do banco do Supabase, só para o `docker:cloud` |
 | | `GOOGLE_MAPS_API_KEY` | Opcional: Routes API do Google para o "Como chegar" ([como criar](#google-maps)); sem ela, a distância é estimada |
+| | `GOOGLE_MAPS_BROWSER_KEY` | Opcional: mapa interativo do Google na tela de Rede ([como criar](#google-maps)); sem ela, o mapa é o OpenStreetMap |
 | | `WEB_PORT` · `API_PORT` | Portas na sua máquina: o site, com a API em `/api/` (padrão `8080`), e o acesso direto ao backend, só para depurar (padrão `8082`) |
 | | `COMPOSE_FILE` | Banco do `docker compose up` sem `-f` (`compose.yaml` ou `compose.yaml:compose.supabase.yaml`) |
 | `backend/.env` | `SUPABASE_DB_PASSWORD` · `SUPABASE_KEY` · `GOOGLE_MAPS_API_KEY` | As mesmas, para o modo desenvolvimento ([modelo](./backend/.env.example)) |
-| `frontend/.env.local` | `VITE_API_URL` · `VITE_API_TIMEOUT_MS` | Opcional: base da API (`/api/v1`) e timeout (`10000` ms) ([modelo](./frontend/.env.example)) |
+| `frontend/.env.local` | `VITE_API_URL` · `VITE_API_TIMEOUT_MS` · `VITE_GOOGLE_MAPS_KEY` | Opcional: base da API (`/api/v1`), timeout (`10000` ms) e a chave do mapa da Rede ([modelo](./frontend/.env.example)) |
 
 > [!WARNING]
 > O `.env` fica fora do Git. A chave **`service_role`** do Supabase ignora o RLS: nunca vai para commit ou frontend.
 
 <details id="google-maps">
-<summary>▶️🗺️ <b>Google Maps — rota do doador até o hospital (PI3-237)</b> — chave opcional da Routes API</summary>
+<summary>▶️🗺️ <b>Google Maps — rota do doador (PI3-237) e mapa da Rede (PI3-236)</b> — chaves opcionais</summary>
 
 No Portal do Doador, o botão **Como chegar** do cartão do paciente pede a localização do doador (com
 consentimento, pela Geolocation API do navegador), mostra a distância de carro e o tempo de chegada com o trânsito
@@ -724,6 +725,18 @@ do paciente, resolvidas pelo backend (`POST /api/v1/campanhas/{id}/rota`).
 
 Sem a chave, ou se o Google não responder em 4 s, o "Como chegar" continua funcionando: a distância vira a linha reta
 × 1,3 a 25 km/h e a tela avisa que é uma estimativa. Os botões do Google Maps e do Waze não usam a chave.
+
+**Mapa da tela de Rede (PI3-258):** o mapa interativo vem da Maps JavaScript API, que roda no navegador. Por isso ele usa
+uma **segunda chave**, feita para ficar exposta no site: a do backend nunca vai para o JavaScript.
+
+1. *APIs e serviços → Biblioteca* → ative a **Maps JavaScript API**.
+2. *Credenciais → Criar credenciais → Chave de API* → em *Restrições de aplicativos*, escolha **Sites** e liste
+   `http://localhost:8080/*`, `http://localhost:5173/*` e o domínio da Vercel; em *Restrições de API*, deixe só a Maps
+   JavaScript API.
+3. Coloque a chave em `GOOGLE_MAPS_BROWSER_KEY` no `.env` (Docker), em `VITE_GOOGLE_MAPS_KEY` no `frontend/.env.local`
+   (modo desenvolvimento) ou em `VITE_GOOGLE_MAPS_KEY` nas variáveis do projeto na Vercel (produção).
+
+Sem essa chave, ou se o Google recusá-la, a tela de Rede usa o mapa do OpenStreetMap, com os mesmos marcadores.
 
 > [!NOTE]
 > O navegador só libera a localização em **HTTPS** ou em `localhost`. Para testar no celular, use o site publicado
@@ -764,6 +777,7 @@ No Windows (PowerShell), troque `cp` por `Copy-Item` e `&&` por `;`.
 | A tela parece de uma versão antiga | `npm run docker:local` reconstrói o que mudou; `curl localhost:8080/versao.json` mostra de quando é o build no ar. Se ele estiver certo, recarregue sem cache (`Cmd+Shift+R` · `Ctrl+Shift+R`) |
 | Migration nova não aparece no banco local | `npm run docker:down:v` e suba de novo (apaga os dados locais) |
 | Erro no `compose.supabase.yaml` | Atualize o Docker Desktop (Compose 2.24+) |
+| O mapa da Rede abre no OpenStreetMap, mesmo com a `GOOGLE_MAPS_BROWSER_KEY` | O console do navegador diz o motivo (ex.: `RefererNotAllowedMapError`, `ApiNotActivatedMapError`) |
 | "Como chegar" mostra "Estimativa pela distância em linha reta" | Preencha a `GOOGLE_MAPS_API_KEY` com a Routes API ativa; o log do backend diz o motivo (ex.: `403 PERMISSION_DENIED`) |
 | "Como chegar" não pede a localização no celular | A página precisa estar em HTTPS ([detalhes](#google-maps)) |
 </details>

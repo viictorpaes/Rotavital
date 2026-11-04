@@ -152,6 +152,9 @@ export interface PontoRedeDTO
   tipo: TipoPontoRedeBackend;
   latitude: number;
   longitude: number;
+  logradouro: string;
+  cidade: string | null;
+  uf: string | null;
 }
 
 export interface ConexaoDTO

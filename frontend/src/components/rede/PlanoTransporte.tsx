@@ -1,12 +1,13 @@
 import { MapPin, Route, Thermometer, Truck } from "lucide-react";
-import type { PontoDeRede, TipoComponente } from "@/types";
-import { COMPONENTES, formatarFaixa, TRANSPORTE_POR_COMPONENTE } from "@/lib/rede";
+import type { TipoComponente } from "@/types";
+import type { PontoRedeDTO } from "@/types/dtos";
+import { COMPONENTES, enderecoDoPonto, formatarFaixa, TRANSPORTE_POR_COMPONENTE } from "@/lib/rede";
 import type { RotaCalculada } from "@/lib/roteirizacao";
 
 interface Props
 {
-  destino: PontoDeRede;
-  rota: RotaCalculada;
+  destino: PontoRedeDTO;
+  rota: RotaCalculada | undefined;
   componente: TipoComponente;
   onComponenteChange: (componente: TipoComponente) => void;
 }
@@ -44,11 +45,11 @@ export function PlanoTransporte({ destino, rota, componente, onComponenteChange 
           {destino.nome}
         </Linha>
         <Linha icone={<MapPin className="h-4 w-4" />} rotulo="Endereço">
-          <span className="text-gray-500">{destino.endereco}</span>
+          <span className="text-gray-500">{enderecoDoPonto(destino)}</span>
         </Linha>
         <Linha icone={<Route className="h-4 w-4" />} rotulo="Melhor rota">
-          {rota.distanciaKm} km · {rota.tempoMin} min estimados
-          {!rota.doRoteador && (
+          {rota ? `${rota.distanciaKm} km · ${rota.tempoMin} min estimados` : "sem rota calculada"}
+          {rota && !rota.doRoteador && (
             <span className="ml-2 font-mono text-[11px] text-gray-400">valor previsto</span>
           )}
         </Linha>

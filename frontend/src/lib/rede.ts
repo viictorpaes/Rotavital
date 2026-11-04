@@ -1,6 +1,6 @@
-import type { LoteHemocomponente, PontoDeRede, TipoComponente } from "@/types";
+import type { LoteHemocomponente, TipoComponente } from "@/types";
+import type { PontoRedeDTO } from "@/types/dtos";
 import { lotesEstoque, FAIXAS_IDEAIS } from "@/data/estoqueMock";
-import { conexoes, hemocentro, hospitais } from "@/data/redeMock";
 import { diasAteVencer } from "@/lib/estoque";
 
 export const COMPONENTES: TipoComponente[] = [
@@ -19,18 +19,12 @@ export const TRANSPORTE_POR_COMPONENTE: Record<TipoComponente, string> =
   "Crioprecipitado": "caixa térmica com gelo seco",
 };
 
-export function conexaoDe(hospitalId: string)
+/** "Av. Prof. Moraes Rego, 1235 — Recife/PE": cidade e UF são opcionais no cadastro. */
+export function enderecoDoPonto(ponto: PontoRedeDTO)
 {
-  return conexoes.find((conexao) => conexao.hospitalId === hospitalId);
+  const local = [ponto.cidade, ponto.uf].filter(Boolean).join("/");
+  return local ? `${ponto.logradouro} — ${local}` : ponto.logradouro;
 }
-
-export function hospitalDe(hospitalId: string)
-{
-  return hospitais.find((hospital) => hospital.id === hospitalId);
-}
-
-/** Todos os pontos da rede — hemocentro de origem + hospitais conectados. */
-export const pontosDaRede: PontoDeRede[] = [hemocentro, ...hospitais];
 
 export function formatarFaixa(componente: TipoComponente)
 {
