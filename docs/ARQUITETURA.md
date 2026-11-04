@@ -151,7 +151,7 @@ Os testes ficam em [`backend/src/test`](../backend/src/test) em três níveis �
 | `/painel` | `PaginaPainel` | médico, admin | estoque e campanhas da API; alertas calculados na tela |
 | `/estoque` | `PaginaEstoque` | médico, admin | `GET`/`POST /hemocomponentes` |
 | `/requisicao` | `PaginaRequisicao` | médico, admin | Campanha: `POST /campanhas` · Solicitar: estoque da API com FEFO na tela · Recebidas: exemplo |
-| `/rede` | `PaginaRede` | médico, admin | dados de exemplo + OSRM |
+| `/rede` | `PaginaRede` | médico, admin | API (`/pontos`, `/rotas`, `/hemocomponentes`, `/transferencias`) + Google Maps, com OSRM e OpenStreetMap de plano B |
 | `/pacientes` | `PaginaPacientes` | médico (admin só consulta) | `/pacientes` |
 | `/doacoes` | `PaginaDoacoes` | médico, admin | `/campanhas` e agendamentos |
 | `/portal-doador` | `PaginaPortalDoador` | doador | `/campanhas`, `/agendamentos/meus`, `/doadores/eu`, `/hemocentros` |

@@ -27,6 +27,8 @@ interface ValorContextoDados
   campanhas: CampanhaDTO[];
   situacaoCampanhas: SituacaoCarga;
   erroCampanhas: string | null;
+  /** Lê o estoque de novo — chamado depois de movimentar uma bolsa (PI3-236). */
+  recarregarEstoque: () => Promise<void>;
   /** Lê as campanhas de novo — chamado depois de publicar, editar, encerrar ou agendar. */
   recarregarCampanhas: () => Promise<void>;
   /** Remessas ainda sem conferência física (HU-05). */
@@ -61,27 +63,30 @@ export function ProvedorDados({ children }: { children: ReactNode })
   const [recebimentosConfirmados, setConfirmados] = useState<RequisicaoRecebida[]>([]);
   const [procedimentosConcluidos, setProcedimentos] = useState<ProcedimentoConcluido[]>([]);
 
-  useEffect(() =>
+  const recarregarEstoque = useCallback(async () =>
   {
-    async function carregarEstoqueReal()
+    try
     {
-      try
+      const res = await buscarEstoque("BS-01");
+      if (res && res.bolsas && res.bolsas.length > 0)
       {
-        const res = await buscarEstoque("BS-01");
-        if (res && res.bolsas && res.bolsas.length > 0)
-        {
-          const convertidos = res.bolsas.map(converterBolsaParaLote);
-          setLotes(convertidos);
-        }
-      }
-      catch (e)
-      {
-        console.warn("ContextoDados: usando estoque local de contingência", e);
+        // Bolsa que saiu do hemocentro (em trânsito, entregue, usada ou descartada) não conta mais no estoque.
+        const convertidos = res.bolsas
+          .filter((bolsa) => bolsa.status === "DISPONIVEL" || bolsa.status === "RESERVADA")
+          .map(converterBolsaParaLote);
+        setLotes(convertidos);
       }
     }
-
-    carregarEstoqueReal();
+    catch (e)
+    {
+      console.warn("ContextoDados: usando estoque local de contingência", e);
+    }
   }, []);
+
+  useEffect(() =>
+  {
+    recarregarEstoque();
+  }, [recarregarEstoque]);
 
   const recarregarCampanhas = useCallback(async () =>
   {
@@ -167,6 +172,7 @@ export function ProvedorDados({ children }: { children: ReactNode })
       campanhas,
       situacaoCampanhas,
       erroCampanhas,
+      recarregarEstoque,
       recarregarCampanhas,
       recebimentosPendentes,
       recebimentosConfirmados,
@@ -180,6 +186,7 @@ export function ProvedorDados({ children }: { children: ReactNode })
     campanhas,
     situacaoCampanhas,
     erroCampanhas,
+    recarregarEstoque,
     recarregarCampanhas,
     recebimentosPendentes,
     recebimentosConfirmados,

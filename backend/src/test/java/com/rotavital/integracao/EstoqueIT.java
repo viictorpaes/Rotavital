@@ -40,7 +40,7 @@ public class EstoqueIT
     }
 
     @Test
-    public void migrationsCriamAs14TabelasEAsEntidadesBatemComElas()
+    public void migrationsCriamAs15TabelasEAsEntidadesBatemComElas()
     {
         // O contexto só sobe se o Hibernate (ddl-auto=validate) achar cada @Entity no schema.
         Integer tabelas = jdbc.queryForObject("""
@@ -48,7 +48,7 @@ public class EstoqueIT
                 where table_schema = 'public' and table_type = 'BASE TABLE'
                 """, Integer.class);
 
-        Assertions.assertEquals(14, tabelas);
+        Assertions.assertEquals(15, tabelas);
     }
 
     @Test

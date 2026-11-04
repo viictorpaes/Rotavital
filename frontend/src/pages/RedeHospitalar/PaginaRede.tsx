@@ -1,14 +1,22 @@
 import { useMemo, useState } from "react";
-import type { TipoComponente } from "@/types";
-import type { PontoRedeDTO } from "@/types/dtos";
+import type { LoteHemocomponente, TipoComponente } from "@/types";
+import type { PontoRedeDTO, TransferenciaDTO } from "@/types/dtos";
+import { useAutenticacao } from "@/context/ContextoAutenticacao";
+import { useDados } from "@/context/ContextoDados";
+import { useNotificacao } from "@/context/ContextoNotificacao";
+import { useFilaDeEnvio } from "@/hooks/useFilaDeEnvio";
 import { usePontosDaRede } from "@/hooks/usePontosDaRede";
 import { useRotaNoMapa } from "@/hooks/useRotaNoMapa";
 import { useRotasDaRede } from "@/hooks/useRotasDaRede";
+import { useTransferencias } from "@/hooks/useTransferencias";
+import { mensagemDeErro } from "@/lib/doacoes";
 import { COR_DO_DESTAQUE, type DestaqueDoPonto } from "@/lib/marcadoresDaRede";
+import { confirmarRecebimentoDaBolsa, despacharBolsa } from "@/services/api";
 import { ListaHospitais } from "@/components/rede/ListaHospitais";
 import { MapaRede } from "@/components/rede/MapaRede";
 import { PlanoTransporte } from "@/components/rede/PlanoTransporte";
 import { PrioridadeEnvio } from "@/components/rede/PrioridadeEnvio";
+import { TransferenciasEmAndamento } from "@/components/rede/TransferenciasEmAndamento";
 
 const LEGENDA: Array<{ destaque: DestaqueDoPonto; rotulo: string }> =
 [
@@ -44,6 +52,61 @@ function Rede({ origemInicial, hospitais, pontos }: Readonly<{
   const rotas = useRotasDaRede(origem.id, destinos);
   const { rota, caminho, tracado, situacao, erro } = useRotaNoMapa(origem, destino, pontos);
 
+  const { usuario } = useAutenticacao();
+  const { recarregarEstoque } = useDados();
+  const { notificarErro, notificarSucesso } = useNotificacao();
+  const ehMedico = usuario?.papel === "medico";
+
+  const hemocentroId = origem.tipo === "BANCO_DE_SANGUE" ? origem.id : null;
+  const fila = useFilaDeEnvio(hemocentroId, componente);
+  const andamento = useTransferencias();
+  const [enviando, setEnviando] = useState(false);
+  const [recebendoId, setRecebendoId] = useState<string | null>(null);
+
+  // Depois de mexer numa bolsa, a fila, as transferências e o estoque do painel mudam juntos.
+  async function atualizarDepoisDeMovimentar()
+  {
+    await Promise.all([fila.recarregar(), andamento.recarregar(), recarregarEstoque()]);
+  }
+
+  async function enviar(lote: LoteHemocomponente)
+  {
+    setEnviando(true);
+    try
+    {
+      const transferencia = await despacharBolsa(lote.id, destino.id);
+      notificarSucesso("Bolsa a caminho", `${lote.id} saiu de ${transferencia.origemNome} para ${transferencia.destinoNome}.`);
+      await atualizarDepoisDeMovimentar();
+    }
+    catch (e)
+    {
+      notificarErro("Envio não confirmado", mensagemDeErro(e));
+    }
+    finally
+    {
+      setEnviando(false);
+    }
+  }
+
+  async function receber(transferencia: TransferenciaDTO)
+  {
+    setRecebendoId(transferencia.id);
+    try
+    {
+      await confirmarRecebimentoDaBolsa(transferencia.id);
+      notificarSucesso("Bolsa recebida", `${transferencia.bolsaId} está em ${transferencia.destinoNome}.`);
+      await atualizarDepoisDeMovimentar();
+    }
+    catch (e)
+    {
+      notificarErro("Recebimento não confirmado", mensagemDeErro(e));
+    }
+    finally
+    {
+      setRecebendoId(null);
+    }
+  }
+
   const destaques = useMemo(() =>
   {
     const papeis: Record<string, DestaqueDoPonto> = {};
@@ -76,40 +139,51 @@ function Rede({ origemInicial, hospitais, pontos }: Readonly<{
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-      <section className="self-start overflow-hidden rounded-xl border border-rota-border bg-white lg:col-span-3">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rota-border px-5 py-4">
-          <div>
-            <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-gray-400">
-              Mapa da rede · Recife — PE
-            </h2>
-            <p className="mt-1 font-mono text-[11px] text-gray-500">
-              {situacao === "carregando" ? "Calculando a rota…" : "Clique em um hospital para calcular a rota"}
-            </p>
+      <div className="space-y-4 lg:col-span-3">
+        <section className="overflow-hidden rounded-xl border border-rota-border bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rota-border px-5 py-4">
+            <div>
+              <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-gray-400">
+                Mapa da rede · Recife — PE
+              </h2>
+              <p className="mt-1 font-mono text-[11px] text-gray-500">
+                {situacao === "carregando" ? "Calculando a rota…" : "Clique em um hospital para calcular a rota"}
+              </p>
+            </div>
+            <label className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+              Origem
+              <select
+                value={origem.id}
+                onChange={(evento) => trocarOrigem(evento.target.value)}
+                className="max-w-[12rem] rounded-lg border border-rota-border bg-white px-2 py-1.5 text-xs normal-case text-gray-900 focus:border-rota-red focus:outline-none focus:ring-1 focus:ring-rota-red"
+              >
+                {pontos.map((ponto) => (
+                  <option key={ponto.id} value={ponto.id}>{ponto.nome}</option>
+                ))}
+              </select>
+            </label>
           </div>
-          <label className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-            Origem
-            <select
-              value={origem.id}
-              onChange={(evento) => trocarOrigem(evento.target.value)}
-              className="max-w-[12rem] rounded-lg border border-rota-border bg-white px-2 py-1.5 text-xs normal-case text-gray-900 focus:border-rota-red focus:outline-none focus:ring-1 focus:ring-rota-red"
-            >
-              {pontos.map((ponto) => (
-                <option key={ponto.id} value={ponto.id}>{ponto.nome}</option>
-              ))}
-            </select>
-          </label>
-        </div>
 
-        <MapaRede pontos={pontos} destaques={destaques} tracado={tracado} onSelecionar={selecionar} />
+          <MapaRede pontos={pontos} destaques={destaques} tracado={tracado} onSelecionar={selecionar} />
 
-        <ul className="flex flex-wrap items-center gap-4 border-t border-rota-border px-5 py-3 font-mono text-[11px] text-gray-500">
-          {LEGENDA.map(({ destaque, rotulo }) => (
-            <li key={destaque} className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: COR_DO_DESTAQUE[destaque] }} /> {rotulo}
-            </li>
-          ))}
-        </ul>
-      </section>
+          <ul className="flex flex-wrap items-center gap-4 border-t border-rota-border px-5 py-3 font-mono text-[11px] text-gray-500">
+            {LEGENDA.map(({ destaque, rotulo }) => (
+              <li key={destaque} className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: COR_DO_DESTAQUE[destaque] }} /> {rotulo}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <TransferenciasEmAndamento
+          transferencias={andamento.transferencias}
+          situacao={andamento.situacao}
+          erro={andamento.erro}
+          podeReceber={ehMedico}
+          recebendoId={recebendoId}
+          onReceber={receber}
+        />
+      </div>
 
       <div className="space-y-4 lg:col-span-2">
         <ListaHospitais hospitais={destinos} selecionadoId={destino.id} rotas={rotas} onSelecionar={setDestino} />
@@ -122,7 +196,17 @@ function Rede({ origemInicial, hospitais, pontos }: Readonly<{
           componente={componente}
           onComponenteChange={setComponente}
         />
-        <PrioridadeEnvio componente={componente} />
+        <PrioridadeEnvio
+          lotes={fila.lotes}
+          situacao={fila.situacao}
+          erro={fila.erro}
+          origemEhHemocentro={hemocentroId !== null}
+          destinoNome={destino.nome}
+          rotaPronta={situacao === "pronto"}
+          podeEnviar={ehMedico}
+          enviando={enviando}
+          onEnviar={enviar}
+        />
       </div>
     </div>
   );
@@ -131,7 +215,8 @@ function Rede({ origemInicial, hospitais, pontos }: Readonly<{
 /**
  * HU-07 — Mapa dos hospitais conectados e plano de transporte na cadeia fria.
  * Os pontos vêm do backend (PI3-258) e a rota, do Dijkstra levado para as ruas (PI3-259).
- * Selecionar um hospital, no mapa ou na lista, recalcula a rota e o plano.
+ * Selecionar um hospital, no mapa ou na lista, recalcula a rota e o plano; a bolsa sai do estoque
+ * real, por FEFO, e fica rastreada até a chegada (PI3-236).
  */
 export default function PaginaRede()
 {

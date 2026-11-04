@@ -29,6 +29,8 @@ import type {
   PontoRedeDTO,
   RotaCalculadaDTO,
   RotaNoMapaDTO,
+  StatusTransferenciaBackend,
+  TransferenciaDTO,
   DiagnosticoDados,
 } from "@/types/dtos";
 
@@ -99,6 +101,28 @@ export async function calcularRota(origemId: string, destinoId: string): Promise
 export async function calcularRotaNoMapa(origemId: string, destinoId: string): Promise<RotaNoMapaDTO>
 {
   return clienteHttp.get<RotaNoMapaDTO>("/rotas/trajeto", { params: { origemId, destinoId }, silencioso: true });
+}
+
+// ----------------------------------------------------------------------
+// Transferências de bolsas pela tela de Rede (PI3-236). Consultar é livre; despachar e confirmar
+// o recebimento exigem um médico (X-Usuario-Id). Silenciosas: a tela mostra o erro perto da ação.
+// ----------------------------------------------------------------------
+
+export async function listarTransferencias(status?: StatusTransferenciaBackend): Promise<TransferenciaDTO[]>
+{
+  return clienteHttp.get<TransferenciaDTO[]>("/transferencias", { params: { status }, silencioso: true });
+}
+
+/** A bolsa sai do hemocentro dela para o hospital: fica EM_TRANSITO, com a chegada prevista pela rota. */
+export async function despacharBolsa(bolsaId: string, destinoId: string): Promise<TransferenciaDTO>
+{
+  return clienteHttp.post<TransferenciaDTO>("/transferencias", { bolsaId, destinoId }, { silencioso: true });
+}
+
+/** Confirma a chegada: a bolsa fica ENTREGUE e passa a estar no hospital de destino. */
+export async function confirmarRecebimentoDaBolsa(transferenciaId: string): Promise<TransferenciaDTO>
+{
+  return clienteHttp.post<TransferenciaDTO>(`/transferencias/${transferenciaId}/recebimento`, undefined, { silencioso: true });
 }
 
 // ----------------------------------------------------------------------

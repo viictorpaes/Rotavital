@@ -70,6 +70,8 @@ export interface BolsaHemocomponenteDTO
   localizacao?: string;
   localizacaoFisica?: string;
   bancoOrigemId?: string;
+  /** Hospital onde a bolsa está; nulo no hemocentro de origem e em trânsito (PI3-236). */
+  hospitalAtualId?: string | null;
 }
 
 /** Filtros opcionais e combináveis de GET /hemocomponentes; page começa em 0 e size vai de 1 a 100. */
@@ -188,6 +190,32 @@ export interface RotaNoMapaDTO
   fonte: FonteDoTrajetoBackend;
   /** Traçado do Google ("encoded polyline"); nulo quando a rota não passou por ele. */
   polyline: string | null;
+}
+
+export type StatusTransferenciaBackend = "EM_TRANSITO" | "RECEBIDA" | "CANCELADA";
+
+/** Uma bolsa saindo do hemocentro para um hospital pela tela de Rede (PI3-236). */
+export interface TransferenciaDTO
+{
+  id: string;
+  bolsaId: string;
+  tipoComponente: TipoComponenteBackend;
+  tipoSanguineo: TipoSanguineoBackend;
+  origemId: string;
+  origemNome: string;
+  destinoId: string;
+  destinoNome: string;
+  status: StatusTransferenciaBackend;
+  distanciaKm: number;
+  duracaoMinutos: number;
+  fonte: FonteDoTrajetoBackend;
+  /** Datas com fuso (ISO 8601). */
+  despachadaEm: string;
+  chegadaPrevistaEm: string;
+  recebidaEm: string | null;
+  despachadaPorNome: string | null;
+  recebidaPorNome: string | null;
+  localizacaoDaBolsa: string | null;
 }
 
 // ======================================================================

@@ -188,6 +188,9 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | **🚚 Rotas** | *`RotaController`* | | | | |
 | `GET` | `/api/v1/rotas?origemId=&destinoId=&janelaEntregaLimite=` | ✅ Rota de menor custo (Dijkstra) e se ela cabe na janela de entrega | Nenhuma no MVP (alvo: médico) | `RotaCalculada` | `200` · `400` · `404` · `422` |
 | `GET` | `/api/v1/rotas/trajeto?origemId=&destinoId=` | ✅ O caminho do Dijkstra levado para as ruas, com o traçado para o mapa (PI3-259) | `X-Usuario-Id` de médico ou admin | `RotaNoMapa` | `200` · `400` · `401` · `403` · `404` · `422` |
+| `GET` | `/api/v1/transferencias?status=` | ✅ Transferências de bolsas; com `status`, da que saiu primeiro para a última (PI3-236) | Nenhuma | `Transferencia[]` | `200` · `400` |
+| `POST` | `/api/v1/transferencias` | ✅ Despacha a bolsa do hemocentro para o hospital: `EM_TRANSITO`, com a chegada prevista (PI3-236) | `X-Usuario-Id` de médico | `Transferencia` | `201` · `400` · `401` · `403` · `404` · `409` · `422` |
+| `POST` | `/api/v1/transferencias/{id}/recebimento` | ✅ Confirma a chegada: a bolsa fica `ENTREGUE`, no hospital de destino (PI3-236) | `X-Usuario-Id` de médico | `Transferencia` | `200` · `401` · `403` · `404` · `422` |
 | **🌡️ Entregas → Leituras** | *`EntregaController` (planejado)* | | | | |
 | `POST` | `/api/v1/entregas/{id}/leituras` | 🕓 Registra uma leitura simulada (GPS + °C) | Nenhuma no MVP (alvo: médico) | `LeituraTelemetria` | `201` · `400` · `404` · `422` |
 | `GET` | `/api/v1/entregas/{id}/leituras` | 🕓 Histórico de leituras da entrega, em ordem cronológica | Nenhuma no MVP (alvo: médico) | `MonitoramentoEntrega` | `200` · `404` |

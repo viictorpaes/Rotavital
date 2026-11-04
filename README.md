@@ -459,7 +459,7 @@ Detalhe em <a href="./docs/MODULOS.md"><code>docs/MODULOS.md</code></a>.
 | 📦 Estoque e Hemocomponentes (HU‑02, HU‑03, HU‑08) | `/painel`, `/estoque` | `/bancos/{bancoId}/estoque` · `/resumo` · `/alertas`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente`, `AlertaDeEstoque` | ✅ Implementado |
 | 🏥 Requisições e Alocação (HU‑04, HU‑05) | `/requisicao` (abas Solicitar e Recebidas) | `GET /bancos/{bancoId}/sugestao-lote` | `RequisicaoHospitalar`, `CompatibilidadeSanguinea`, `FilaRequisicoesHospitalares` | ⚠️ Parcial — requisição e recebimento sem controller |
 | ❤️ Pacientes e Doações (HU‑06, HU‑08, HU‑09) | `/pacientes`, `/requisicao` (aba Campanha), `/doacoes`, `/portal-doador` | `/pacientes`, `/campanhas`, `/agendamentos`, `/hemocentros` | `Paciente`, `CampanhaDoacao`, `AgendamentoDoacao`, `AgendaDoHemocentro` | ✅ Implementado — conclusão de procedimento ainda não é gravada |
-| 🚚 Roteirização e Logística (HU‑07) | `/rede` | `GET /pontos`, `/conexoes`, `/rotas` | `RedeDistribuicao` (grafo + Dijkstra), `Conexao`, `RotaCalculada` | ✅ API · ⚠️ tela com dados de exemplo + OSRM |
+| 🚚 Roteirização e Logística (HU‑07, PI3‑236) | `/rede` | `GET /pontos`, `/rotas`, `/rotas/trajeto`, `/hemocomponentes`, `/transferencias` | `RedeDistribuicao` (grafo + Dijkstra), `Conexao`, `RotaCalculada`, `TransferenciaDeBolsa` | ✅ API · ✅ tela com dados reais |
 | 🌡️ Telemetria e Cadeia Fria | — | só contrato (`/entregas/{id}/leituras`) | *(nenhuma)* | ⚠️ Gap de domínio |
 | 🛠️ Admin e Infraestrutura | `/admin` | `GET /diagnostico`, `/benchmarks/auditoria-telemetria`, `/actuator/health` | `diagnostico`, `benchmark` (paralelismo) | ✅ Implementado |
 
@@ -580,8 +580,9 @@ spring.jpa.hibernate.ddl-auto=validate
 | 5️⃣ | [`20260925120200_views_painel.sql`](./supabase/migrations/20260925120200_views_painel.sql) | Cria as views `vw_estoque_por_tipo` e `vw_estoque_agrupado` usadas pelo Painel e pelo Estoque |
 | 6️⃣ | [`20261015010623_papel_admin.sql`](./supabase/migrations/20261015010623_papel_admin.sql) | Inclui o papel `ADMIN` no `CHECK` de `usuario.papel` (PI3-183) |
 | 7️⃣ | [`20261030120000_perfil_doador.sql`](./supabase/migrations/20261030120000_perfil_doador.sql) | Perfil do doador em `usuario`: e-mail (único), telefone e data de nascimento (PI3-203) |
+| 8️⃣ | [`20261104120000_transferencia_bolsa.sql`](./supabase/migrations/20261104120000_transferencia_bolsa.sql) | Rastreabilidade das bolsas (PI3-236): `hospital_atual_id` e a tabela `transferencia_bolsa`, com de onde saíram, para onde foram, quem despachou e quem recebeu |
 
-> ⚠️ Os prints abaixo foram tirados depois das duas primeiras migrations (7 tabelas); as migrations 3 a 7 ainda não têm print.
+> ⚠️ Os prints abaixo foram tirados depois das duas primeiras migrations (7 tabelas); as migrations 3 a 8 ainda não têm print.
 </details>
 
 <details>
@@ -597,7 +598,7 @@ spring.jpa.hibernate.ddl-auto=validate
 <details>
 <summary>▶️🚀 <b>Como aplicar as migrations</b></summary>
 
-**Opção A — SQL Editor:** abrir o projeto → **SQL Editor** → rodar as 7 migrations em ordem (pelo prefixo de data) → rodar `supabase/seed.sql` para carregar os dados de exemplo → criar os usuários de teste seguindo [`supabase/usuarios_de_teste.sql`](./supabase/usuarios_de_teste.sql) → conferir em **Table Editor**.
+**Opção A — SQL Editor:** abrir o projeto → **SQL Editor** → rodar as 8 migrations em ordem (pelo prefixo de data) → rodar `supabase/seed.sql` para carregar os dados de exemplo → criar os usuários de teste seguindo [`supabase/usuarios_de_teste.sql`](./supabase/usuarios_de_teste.sql) → conferir em **Table Editor**.
 
 **Opção B — Supabase CLI:**
 
@@ -867,13 +868,17 @@ manda sozinho). Sem o header → `401`; perfil errado → `403`.
 </details>
 
 <details>
-<summary>▶️🚚 <b>Rede e Rotas</b> — <code>/pontos</code>, <code>/conexoes</code>, <code>/rotas</code></summary>
+<summary>▶️🚚 <b>Rede e Rotas</b> — <code>/pontos</code>, <code>/conexoes</code>, <code>/rotas</code>, <code>/transferencias</code></summary>
 
 | Método | Endpoint | Quem | Para quê |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/pontos` | livre | Hemocentro e hospitais da rede |
 | `GET` | `/conexoes` | livre | Ligações entre os pontos, com distância e tempo |
 | `GET` | `/rotas?origemId=&destinoId=&janelaEntregaLimite=` | livre | Menor caminho pelo grafo (Dijkstra) (HU‑07) |
+| `GET` | `/rotas/trajeto?origemId=&destinoId=` | 🔒 médico ou admin | O caminho do Dijkstra levado para as ruas, com o traçado para o mapa (PI3‑259) |
+| `GET` | `/transferencias?status=` | livre | Transferências de bolsas; `EM_TRANSITO` são as ativas (PI3‑236) |
+| `POST` | `/transferencias` | 🔒 médico | Despacha a bolsa (`{bolsaId, destinoId}`): `EM_TRANSITO`, com a chegada prevista pela rota (PI3‑236) |
+| `POST` | `/transferencias/{id}/recebimento` | 🔒 médico | Confirma a chegada: a bolsa fica `ENTREGUE`, no hospital de destino (PI3‑236) |
 </details>
 
 <details>
@@ -950,7 +955,7 @@ O protótipo ao lado da mesma tela rodando de verdade (prints com Playwright, 14
 | 🌐 [`CONTRATOS_DE_API.md`](./docs/CONTRATOS_DE_API.md) | Endpoints por módulo, padrões e erros |
 | 📄 [`openapi.yaml`](./docs/openapi.yaml) | Contrato OpenAPI 3.0.3 |
 | 📦 [`MODULOS.md`](./docs/MODULOS.md) | Contrato × domínio × banco, por módulo |
-| 🗄️ [`DER.md`](./docs/DER.md) | 14 tabelas, 2 views e constraints |
+| 🗄️ [`DER.md`](./docs/DER.md) | 15 tabelas, 2 views e constraints |
 | 🟢 [`SUPABASE.md`](./docs/SUPABASE.md) | Conexão, `.env`, RLS e prints |
 | 🔐 [`PERFIS_DE_ACESSO.md`](./docs/PERFIS_DE_ACESSO.md) | Perfis (médico, doador, admin), telas e decisões do login |
 | 🔌 [`LIGACOES_E_REDES.md`](./docs/LIGACOES_E_REDES.md) | Ligações e sub-redes (RSD) |

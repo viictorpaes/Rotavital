@@ -108,6 +108,7 @@ quem pode fazer o quê (FKs compostas `(id, papel)` → `usuario`, ver [`DER.md`
 | Consultar painel, estoque, rede e pacientes | HU-02, 03, 07, 08 | ✅ | ❌ | ✅ | — (só leitura) |
 | Solicitar hemocomponente | HU-04 | ✅ | ❌ | ❌ | Não (`solicitante_id` é FK simples) |
 | Registrar recebimento de remessa | HU-05 | ✅ | ❌ | ❌ | Não (`conferida_por` é FK simples) |
+| Despachar bolsa e confirmar a chegada no hospital | PI3-236 | ✅ | ❌ | ❌ | Não: conferido na API (`despachada_por` e `recebida_por` são FKs simples) |
 | Publicar campanha de doação | HU-06 | ✅ | ❌ | ❌ | **Sim:** `publicada_por_papel = 'MEDICO'` |
 | Concluir procedimento (baixa por FEFO) | HU-08 | ✅ | ❌ | ❌ | **Sim:** `responsavel_papel = 'MEDICO'` |
 | Ver pessoas que precisam de doação | HU-09, 10 | ✅ | ✅ | ✅ | — (só leitura) |

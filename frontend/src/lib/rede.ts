@@ -1,7 +1,6 @@
 import type { Coordenada, LoteHemocomponente, TipoComponente } from "@/types";
-import type { PontoRedeDTO } from "@/types/dtos";
-import { lotesEstoque, FAIXAS_IDEAIS } from "@/data/estoqueMock";
-import { diasAteVencer } from "@/lib/estoque";
+import type { BolsaHemocomponenteDTO, PontoRedeDTO } from "@/types/dtos";
+import { converterBolsaParaLote, diasAteVencer, obterFaixaTemperatura, temperaturaForaDaFaixa } from "@/lib/estoque";
 
 export const COMPONENTES: TipoComponente[] = [
   "Concentrado de Hemácias",
@@ -28,7 +27,7 @@ export function enderecoDoPonto(ponto: PontoRedeDTO)
 
 export function formatarFaixa(componente: TipoComponente)
 {
-  const faixa = FAIXAS_IDEAIS[componente];
+  const faixa = obterFaixaTemperatura(componente);
   return `${faixa.minima} a ${faixa.maxima} °C`;
 }
 
@@ -71,13 +70,14 @@ export function decodificarPolyline(polyline: string): Coordenada[]
 }
 
 /**
- * Prioridade de envio por FEFO (*first expired, first out*): entre os lotes do
- * hemocomponente escolhido, saem primeiro os mais próximos do vencimento.
+ * Fila de envio por FEFO (*first expired, first out*): a API devolve as bolsas da que vence primeiro
+ * para a última, e aqui só ficam as que podem sair, com a mesma regra do backend: na validade e com
+ * a cadeia fria intacta.
  */
-export function prioridadeFefo(componente: TipoComponente, limite = 3): LoteHemocomponente[]
+export function filaFefo(bolsas: BolsaHemocomponenteDTO[], limite = 3): LoteHemocomponente[]
 {
-  return lotesEstoque
-    .filter((lote) => lote.componente === componente)
-    .sort((a, b) => diasAteVencer(a) - diasAteVencer(b))
+  return bolsas
+    .map(converterBolsaParaLote)
+    .filter((lote) => diasAteVencer(lote) >= 0 && !temperaturaForaDaFaixa(lote))
     .slice(0, limite);
 }
