@@ -444,6 +444,69 @@ viraram trabalho da Entrega 03.
 | <img src="./img/issue-tracker_issue6-painel-operacional.png" width="260"/> | 🟠 #6 — Painel Operacional (HU‑02) | Escopo e cenários BDD para os números rápidos e a caixa de avisos. |
 | <img src="./img/issue-tracker_issue7-doador-campanha.png" width="260"/> | 🟠 #7 — Modelar Doador e Campanha | Diagrama de `Doador`, `CampanhaDoacao` e `AgendamentoDoacao`, que destravava as HU‑06, 09 e 10. |
 
+<h3 id="-entrega-03" align="center">📌 Entrega 03 — 19/10 <br>
+<img src="https://img.shields.io/badge/-Supabase_Auth-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="20"/>
+<img src="https://img.shields.io/badge/-CRUD_de_Estoque-111827?style=flat-square&logo=springboot&logoColor=green" height="20"/>
+<img src="https://img.shields.io/badge/Status-Em_andamento-F59E0B?style=flat" height="20"/>
+</h3>
+
+<p align="center">
+Duas histórias saem do protótipo e passam a gravar no <b>Supabase</b>: o <b>login com e-mail e senha</b>, que leva
+cada perfil (médico, doador, admin) à sua tela, e o <b>estoque de verdade</b>, com cadastro, listagem com filtros e
+mensagens de erro claras. No Jira: histórias <b>PI3-171</b> (Login) e <b>PI3-170</b> (Crud de estoque).
+</p>
+
+| Requisito da entrega | Descrição | Status |
+| :--- | :--- | :---: |
+| ✅ Histórias implementadas | Mais 2 HUs em código real, descritas em post-it abaixo | <img src="https://img.shields.io/badge/2%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
+| 🔁 Versionamento atuante | Commits de código na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/4_de_4_semanas-22C55E?style=flat-square" height="18"/> **Feito** — commits de código em todas as semanas de 22/09 a 19/10 ([histórico](https://github.com/viictorpaes/Rotavital/commits/main?since=2026-09-22&until=2026-10-19)) |
+| 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, mostrando as 2 histórias novas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> **Pendente** (PI3-221) |
+| 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das 2 histórias | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> **Pendente** (PI3-222) |
+| 🐞 Issue/Bug Tracker | GitHub Issues atualizado + print no README | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> **Pendente** (PI3-223) |
+
+| Artefato | Link |
+| :--- | :--- |
+| 🎬 Screencast — uso do sistema | *a publicar* |
+| 🎬 Screencast — explicação do código | *a publicar* |
+
+<h4 align="center">📝 Histórias Implementadas — Entrega 03</h4>
+
+<p align="center">Resumo em <b>post-it</b>, como visto em sala; o detalhamento de cada HU está na <a href="#-entrega-01">Entrega 01</a>.</p>
+
+> 🟨 **HU‑01 · Login (PI3‑171)** — Como **médico, doador ou administrador**, preciso entrar com meu **e-mail e
+> senha**, para cair direto na tela do meu perfil e não ver o que não é meu.
+>
+> ✅ Perfis decididos — quem entra e o que cada um vê: [`PERFIS_DE_ACESSO.md`](./docs/PERFIS_DE_ACESSO.md) (PI3‑182)
+> ✅ Backend — `POST /api/v1/acessos` confere a senha no Supabase Auth e devolve o perfil e a tela inicial:
+> [`AcessoController.java`](./backend/src/main/java/com/rotavital/api/AcessoController.java),
+> [`AutenticacaoService.java`](./backend/src/main/java/com/rotavital/servico/AutenticacaoService.java),
+> [`SupabaseAuth.java`](./backend/src/main/java/com/rotavital/supabase/SupabaseAuth.java) (PI3‑183)
+> ✅ Frontend — login leva médico ao Painel, doador ao Portal e admin à tela de Admin, com aviso de senha errada
+> ou usuário inexistente: [`PaginaLogin.tsx`](./frontend/src/pages/Login/PaginaLogin.tsx),
+> [`ContextoAutenticacao.tsx`](./frontend/src/context/ContextoAutenticacao.tsx) (PI3‑184, PI3‑196)
+> 📎 Evidências — [`PI3-184_PI3-196_login.md`](./docs/evidencias/PI3-184_PI3-196_login.md)
+
+> 🟨 **HU‑03 · Crud de estoque (PI3‑170)** — Como **médico**, preciso cadastrar as bolsas que chegam e consultar o
+> estoque com filtros, para saber o que tenho de cada tipo e componente e o que vence primeiro.
+>
+> ✅ Backend — `POST /api/v1/hemocomponentes` com as regras de validade, volume e temperatura (PI3‑179);
+> `GET /api/v1/hemocomponentes` com filtros de banco, componente, tipo e status, paginação e ordem por validade (PI3‑187);
+> respostas 400/404/422 com mensagem clara (PI3‑181); totais por tipo sanguíneo e componente (PI3‑188):
+> [`EstoqueController.java`](./backend/src/main/java/com/rotavital/api/EstoqueController.java),
+> [`EstoqueService.java`](./backend/src/main/java/com/rotavital/servico/EstoqueService.java)
+> ✅ Frontend — tela de Estoque lendo da API, com filtros, paginação e o formulário **Nova bolsa**:
+> [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx),
+> [`ModalNovaBolsa.tsx`](./frontend/src/components/estoque/ModalNovaBolsa.tsx) (PI3‑180, PI3‑179)
+> 🔄 Edição e descarte de bolsas (PI3‑190) — implementados no [PR #29](https://github.com/viictorpaes/Rotavital/pull/29), aguardando merge
+
+<h4 align="center" id="issue-tracker-entrega-03">🐛 Issue/Bug Tracker — Entrega 03</h4>
+
+<p align="center">
+<i>Pendente (PI3‑223):</i> fechar no <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> o que já foi resolvido —
+a #3 (tela de Estoque) e a #4 (integrar o frontend ao backend) saíram nesta entrega —, abrir as pendências
+encontradas nos testes e colocar aqui o print da lista atualizada.
+</p>
+
 <h2 align="center" id="modulos">📦 Módulos do Sistema <br>
 <img src="https://img.shields.io/badge/Módulos-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="22"/>
 </h2>
