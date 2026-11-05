@@ -56,6 +56,26 @@ from (values ('BS-01', 'HOSP-01',        3.2,  9),
 on conflict do nothing;
 
 -- -------------------------------------------------------------------
+-- conexao — ligações diretas entre hospitais (PI3-259). Só com a estrela
+-- acima, todo caminho a partir do BS-01 seria direto e o Dijkstra não teria
+-- o que escolher. Distância: linha reta × 1,3; tempo: a 25 km/h, os mesmos
+-- fatores da estimativa de Trajeto.java.
+-- -------------------------------------------------------------------
+insert into public.conexao (origem_id, destino_id, distancia_km, tempo_estimado_min)
+select origem_id, destino_id, distancia_km, tempo_estimado_min
+from (values ('barao-lucena',   'hc-pe',          2.4,  6),
+             ('barao-lucena',   'upa-norte',      4.9, 12),
+             ('real-portugues', 'barao-lucena',   4.9, 12),
+             ('real-portugues', 'getulio-vargas', 5.2, 13)) as ida (origem_id, destino_id, distancia_km, tempo_estimado_min)
+union all
+select destino_id, origem_id, distancia_km, tempo_estimado_min
+from (values ('barao-lucena',   'hc-pe',          2.4,  6),
+             ('barao-lucena',   'upa-norte',      4.9, 12),
+             ('real-portugues', 'barao-lucena',   4.9, 12),
+             ('real-portugues', 'getulio-vargas', 5.2, 13)) as volta (origem_id, destino_id, distancia_km, tempo_estimado_min)
+on conflict do nothing;
+
+-- -------------------------------------------------------------------
 -- bolsa_hemocomponente — estoque do Hemope Central (BS-01).
 -- PQ-3014 está a 25,6 °C de propósito: fora da faixa ideal das plaquetas
 -- (20–24 °C), para o alerta "FORA DA FAIXA" da HU-03 aparecer.
@@ -73,7 +93,7 @@ on conflict do nothing;
 commit;
 
 -- -------------------------------------------------------------------
--- Conferência (esperado: 7 pontos, 12 conexões, 6 bolsas do seed).
+-- Conferência (esperado: 7 pontos, 12 conexões do BS-01, 6 bolsas do seed).
 -- -------------------------------------------------------------------
 select 'ponto_rede' as tabela, count(*) as linhas
 from public.ponto_rede

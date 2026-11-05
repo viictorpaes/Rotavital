@@ -70,6 +70,8 @@ export interface BolsaHemocomponenteDTO
   localizacao?: string;
   localizacaoFisica?: string;
   bancoOrigemId?: string;
+  /** Hospital onde a bolsa está; nulo no hemocentro de origem e em trânsito (PI3-236). */
+  hospitalAtualId?: string | null;
 }
 
 /** Filtros opcionais e combináveis de GET /hemocomponentes; page começa em 0 e size vai de 1 a 100. */
@@ -152,6 +154,9 @@ export interface PontoRedeDTO
   tipo: TipoPontoRedeBackend;
   latitude: number;
   longitude: number;
+  logradouro: string;
+  cidade: string | null;
+  uf: string | null;
 }
 
 export interface ConexaoDTO
@@ -162,18 +167,55 @@ export interface ConexaoDTO
   tempoEstimadoMin: number;
 }
 
+/** Menor caminho pelo Dijkstra (GET /rotas), com a distância e o tempo das conexões cadastradas. */
 export interface RotaCalculadaDTO
 {
+  origemId: string;
+  destinoId: string;
+  /** Ids dos pontos do caminho, da origem ao destino. */
+  nos: string[];
+  distanciaTotalKm: number;
+  tempoEstimadoMin: number;
+  dentroDaJanela: boolean;
+}
+
+/** Rota para o mapa (GET /rotas/trajeto, PI3-259): o caminho do Dijkstra levado para as ruas. */
+export interface RotaNoMapaDTO
+{
+  origemId: string;
+  destinoId: string;
+  nos: string[];
+  distanciaKm: number;
+  duracaoMinutos: number;
+  fonte: FonteDoTrajetoBackend;
+  /** Traçado do Google ("encoded polyline"); nulo quando a rota não passou por ele. */
+  polyline: string | null;
+}
+
+export type StatusTransferenciaBackend = "EM_TRANSITO" | "RECEBIDA" | "CANCELADA";
+
+/** Uma bolsa saindo do hemocentro para um hospital pela tela de Rede (PI3-236). */
+export interface TransferenciaDTO
+{
+  id: string;
+  bolsaId: string;
+  tipoComponente: TipoComponenteBackend;
+  tipoSanguineo: TipoSanguineoBackend;
   origemId: string;
   origemNome: string;
   destinoId: string;
   destinoNome: string;
-  distanciaKmTotal: number;
-  duracaoMinutosTotal: number;
-  partidaEstimada: string;
-  chegadaEstimada: string;
-  atendeJanelaTempo: boolean;
-  caminho: PontoRedeDTO[];
+  status: StatusTransferenciaBackend;
+  distanciaKm: number;
+  duracaoMinutos: number;
+  fonte: FonteDoTrajetoBackend;
+  /** Datas com fuso (ISO 8601). */
+  despachadaEm: string;
+  chegadaPrevistaEm: string;
+  recebidaEm: string | null;
+  despachadaPorNome: string | null;
+  recebidaPorNome: string | null;
+  localizacaoDaBolsa: string | null;
 }
 
 // ======================================================================
@@ -380,8 +422,11 @@ export interface HorarioDTO
 // DTOs - ROTA ATÉ O HOSPITAL DA CAMPANHA (PI3-237, PI3-262)
 // ======================================================================
 
-/** GOOGLE_ROUTES: ruas e trânsito do Google · ESTIMATIVA: linha reta × 1,3 a 25 km/h (sem o Google). */
-export type FonteDoTrajetoBackend = "GOOGLE_ROUTES" | "ESTIMATIVA";
+/**
+ * GOOGLE_ROUTES: ruas e trânsito do Google · ESTIMATIVA: linha reta × 1,3 a 25 km/h (sem o Google) ·
+ * CONEXOES_DA_REDE: distância e tempo das conexões cadastradas no caminho do Dijkstra (sem o Google).
+ */
+export type FonteDoTrajetoBackend = "GOOGLE_ROUTES" | "ESTIMATIVA" | "CONEXOES_DA_REDE";
 
 /** Corpo do POST /campanhas/{id}/rota: onde o doador está agora. */
 export interface OrigemPayloadDTO

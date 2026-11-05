@@ -18,6 +18,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.rotavital.dominio.Coordenada;
 import com.rotavital.dominio.FonteDoTrajeto;
 import com.rotavital.dominio.Trajeto;
@@ -31,6 +32,9 @@ import com.rotavital.servico.CalculadoraDeTrajeto;
  * ao navegador. O X-Goog-FieldMask pede só distância e duração, que é o que a tela mostra e o
  * que a cobrança do Google considera.
  *
+ * PI3-259 — A tela de Rede pede também o traçado (polyline) de um caminho com paradas, para
+ * desenhar no mapa as ruas do caminho que o Dijkstra escolheu, sem expor a chave no navegador.
+ *
  * Qualquer problema (chave ausente, API desligada no projeto, tempo esgotado, sem caminho)
  * devolve vazio e fica no log: o serviço usa a estimativa em linha reta no lugar. A posição do
  * doador não vai para o log.
@@ -41,9 +45,9 @@ public class GoogleRoutes implements CalculadoraDeTrajeto
 {
     static final String CAMINHO = "/directions/v2:computeRoutes";
     static final String CAMPOS = "routes.distanceMeters,routes.duration";
+    static final String CAMPOS_COM_TRACADO = CAMPOS + ",routes.polyline.encodedPolyline";
 
     private static final Logger LOG = LoggerFactory.getLogger(GoogleRoutes.class);
-    // Menor que o timeout do frontend (10 s): se o Google demorar, ainda sobra tempo para a estimativa.
     private static final Duration TEMPO_LIMITE = Duration.ofSeconds(4);
 
     private final RestClient cliente;
@@ -57,7 +61,7 @@ public class GoogleRoutes implements CalculadoraDeTrajeto
 
         if (!chaveConfigurada)
         {
-            LOG.info("GOOGLE_MAPS_API_KEY não configurada: a rota até o hospital usa a estimativa em linha reta.");
+            LOG.info("GOOGLE_MAPS_API_KEY não foi configurada: a rota até o hospital usa a estimativa em linha reta.");
         }
     }
 
@@ -75,6 +79,17 @@ public class GoogleRoutes implements CalculadoraDeTrajeto
     @Override
     public Optional<Trajeto> calcular(Coordenada origem, Coordenada destino)
     {
+        return pedir(PedidoDeRota.deCarro(List.of(origem, destino)), CAMPOS);
+    }
+
+    @Override
+    public Optional<Trajeto> calcularComTracado(List<Coordenada> paradas)
+    {
+        return pedir(PedidoDeRota.deCarro(paradas), CAMPOS_COM_TRACADO);
+    }
+
+    private Optional<Trajeto> pedir(PedidoDeRota pedido, String campos)
+    {
         if (!chaveConfigurada)
         {
             return Optional.empty();
@@ -85,21 +100,22 @@ public class GoogleRoutes implements CalculadoraDeTrajeto
             RespostaRotas resposta = cliente.post()
                     .uri(CAMINHO)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .header("X-Goog-FieldMask", CAMPOS)
-                    .body(PedidoDeRota.deCarro(origem, destino))
+                    .header("X-Goog-FieldMask", campos)
+                    .body(pedido)
                     .retrieve()
                     .body(RespostaRotas.class);
 
             if (resposta == null || resposta.routes() == null || resposta.routes().isEmpty())
             {
-                LOG.warn("Routes API não encontrou caminho de carro até o hospital.");
+                LOG.warn("As 'Routes' não encontraram o caminho de carro até o hospital.");
                 return Optional.empty();
             }
 
             Rota rota = resposta.routes().get(0);
             long segundos = segundos(rota.duration());
             int minutos = (int) Math.ceil(segundos / 60.0);
-            return Optional.of(new Trajeto(rota.distanceMeters() / 1000.0, minutos, FonteDoTrajeto.GOOGLE_ROUTES));
+            String tracado = rota.polyline() == null ? null : rota.polyline().encodedPolyline();
+            return Optional.of(new Trajeto(rota.distanceMeters() / 1000.0, minutos, FonteDoTrajeto.GOOGLE_ROUTES, tracado));
         }
         catch (RestClientResponseException e)
         {
@@ -128,9 +144,9 @@ public class GoogleRoutes implements CalculadoraDeTrajeto
     private static RestClient montarCliente(String url, String chave, RestClient.Builder builder)
     {
         return builder
-                .baseUrl(url.replaceAll("/+$", ""))
-                .defaultHeader("X-Goog-Api-Key", estaPreenchida(chave) ? chave : "")
-                .build();
+            .baseUrl(url.replaceAll("/+$", ""))
+            .defaultHeader("X-Goog-Api-Key", estaPreenchida(chave) ? chave : "")
+            .build();
     }
 
     private static boolean estaPreenchida(String chave)
@@ -146,12 +162,16 @@ public class GoogleRoutes implements CalculadoraDeTrajeto
         return fabrica;
     }
 
-    record PedidoDeRota(Ponto origin, Ponto destination, String travelMode, String routingPreference,
-            String languageCode, String units)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    record PedidoDeRota(Ponto origin, Ponto destination, List<Ponto> intermediates, String travelMode,
+    String routingPreference,  String languageCode, String units)
     {
-        static PedidoDeRota deCarro(Coordenada origem, Coordenada destino)
+        // A primeira parada é a origem, a última é o destino e as do meio viram pontos de passagem.
+        static PedidoDeRota deCarro(List<Coordenada> paradas)
         {
-            return new PedidoDeRota(Ponto.de(origem), Ponto.de(destino), "DRIVE", "TRAFFIC_AWARE", "pt-BR", "METRIC");
+            List<Ponto> pontos = paradas.stream().map(Ponto::de).toList();
+            return new PedidoDeRota(pontos.get(0), pontos.get(pontos.size() - 1),
+                    pontos.subList(1, pontos.size() - 1), "DRIVE", "TRAFFIC_AWARE", "pt-BR", "METRIC");
         }
     }
 
@@ -174,6 +194,10 @@ public class GoogleRoutes implements CalculadoraDeTrajeto
     {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record Rota(long distanceMeters, String duration)
+    record Rota(long distanceMeters, String duration, Polilinha polyline)
+    {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record Polilinha(String encodedPolyline)
     {}
 }

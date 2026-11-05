@@ -6,14 +6,18 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# tsc -b (checagem de tipos) + vite build: erro de tipo derruba o build da imagem
+# tsc -b (checagem de tipos) + vite build: erro de tipo derruba o build da imagem.
+# O Vite grava os VITE_* dentro do JavaScript no build: trocar a chave do mapa exige reconstruir a imagem.
 COPY . .
+ARG VITE_GOOGLE_MAPS_KEY=
 RUN npm run build
 
 # Versão (sha do commit) gravada pela esteira em /versao.json; o smoke test do deploy confere por ela.
 # Fica depois do build para trocar de versão não invalidar o cache do npm run build.
+# construidoEm só muda quando o código muda (esta camada vem do cache): "curl localhost:8080/versao.json"
+# mostra de quando é o front-end que está no ar.
 ARG APP_VERSAO=local
-RUN printf '{"versao":"%s"}\n' "$APP_VERSAO" > dist/versao.json
+RUN printf '{"versao":"%s","construidoEm":"%s"}\n' "$APP_VERSAO" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > dist/versao.json
 
 # 2. Estágio de produção: só o Nginx e os arquivos estáticos do build.
 # Variante "unprivileged": o Nginx roda sem root, por isso escuta na 8080 (portas < 1024 exigem root).

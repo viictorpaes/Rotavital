@@ -159,8 +159,8 @@ Trocar o header pelo token do Supabase fica para quando a decisão 6 for impleme
 <h3 align="left" id="2-3-endpoints">🧾 2.3 Endpoints REST do MVP, por recurso</h3>
 
 São **19 endpoints**, mais de 15. Por isso a tabela está agrupada por recurso, e os 6 principais estão detalhados na
-[seção 2.4](#2-4-principais). Caminhos relativos a `http://localhost:8080` (backend direto) ou a
-`http://localhost` (via Nginx). ✅ = implementado e respondendo · 🕓 = só no contrato (a rota dá 404
+[seção 2.4](#2-4-principais). Caminhos relativos a `http://localhost:8080`: o backend direto no modo
+desenvolvimento, ou o Nginx, que repassa para ele, no Docker. ✅ = implementado e respondendo · 🕓 = só no contrato (a rota dá 404
 até o controller existir). Toda operação também pode devolver `500` (RFC 7807), que foi omitido nas linhas.
 
 | Método | Caminho | Descrição | Autenticação | Resposta | Status |
@@ -187,6 +187,10 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | `GET` | `/api/v1/conexoes` | ✅ Arestas do grafo (distância/tempo) | Nenhuma no MVP (alvo: médico) | `Conexao[]` | `200` |
 | **🚚 Rotas** | *`RotaController`* | | | | |
 | `GET` | `/api/v1/rotas?origemId=&destinoId=&janelaEntregaLimite=` | ✅ Rota de menor custo (Dijkstra) e se ela cabe na janela de entrega | Nenhuma no MVP (alvo: médico) | `RotaCalculada` | `200` · `400` · `404` · `422` |
+| `GET` | `/api/v1/rotas/trajeto?origemId=&destinoId=` | ✅ O caminho do Dijkstra levado para as ruas, com o traçado para o mapa (PI3-259) | `X-Usuario-Id` de médico ou admin | `RotaNoMapa` | `200` · `400` · `401` · `403` · `404` · `422` |
+| `GET` | `/api/v1/transferencias?status=` | ✅ Transferências de bolsas; com `status`, da que saiu primeiro para a última (PI3-236) | Nenhuma | `Transferencia[]` | `200` · `400` |
+| `POST` | `/api/v1/transferencias` | ✅ Despacha a bolsa do hemocentro para o hospital: `EM_TRANSITO`, com a chegada prevista (PI3-236) | `X-Usuario-Id` de médico | `Transferencia` | `201` · `400` · `401` · `403` · `404` · `409` · `422` |
+| `POST` | `/api/v1/transferencias/{id}/recebimento` | ✅ Confirma a chegada: a bolsa fica `ENTREGUE`, no hospital de destino (PI3-236) | `X-Usuario-Id` de médico | `Transferencia` | `200` · `401` · `403` · `404` · `422` |
 | **🌡️ Entregas → Leituras** | *`EntregaController` (planejado)* | | | | |
 | `POST` | `/api/v1/entregas/{id}/leituras` | 🕓 Registra uma leitura simulada (GPS + °C) | Nenhuma no MVP (alvo: médico) | `LeituraTelemetria` | `201` · `400` · `404` · `422` |
 | `GET` | `/api/v1/entregas/{id}/leituras` | 🕓 Histórico de leituras da entrega, em ordem cronológica | Nenhuma no MVP (alvo: médico) | `MonitoramentoEntrega` | `200` · `404` |

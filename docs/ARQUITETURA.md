@@ -53,19 +53,20 @@ flowchart LR
 
 | Componente | Tecnologia | Porta | Papel |
 | :--- | :--- | :--- | :--- |
-| 🖥️ Frontend | React 18 + TypeScript + Vite + Tailwind CSS, servido pelo `nginx-unprivileged` | `8080` no container → `80` na máquina | Entrega a SPA e repassa `/api/` para o backend ([`nginx/default.conf.template`](../frontend/nginx/default.conf.template)) |
+| 🖥️ Frontend | React 18 + TypeScript + Vite + Tailwind CSS, servido pelo `nginx-unprivileged` | `8080` no container e na máquina | Entrega a SPA e repassa `/api/` e `/actuator/` para o backend ([`nginx/default.conf.template`](../frontend/nginx/default.conf.template)) |
 | ☕ Backend | Spring Boot 3.3, Java 21, Spring Data JPA, Actuator | `8080` | API REST `/api/v1`; única peça que fala com o banco |
 | 🐘 Banco | PostgreSQL 17 (container `db`) ou Supabase | `5432` | Dados; o schema vem só de [`supabase/migrations`](../supabase/migrations) |
 | 🔑 Supabase Auth | Serviço do Supabase | HTTPS | Confere e-mail e senha no login e cria a conta do doador que se cadastra |
-| 🗺️ OSRM + OpenStreetMap | Serviços públicos | HTTPS | Rota real e mapa da HU-07, chamados direto pelo navegador, com valores de exemplo se não responderem |
+| 🗺️ Google Maps Platform | Maps JavaScript API (navegador) | HTTPS | Mapa interativo da tela de Rede (PI3-258), com chave própria para o navegador |
+| 🗺️ OSRM + OpenStreetMap | Serviços públicos | HTTPS | Plano B do mapa e do traçado da tela de Rede, chamados direto pelo navegador quando o Google não está configurado |
 
 <h2 align="left" id="2-ambientes">🌍 2. Ambientes de execução</h2>
 
 | Ambiente | Como sobe | Site | API | Banco |
 | :--- | :--- | :--- | :--- | :--- |
 | 💻 Desenvolvimento | `npm run dev` em `frontend/` + `mvn spring-boot:run` em `backend/` | Vite em `localhost:5173`, com proxy `/api` → `8080` ([`vite.config.ts`](../frontend/vite.config.ts)) | `localhost:8080` | Supabase ([`application.properties`](../backend/src/main/resources/application.properties)) |
-| 🐳 Docker local | `npm run docker:local` | Nginx em `localhost` | `localhost:8080` | Postgres 17 do container `db`, volume `dados-postgres` |
-| ☁️ Docker + Supabase | `npm run docker:cloud` | Nginx em `localhost` | `localhost:8080` | Supabase ([`compose.supabase.yaml`](../compose.supabase.yaml)) |
+| 🐳 Docker local | `npm run docker:local` | Nginx em `localhost:8080` | pelo Nginx, em `localhost:8080/api/` (direto em `localhost:8082`) | Postgres 17 do container `db`, volume `dados-postgres` |
+| ☁️ Docker + Supabase | `npm run docker:cloud` | Nginx em `localhost:8080` | pelo Nginx, em `localhost:8080/api/` (direto em `localhost:8082`) | Supabase ([`compose.supabase.yaml`](../compose.supabase.yaml)) |
 | 🚀 Produção (⏳ falta ligar as contas) | Esteira na `main` | Vercel, com rewrite `/api/` → Render ([`vercel.json`](../frontend/vercel.json)) | Render, imagem do GHCR ([`render.yaml`](../render.yaml)) | Supabase |
 
 A mesma imagem do backend roda nos três últimos: o banco muda só pelas variáveis `SPRING_DATASOURCE_*`. Passo a passo
@@ -150,7 +151,7 @@ Os testes ficam em [`backend/src/test`](../backend/src/test) em três níveis �
 | `/painel` | `PaginaPainel` | médico, admin | estoque e campanhas da API; alertas calculados na tela |
 | `/estoque` | `PaginaEstoque` | médico, admin | `GET`/`POST /hemocomponentes` |
 | `/requisicao` | `PaginaRequisicao` | médico, admin | Campanha: `POST /campanhas` · Solicitar: estoque da API com FEFO na tela · Recebidas: exemplo |
-| `/rede` | `PaginaRede` | médico, admin | dados de exemplo + OSRM |
+| `/rede` | `PaginaRede` | médico, admin | API (`/pontos`, `/rotas`, `/hemocomponentes`, `/transferencias`) + Google Maps, com OSRM e OpenStreetMap de plano B |
 | `/pacientes` | `PaginaPacientes` | médico (admin só consulta) | `/pacientes` |
 | `/doacoes` | `PaginaDoacoes` | médico, admin | `/campanhas` e agendamentos |
 | `/portal-doador` | `PaginaPortalDoador` | doador | `/campanhas`, `/agendamentos/meus`, `/doadores/eu`, `/hemocentros` |

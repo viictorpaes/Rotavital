@@ -28,6 +28,9 @@ import type {
   NovaBolsaHemocomponenteDTO,
   PontoRedeDTO,
   RotaCalculadaDTO,
+  RotaNoMapaDTO,
+  StatusTransferenciaBackend,
+  TransferenciaDTO,
   DiagnosticoDados,
 } from "@/types/dtos";
 
@@ -78,20 +81,48 @@ export async function cadastrarHemocomponente(dados: NovaBolsaHemocomponenteDTO)
 
 /**
  * Lista todos os pontos cadastrados na rede hospitalar (bancos de sangue e hospitais).
+ * Silencioso: as telas que usam a lista mostram o erro no próprio corpo.
  */
 export async function listarPontosRede(): Promise<PontoRedeDTO[]>
 {
-  return clienteHttp.get<PontoRedeDTO[]>("/pontos");
+  return clienteHttp.get<PontoRedeDTO[]>("/pontos", { silencioso: true });
+}
+
+/** Menor caminho entre dois pontos da rede (Dijkstra). Silencioso: sem caminho, a lista mostra "sem rota". */
+export async function calcularRota(origemId: string, destinoId: string): Promise<RotaCalculadaDTO>
+{
+  return clienteHttp.get<RotaCalculadaDTO>("/rotas", { params: { origemId, destinoId }, silencioso: true });
 }
 
 /**
- * Calcula a rota ótima entre dois pontos da rede com previsão de chegada.
+ * Rota para desenhar no mapa (PI3-259): o caminho do Dijkstra levado para as ruas pelo Google.
+ * Cada chamada consome a cota da Routes API: é pedida só para o destino selecionado.
  */
-export async function calcularRota(origemId: string, destinoId: string, partida?: string): Promise<RotaCalculadaDTO>
+export async function calcularRotaNoMapa(origemId: string, destinoId: string): Promise<RotaNoMapaDTO>
 {
-  return clienteHttp.get<RotaCalculadaDTO>("/rotas", {
-    params: { origemId, destinoId, partida },
-  });
+  return clienteHttp.get<RotaNoMapaDTO>("/rotas/trajeto", { params: { origemId, destinoId }, silencioso: true });
+}
+
+// ----------------------------------------------------------------------
+// Transferências de bolsas pela tela de Rede (PI3-236). Consultar é livre; despachar e confirmar
+// o recebimento exigem um médico (X-Usuario-Id). Silenciosas: a tela mostra o erro perto da ação.
+// ----------------------------------------------------------------------
+
+export async function listarTransferencias(status?: StatusTransferenciaBackend): Promise<TransferenciaDTO[]>
+{
+  return clienteHttp.get<TransferenciaDTO[]>("/transferencias", { params: { status }, silencioso: true });
+}
+
+/** A bolsa sai do hemocentro dela para o hospital: fica EM_TRANSITO, com a chegada prevista pela rota. */
+export async function despacharBolsa(bolsaId: string, destinoId: string): Promise<TransferenciaDTO>
+{
+  return clienteHttp.post<TransferenciaDTO>("/transferencias", { bolsaId, destinoId }, { silencioso: true });
+}
+
+/** Confirma a chegada: a bolsa fica ENTREGUE e passa a estar no hospital de destino. */
+export async function confirmarRecebimentoDaBolsa(transferenciaId: string): Promise<TransferenciaDTO>
+{
+  return clienteHttp.post<TransferenciaDTO>(`/transferencias/${transferenciaId}/recebimento`, undefined, { silencioso: true });
 }
 
 // ----------------------------------------------------------------------

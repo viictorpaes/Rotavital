@@ -41,7 +41,7 @@ roteirização de entregas, telemetria da cadeia fria e campanhas de doação qu
 ```bash
 git clone https://github.com/viictorpaes/Rotavital.git && cd Rotavital
 cp .env.example .env        # Windows (PowerShell): Copy-Item .env.example .env
-npm run docker:local        # banco + API + site → http://localhost
+npm run docker:local        # banco + API + site → http://localhost:8080
 ```
 
 **📑 Sumário**
@@ -459,7 +459,7 @@ Detalhe em <a href="./docs/MODULOS.md"><code>docs/MODULOS.md</code></a>.
 | 📦 Estoque e Hemocomponentes (HU‑02, HU‑03, HU‑08) | `/painel`, `/estoque` | `/bancos/{bancoId}/estoque` · `/resumo` · `/alertas`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente`, `AlertaDeEstoque` | ✅ Implementado |
 | 🏥 Requisições e Alocação (HU‑04, HU‑05) | `/requisicao` (abas Solicitar e Recebidas) | `GET /bancos/{bancoId}/sugestao-lote` | `RequisicaoHospitalar`, `CompatibilidadeSanguinea`, `FilaRequisicoesHospitalares` | ⚠️ Parcial — requisição e recebimento sem controller |
 | ❤️ Pacientes e Doações (HU‑06, HU‑08, HU‑09) | `/pacientes`, `/requisicao` (aba Campanha), `/doacoes`, `/portal-doador` | `/pacientes`, `/campanhas`, `/agendamentos`, `/hemocentros` | `Paciente`, `CampanhaDoacao`, `AgendamentoDoacao`, `AgendaDoHemocentro` | ✅ Implementado — conclusão de procedimento ainda não é gravada |
-| 🚚 Roteirização e Logística (HU‑07) | `/rede` | `GET /pontos`, `/conexoes`, `/rotas` | `RedeDistribuicao` (grafo + Dijkstra), `Conexao`, `RotaCalculada` | ✅ API · ⚠️ tela com dados de exemplo + OSRM |
+| 🚚 Roteirização e Logística (HU‑07, PI3‑236) | `/rede` | `GET /pontos`, `/rotas`, `/rotas/trajeto`, `/hemocomponentes`, `/transferencias` | `RedeDistribuicao` (grafo + Dijkstra), `Conexao`, `RotaCalculada`, `TransferenciaDeBolsa` | ✅ API · ✅ tela com dados reais |
 | 🌡️ Telemetria e Cadeia Fria | — | só contrato (`/entregas/{id}/leituras`) | *(nenhuma)* | ⚠️ Gap de domínio |
 | 🛠️ Admin e Infraestrutura | `/admin` | `GET /diagnostico`, `/benchmarks/auditoria-telemetria`, `/actuator/health` | `diagnostico`, `benchmark` (paralelismo) | ✅ Implementado |
 
@@ -580,8 +580,9 @@ spring.jpa.hibernate.ddl-auto=validate
 | 5️⃣ | [`20260925120200_views_painel.sql`](./supabase/migrations/20260925120200_views_painel.sql) | Cria as views `vw_estoque_por_tipo` e `vw_estoque_agrupado` usadas pelo Painel e pelo Estoque |
 | 6️⃣ | [`20261015010623_papel_admin.sql`](./supabase/migrations/20261015010623_papel_admin.sql) | Inclui o papel `ADMIN` no `CHECK` de `usuario.papel` (PI3-183) |
 | 7️⃣ | [`20261030120000_perfil_doador.sql`](./supabase/migrations/20261030120000_perfil_doador.sql) | Perfil do doador em `usuario`: e-mail (único), telefone e data de nascimento (PI3-203) |
+| 8️⃣ | [`20261104120000_transferencia_bolsa.sql`](./supabase/migrations/20261104120000_transferencia_bolsa.sql) | Rastreabilidade das bolsas (PI3-236): `hospital_atual_id` e a tabela `transferencia_bolsa`, com de onde saíram, para onde foram, quem despachou e quem recebeu |
 
-> ⚠️ Os prints abaixo foram tirados depois das duas primeiras migrations (7 tabelas); as migrations 3 a 7 ainda não têm print.
+> ⚠️ Os prints abaixo foram tirados depois das duas primeiras migrations (7 tabelas); as migrations 3 a 8 ainda não têm print.
 </details>
 
 <details>
@@ -597,7 +598,7 @@ spring.jpa.hibernate.ddl-auto=validate
 <details>
 <summary>▶️🚀 <b>Como aplicar as migrations</b></summary>
 
-**Opção A — SQL Editor:** abrir o projeto → **SQL Editor** → rodar as 7 migrations em ordem (pelo prefixo de data) → rodar `supabase/seed.sql` para carregar os dados de exemplo → criar os usuários de teste seguindo [`supabase/usuarios_de_teste.sql`](./supabase/usuarios_de_teste.sql) → conferir em **Table Editor**.
+**Opção A — SQL Editor:** abrir o projeto → **SQL Editor** → rodar as 8 migrations em ordem (pelo prefixo de data) → rodar `supabase/seed.sql` para carregar os dados de exemplo → criar os usuários de teste seguindo [`supabase/usuarios_de_teste.sql`](./supabase/usuarios_de_teste.sql) → conferir em **Table Editor**.
 
 **Opção B — Supabase CLI:**
 
@@ -657,19 +658,22 @@ nuvem, também a `SUPABASE_DB_PASSWORD` (peça os valores ao líder do grupo).
 | **Use para** | desenvolver e testar sem medo | conferir com os dados reais |
 
 ```bash
-npm run docker:build        # 1ª vez e sempre que o código mudar
 npm run docker:local        # ou: npm run docker:cloud
 ```
 
-**4. Conferir:** `npm run docker:status` deve mostrar os containers `(healthy)`. O **site** abre em http://localhost
-(entre com um dos [usuários de teste](#usuarios-teste)), a **API** em http://localhost:8080/api/v1 e a saúde em
-http://localhost:8080/actuator/health.
+O `up` reconstrói sozinho as imagens do que mudou no código (`pull_policy: build`), então o que sobe é sempre o que está na
+pasta. Não precisa rodar `docker:build` antes.
+
+**4. Conferir:** `npm run docker:status` deve mostrar os containers `(healthy)`. Tudo passa por uma porta só: o **site** abre
+em http://localhost:8080 (entre com um dos [usuários de teste](#usuarios-teste)), a **API** responde em
+http://localhost:8080/api/v1 e a saúde em http://localhost:8080/actuator/health. A versão no ar aparece em
+http://localhost:8080/versao.json.
 
 <h4 align="left" id="comandos-npm">🧰 Comandos npm</h4>
 
 | Comando | O que faz | Equivale a |
 | :--- | :--- | :--- |
-| `npm run docker:build` | Gera as imagens (o build do backend roda os testes) | `docker compose build` |
+| `npm run docker:build` | Só gera as imagens, sem subir (o build do backend roda os testes) | `docker compose build` |
 | `npm run docker:local` | Sobe db → backend → frontend | `docker compose -f compose.yaml up -d` |
 | `npm run docker:cloud` | Sobe backend → frontend ligados ao Supabase | `docker compose -f compose.yaml -f compose.supabase.yaml up -d` |
 | `npm run docker:status` | Lista os containers e se estão `(healthy)` | `docker compose ps` |
@@ -687,16 +691,17 @@ http://localhost:8080/actuator/health.
 | | `SUPABASE_KEY` | Chave publicável do Supabase Auth; sem ela, login e cadastro de doador respondem `503` |
 | | `SUPABASE_DB_PASSWORD` | Senha do banco do Supabase, só para o `docker:cloud` |
 | | `GOOGLE_MAPS_API_KEY` | Opcional: Routes API do Google para o "Como chegar" ([como criar](#google-maps)); sem ela, a distância é estimada |
-| | `API_PORT` · `WEB_PORT` | Portas na sua máquina (padrão `8080` e `80`) |
+| | `GOOGLE_MAPS_BROWSER_KEY` | Opcional: mapa interativo do Google na tela de Rede ([como criar](#google-maps)); sem ela, o mapa é o OpenStreetMap |
+| | `WEB_PORT` · `API_PORT` | Portas na sua máquina: o site, com a API em `/api/` (padrão `8080`), e o acesso direto ao backend, só para depurar (padrão `8082`) |
 | | `COMPOSE_FILE` | Banco do `docker compose up` sem `-f` (`compose.yaml` ou `compose.yaml:compose.supabase.yaml`) |
 | `backend/.env` | `SUPABASE_DB_PASSWORD` · `SUPABASE_KEY` · `GOOGLE_MAPS_API_KEY` | As mesmas, para o modo desenvolvimento ([modelo](./backend/.env.example)) |
-| `frontend/.env.local` | `VITE_API_URL` · `VITE_API_TIMEOUT_MS` | Opcional: base da API (`/api/v1`) e timeout (`10000` ms) ([modelo](./frontend/.env.example)) |
+| `frontend/.env.local` | `VITE_API_URL` · `VITE_API_TIMEOUT_MS` · `VITE_GOOGLE_MAPS_KEY` | Opcional: base da API (`/api/v1`), timeout (`10000` ms) e a chave do mapa da Rede ([modelo](./frontend/.env.example)) |
 
 > [!WARNING]
 > O `.env` fica fora do Git. A chave **`service_role`** do Supabase ignora o RLS: nunca vai para commit ou frontend.
 
 <details id="google-maps">
-<summary>▶️🗺️ <b>Google Maps — rota do doador até o hospital (PI3-237)</b> — chave opcional da Routes API</summary>
+<summary>▶️🗺️ <b>Google Maps — rota do doador (PI3-237) e mapa da Rede (PI3-236)</b> — chaves opcionais</summary>
 
 No Portal do Doador, o botão **Como chegar** do cartão do paciente pede a localização do doador (com
 consentimento, pela Geolocation API do navegador), mostra a distância de carro e o tempo de chegada com o trânsito
@@ -721,6 +726,29 @@ do paciente, resolvidas pelo backend (`POST /api/v1/campanhas/{id}/rota`).
 
 Sem a chave, ou se o Google não responder em 4 s, o "Como chegar" continua funcionando: a distância vira a linha reta
 × 1,3 a 25 km/h e a tela avisa que é uma estimativa. Os botões do Google Maps e do Waze não usam a chave.
+
+**Mapa da tela de Rede (PI3-258):** o mapa interativo vem da Maps JavaScript API, que roda no navegador. Por isso ele usa
+uma **segunda chave**, feita para ficar exposta no site: a do backend nunca vai para o JavaScript.
+
+1. *APIs e serviços → Biblioteca* → ative a **Maps JavaScript API**.
+2. *Credenciais → Criar credenciais → Chave de API* → em *Restrições de aplicativos*, escolha **Sites** e liste
+   `http://localhost:8080/*`, `http://localhost:5173/*` e o domínio da Vercel; em *Restrições de API*, deixe só a Maps
+   JavaScript API.
+3. Coloque a chave em `GOOGLE_MAPS_BROWSER_KEY` no `.env` (Docker), em `VITE_GOOGLE_MAPS_KEY` no `frontend/.env.local`
+   (modo desenvolvimento) ou em `VITE_GOOGLE_MAPS_KEY` nas variáveis do projeto na Vercel (produção).
+
+Sem essa chave, ou se o Google recusá-la, a tela de Rede usa o mapa do OpenStreetMap, com os mesmos marcadores.
+
+**Rota no mapa (PI3-259):** o **Dijkstra** (`GET /api/v1/rotas`) decide por onde passar, sobre as conexões cadastradas. O
+`GET /api/v1/rotas/trajeto` leva esse caminho para as ruas pela Routes API, com as paradas na ordem do Dijkstra, e devolve o
+traçado (polyline), a distância e o tempo com trânsito. Usa a chave do backend, então não precisa de nada novo. Sem ela,
+os números são os das conexões e o traçado vem do OSRM, sem trânsito; a tela mostra de onde vieram.
+
+**Envio e rastreamento (PI3-236, PI3-260):** a tela lista as bolsas do estoque real por FEFO. O médico confirma o envio
+(`POST /api/v1/transferencias`): a bolsa fica `EM_TRANSITO`, com a localização "Em transporte refrigerado → hospital", e
+ganha uma linha do tempo (Origem, Em trânsito, Chegada estimada, Destino) que se atualiza sozinha a cada 15 s. As maletas
+não têm GPS: o progresso é estimado pelo tempo da rota. A chegada só vale quando o médico confirma o recebimento, e aí
+a bolsa fica `ENTREGUE`, com `hospital_atual_id` no hospital de destino.
 
 > [!NOTE]
 > O navegador só libera a localização em **HTTPS** ou em `localhost`. Para testar no celular, use o site publicado
@@ -758,9 +786,10 @@ No Windows (PowerShell), troque `cp` por `Copy-Item` e `&&` por `;`.
 | `Defina DB_PASSWORD no arquivo .env` | Faltou o `cp .env.example .env` |
 | Login ou cadastro de doador responde `503` | Preencha a `SUPABASE_KEY` e rode `npm run docker:local` de novo |
 | `port is already allocated` | Mude `WEB_PORT` ou `API_PORT` no `.env` |
-| A mudança no código não aparece | `npm run docker:build` antes do `docker:local` |
+| A tela parece de uma versão antiga | `npm run docker:local` reconstrói o que mudou; `curl localhost:8080/versao.json` mostra de quando é o build no ar. Se ele estiver certo, recarregue sem cache (`Cmd+Shift+R` · `Ctrl+Shift+R`) |
 | Migration nova não aparece no banco local | `npm run docker:down:v` e suba de novo (apaga os dados locais) |
 | Erro no `compose.supabase.yaml` | Atualize o Docker Desktop (Compose 2.24+) |
+| O mapa da Rede abre no OpenStreetMap, mesmo com a `GOOGLE_MAPS_BROWSER_KEY` | O console do navegador diz o motivo (ex.: `RefererNotAllowedMapError`, `ApiNotActivatedMapError`) |
 | "Como chegar" mostra "Estimativa pela distância em linha reta" | Preencha a `GOOGLE_MAPS_API_KEY` com a Routes API ativa; o log do backend diz o motivo (ex.: `403 PERMISSION_DENIED`) |
 | "Como chegar" não pede a localização no celular | A página precisa estar em HTTPS ([detalhes](#google-maps)) |
 </details>
@@ -845,13 +874,17 @@ manda sozinho). Sem o header → `401`; perfil errado → `403`.
 </details>
 
 <details>
-<summary>▶️🚚 <b>Rede e Rotas</b> — <code>/pontos</code>, <code>/conexoes</code>, <code>/rotas</code></summary>
+<summary>▶️🚚 <b>Rede e Rotas</b> — <code>/pontos</code>, <code>/conexoes</code>, <code>/rotas</code>, <code>/transferencias</code></summary>
 
 | Método | Endpoint | Quem | Para quê |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/pontos` | livre | Hemocentro e hospitais da rede |
 | `GET` | `/conexoes` | livre | Ligações entre os pontos, com distância e tempo |
 | `GET` | `/rotas?origemId=&destinoId=&janelaEntregaLimite=` | livre | Menor caminho pelo grafo (Dijkstra) (HU‑07) |
+| `GET` | `/rotas/trajeto?origemId=&destinoId=` | 🔒 médico ou admin | O caminho do Dijkstra levado para as ruas, com o traçado para o mapa (PI3‑259) |
+| `GET` | `/transferencias?status=` | livre | Transferências de bolsas; `EM_TRANSITO` são as ativas (PI3‑236) |
+| `POST` | `/transferencias` | 🔒 médico | Despacha a bolsa (`{bolsaId, destinoId}`): `EM_TRANSITO`, com a chegada prevista pela rota (PI3‑236) |
+| `POST` | `/transferencias/{id}/recebimento` | 🔒 médico | Confirma a chegada: a bolsa fica `ENTREGUE`, no hospital de destino (PI3‑236) |
 </details>
 
 <details>
@@ -928,7 +961,7 @@ O protótipo ao lado da mesma tela rodando de verdade (prints com Playwright, 14
 | 🌐 [`CONTRATOS_DE_API.md`](./docs/CONTRATOS_DE_API.md) | Endpoints por módulo, padrões e erros |
 | 📄 [`openapi.yaml`](./docs/openapi.yaml) | Contrato OpenAPI 3.0.3 |
 | 📦 [`MODULOS.md`](./docs/MODULOS.md) | Contrato × domínio × banco, por módulo |
-| 🗄️ [`DER.md`](./docs/DER.md) | 14 tabelas, 2 views e constraints |
+| 🗄️ [`DER.md`](./docs/DER.md) | 15 tabelas, 2 views e constraints |
 | 🟢 [`SUPABASE.md`](./docs/SUPABASE.md) | Conexão, `.env`, RLS e prints |
 | 🔐 [`PERFIS_DE_ACESSO.md`](./docs/PERFIS_DE_ACESSO.md) | Perfis (médico, doador, admin), telas e decisões do login |
 | 🔌 [`LIGACOES_E_REDES.md`](./docs/LIGACOES_E_REDES.md) | Ligações e sub-redes (RSD) |
@@ -952,7 +985,7 @@ sem pedir ajuda a ninguém?"</i>
 
 | Entrega | Resumo | Status |
 | :--- | :--- | :---: |
-| 🐳 [**E1 · Container**](#cdt-como-rodar) | `docker compose up -d --build` sobe banco + API + site; o Dockerfile roda os testes antes de gerar a imagem | ✅ |
+| 🐳 [**E1 · Container**](#cdt-como-rodar) | `docker compose up -d` sobe banco + API + site; o Dockerfile roda os testes antes de gerar a imagem | ✅ |
 | 🧪 [**E2 · TDD**](#cdt-testes) | 3 histórias, 13 tarefas, 9 pares `test:` 🔴 → `feat:` 🟢; 208 unitários, 7 de integração e 13 cenários Gherkin | ✅ |
 | 🚀 [**E3 · Deploy**](#cdt-pipeline) | GitHub Actions: testes → imagem → deploy (API no Render, site na Vercel), só na `main` e só com tudo verde | ⏳ falta ligar as contas |
 
@@ -978,15 +1011,15 @@ Só precisa de **Git** e **Docker**. Java, Maven, Node e Postgres ficam dentro d
 ```bash
 git clone https://github.com/viictorpaes/Rotavital.git && cd Rotavital
 cp .env.example .env            # no Windows: Copy-Item .env.example .env — depois troque DB_PASSWORD
-docker compose up -d --build    # compila, roda os testes e sobe db → backend → frontend
+docker compose up -d            # compila o que mudou, roda os testes e sobe db → backend → frontend
 docker compose ps               # os três precisam aparecer como (healthy)
 ```
 
 | Serviço | O que é | Healthcheck · só sobe depois de | Endereço |
 | :--- | :--- | :--- | :--- |
 | 🐘 `db` | Postgres 17 com as migrations de `supabase/migrations` e o seed ([`db/`](./db/)), dados no volume `dados-postgres` | `pg_isready` | só na rede interna |
-| ☕ `backend` | API Spring Boot ([`backend/Dockerfile`](./backend/Dockerfile), 2 estágios) | `/actuator/health` = `UP` (inclui o banco) · `db` | `localhost:8080` |
-| 🖥️ `frontend` | React no Nginx, com proxy `/api/` → `backend` ([`frontend/Dockerfile`](./frontend/Dockerfile)) | `GET /` · `backend` | `localhost` |
+| ☕ `backend` | API Spring Boot ([`backend/Dockerfile`](./backend/Dockerfile), 2 estágios) | `/actuator/health` = `UP` (inclui o banco) · `db` | `localhost:8080/api/` (pelo Nginx) · `localhost:8082` (direto) |
+| 🖥️ `frontend` | React no Nginx, com proxy `/api/` → `backend` ([`frontend/Dockerfile`](./frontend/Dockerfile)) | `GET /` · `backend` | `localhost:8080` |
 
 `docker compose down` mantém os dados no volume; `docker compose down -v` apaga, e a próxima subida recria o banco com o seed.
 Os mesmos passos têm atalhos `npm run docker:*` (ver [Como Executar](#como-executar)).

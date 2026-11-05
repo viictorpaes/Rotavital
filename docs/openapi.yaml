@@ -743,6 +743,154 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  /rotas/trajeto:
+    get:
+      tags: [Rotas]
+      summary: Rota de transporte para desenhar no mapa, pelo caminho do Dijkstra (PI3-259)
+      description: >
+        O Dijkstra decide por quais pontos passar e o Google leva esse caminho
+        para as ruas, com o trânsito do momento (Routes API, chave só no backend).
+        Sem o Google, valem a distância e o tempo das conexões cadastradas, e
+        polyline vem nula. Fica fora de GET /rotas porque cada chamada consome a
+        cota da Routes API; por isso exige médico ou admin no header X-Usuario-Id.
+      operationId: calcularRotaNoMapa
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+        - name: origemId
+          in: query
+          required: true
+          schema: { type: string }
+          example: BS-01
+        - name: destinoId
+          in: query
+          required: true
+          schema: { type: string }
+          example: hc-pe
+      responses:
+        '200':
+          description: Rota calculada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RotaNoMapa' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Não existe caminho entre origem e destino no grafo.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /transferencias:
+    get:
+      tags: [Rotas]
+      summary: Lista as transferências de bolsas (PI3-236)
+      description: >
+        Com status, da que saiu primeiro para a última (EM_TRANSITO são as
+        ativas, que a tela de Rede acompanha). Sem status, todas, da mais
+        recente para a mais antiga.
+      operationId: listarTransferencias
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/StatusTransferencia' }
+      responses:
+        '200':
+          description: Transferências encontradas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Transferencia' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Rotas]
+      summary: Despacha uma bolsa do hemocentro para um hospital (PI3-236)
+      description: >
+        A bolsa precisa estar DISPONIVEL, na validade e dentro da faixa ideal de
+        temperatura. Ela passa a EM_TRANSITO, com a localização "Em transporte
+        refrigerado → hospital" e a chegada prevista pela rota (GET /rotas/trajeto).
+        A origem é o hemocentro da bolsa. Só um médico despacha.
+      operationId: despacharBolsa
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NovaTransferencia' }
+      responses:
+        '201':
+          description: Bolsa despachada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transferencia' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: A mesma bolsa foi despachada ao mesmo tempo por outra pessoa.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        '422':
+          description: Bolsa que não pode sair (status, validade ou temperatura) ou hospital sem caminho na rede.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /transferencias/{id}/recebimento:
+    post:
+      tags: [Rotas]
+      summary: Confirma a chegada da bolsa ao hospital (PI3-236)
+      description: >
+        A transferência fica RECEBIDA e a bolsa fica ENTREGUE, com hospitalAtualId
+        e a localização no hospital de destino. Só um médico confirma.
+      operationId: confirmarRecebimentoDaBolsa
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Chegada confirmada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transferencia' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Transferência já encerrada ou bolsa que venceu no caminho.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
   # -- Telemetria --------------------------------------------------------
   /entregas/{id}/leituras:
     post:
@@ -1507,6 +1655,11 @@ components:
         volumeMl: { type: number, format: double }
         status: { $ref: '#/components/schemas/StatusBolsa' }
         bancoOrigemId: { type: string, example: BS-01 }
+        hospitalAtualId:
+          type: string
+          nullable: true
+          description: Hospital onde a bolsa está; nulo no hemocentro de origem e em trânsito (PI3-236).
+          example: hc-pe
       required: [id, tipoComponente, tipoSanguineo, dataColeta, dataValidade, loteSintetico, volumeMl, status, bancoOrigemId]
 
     NovaBolsaHemocomponenteRequest:
@@ -1634,7 +1787,10 @@ components:
         tipo: { $ref: '#/components/schemas/TipoPontoRede' }
         latitude: { type: number, format: double }
         longitude: { type: number, format: double }
-      required: [id, nome, tipo, latitude, longitude]
+        logradouro: { type: string }
+        cidade: { type: string, nullable: true }
+        uf: { type: string, nullable: true }
+      required: [id, nome, tipo, latitude, longitude, logradouro]
 
     Conexao:
       type: object
@@ -1658,6 +1814,62 @@ components:
         tempoEstimadoMin: { type: number, format: double }
         dentroDaJanela: { type: boolean }
       required: [origemId, destinoId, nos, distanciaTotalKm, tempoEstimadoMin]
+
+    RotaNoMapa:
+      type: object
+      properties:
+        origemId: { type: string }
+        destinoId: { type: string }
+        nos:
+          type: array
+          items: { type: string }
+          description: Pontos do menor caminho (Dijkstra), na ordem.
+        distanciaKm: { type: number, format: double }
+        duracaoMinutos: { type: integer }
+        fonte:
+          type: string
+          enum: [GOOGLE_ROUTES, ESTIMATIVA, CONEXOES_DA_REDE]
+        polyline:
+          type: string
+          nullable: true
+          description: Traçado do Google no formato encoded polyline; nulo quando a rota não passou por ele.
+      required: [origemId, destinoId, nos, distanciaKm, duracaoMinutos, fonte]
+
+    StatusTransferencia:
+      type: string
+      enum: [EM_TRANSITO, RECEBIDA, CANCELADA]
+
+    NovaTransferencia:
+      type: object
+      properties:
+        bolsaId: { type: string, example: CH-1042 }
+        destinoId: { type: string, example: hc-pe }
+      required: [bolsaId, destinoId]
+
+    Transferencia:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        bolsaId: { type: string }
+        tipoComponente: { type: string }
+        tipoSanguineo: { type: string }
+        origemId: { type: string }
+        origemNome: { type: string }
+        destinoId: { type: string }
+        destinoNome: { type: string }
+        status: { $ref: '#/components/schemas/StatusTransferencia' }
+        distanciaKm: { type: number, format: double }
+        duracaoMinutos: { type: integer }
+        fonte:
+          type: string
+          enum: [GOOGLE_ROUTES, ESTIMATIVA, CONEXOES_DA_REDE]
+        despachadaEm: { type: string, format: date-time }
+        chegadaPrevistaEm: { type: string, format: date-time }
+        recebidaEm: { type: string, format: date-time, nullable: true }
+        despachadaPorNome: { type: string, nullable: true }
+        recebidaPorNome: { type: string, nullable: true }
+        localizacaoDaBolsa: { type: string, nullable: true }
+      required: [id, bolsaId, origemId, destinoId, status, distanciaKm, duracaoMinutos, fonte, despachadaEm, chegadaPrevistaEm]
 
     # ---- Telemetria ----
     RegistrarTelemetriaRequest:

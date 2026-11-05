@@ -1,5 +1,6 @@
 package com.rotavital.servico;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.rotavital.dominio.Coordenada;
@@ -15,4 +16,13 @@ import com.rotavital.dominio.Trajeto;
 public interface CalculadoraDeTrajeto
 {
     Optional<Trajeto> calcular(Coordenada origem, Coordenada destino);
+
+    /**
+     * Trajeto passando pelas paradas, na ordem, com o traçado para desenhar no mapa (PI3-259).
+     * Quem não sabe traçar não responde: quem chama usa o plano B.
+     */
+    default Optional<Trajeto> calcularComTracado(List<Coordenada> paradas)
+    {
+        return Optional.empty();
+    }
 }
