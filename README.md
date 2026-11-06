@@ -50,7 +50,7 @@ npm run docker:local        # banco + API + site → http://localhost:8080
 | :---: | :--- | :--- |
 | 1 | [👥 Docentes](#docentes) e [Integrantes](#integrantes) | Quem orienta e quem desenvolve |
 | 2 | [⛏️ Tecnologias](#tecnologias) | Stack completa |
-| 3 | [🚀 Entregas do PI](#entregas) | Entregas 01 e 02: histórias, protótipo, screencasts e issues |
+| 3 | [🚀 Entregas do PI](#entregas) | Entregas 01 a 04: histórias, protótipo, screencasts e issues |
 | 4 | [📦 Módulos do Sistema](#modulos) | O que o sistema faz, por módulo: telas, endpoints e status |
 | 5 | [🏰 Arquitetura](#arquitetura) | Pastas do projeto e a camada de cada uma (diagramas em `docs/ARQUITETURA.md`) |
 | 6 | [🟢 Banco de Dados](#supabase) | Supabase, migrations, tabelas e RLS |
@@ -447,6 +447,7 @@ viraram trabalho da Entrega 03.
 <h3 id="-entrega-03" align="center">📌 Entrega 03 — 19/10 <br>
 <img src="https://img.shields.io/badge/-Supabase_Auth-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="20"/>
 <img src="https://img.shields.io/badge/-CRUD_de_Estoque-111827?style=flat-square&logo=springboot&logoColor=green" height="20"/>
+<img src="https://img.shields.io/badge/-ScreenCast_em_andamento-111827?style=flat-square&logo=youtube&logoColor=red" height="20"/>
 <img src="https://img.shields.io/badge/Status-Em_andamento-F59E0B?style=flat" height="20"/>
 </h3>
 
@@ -460,14 +461,14 @@ mensagens de erro claras. No Jira: histórias <b>PI3-171</b> (Login) e <b>PI3-17
 | :--- | :--- | :---: |
 | ✅ Histórias implementadas | Mais 2 HUs em código real, descritas em post-it abaixo | <img src="https://img.shields.io/badge/2%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
 | 🔁 Versionamento atuante | Commits de código na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/4_de_4_semanas-22C55E?style=flat-square" height="18"/> **Feito** — commits de código em todas as semanas de 22/09 a 19/10 ([histórico](https://github.com/viictorpaes/Rotavital/commits/main?since=2026-09-22&until=2026-10-19)) |
-| 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, mostrando as 2 histórias novas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> **Pendente** (PI3-221) |
-| 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das 2 histórias | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> **Pendente** (PI3-222) |
-| 🐞 Issue/Bug Tracker | GitHub Issues atualizado + print no README | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> **Pendente** (PI3-223) |
+| 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, mostrando as 2 histórias novas | <img src="https://img.shields.io/badge/Em_andamento-F59E0B?style=flat-square" height="18"/> **Em andamento** (PI3-221) |
+| 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das 2 histórias | <img src="https://img.shields.io/badge/Em_andamento-F59E0B?style=flat-square" height="18"/> **Em andamento** (PI3-222) |
+| 🐞 Issue/Bug Tracker | GitHub Issues atualizado + print no README | <img src="https://img.shields.io/badge/0_abertas_%2F_7_fechadas-22C55E?style=flat-square" height="18"/> **Feito** (PI3-223) — lista atualizada em 06/11, print em [Issue/Bug Tracker](#issue-tracker-entrega-03) |
 
 | Artefato | Link |
 | :--- | :--- |
-| 🎬 Screencast — uso do sistema | *a publicar* |
-| 🎬 Screencast — explicação do código | *a publicar* |
+| 🎬 Screencast — uso do sistema | *em andamento* |
+| 🎬 Screencast — explicação do código | *em andamento* |
 
 <h4 align="center">📝 Histórias Implementadas — Entrega 03</h4>
 
@@ -499,13 +500,154 @@ mensagens de erro claras. No Jira: histórias <b>PI3-171</b> (Login) e <b>PI3-17
 > [`ModalNovaBolsa.tsx`](./frontend/src/components/estoque/ModalNovaBolsa.tsx) (PI3‑180, PI3‑179)
 > 🔄 Edição e descarte de bolsas (PI3‑190) — implementados no [PR #29](https://github.com/viictorpaes/Rotavital/pull/29), aguardando merge
 
-<h4 align="center" id="issue-tracker-entrega-03">🐛 Issue/Bug Tracker — Entrega 03</h4>
+<h4 align="center" id="issue-tracker-entrega-03">🐛 Issue/Bug Tracker — Entrega 03 <br>
+<img src="https://img.shields.io/badge/0_Issues_Abertas-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
+<img src="https://img.shields.io/badge/7_Issues_Fechadas-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
+</h4>
 
 <p align="center">
-<i>Pendente (PI3‑223):</i> fechar no <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> o que já foi resolvido —
-a #3 (tela de Estoque) e a #4 (integrar o frontend ao backend) saíram nesta entrega —, abrir as pendências
-encontradas nos testes e colocar aqui o print da lista atualizada.
+Lista do <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> em 06/11/2026.
+As issues #1, #3 e #4, resolvidas nesta entrega, foram fechadas em 06/11 (PI3‑223).
 </p>
+
+<p align="center">
+<img src="./img/issues_fechadas_atual.png" width="800"/>
+</p>
+
+| Imagem | Issue | Resumo |
+| :---: | :--- | :--- |
+| <img src="./img/issue-tracker_issue1-testes-junit_1.png" width="260"/> | ✅ [#1 — Testes JUnit 5 + CI](https://github.com/viictorpaes/Rotavital/issues/3) | Fechada em 06/11: o `TesteFluxo` virou `TesteFluxoTest`, domínio, serviços e controllers ganharam testes (PI3‑153) e a esteira do GitHub Actions roda `mvn verify` ([PR #31](https://github.com/viictorpaes/Rotavital/pull/31)). |
+| <img src="./img/issue-tracker_issue3-estoque.png" width="260"/> | ✅ [#3 — Tela de Estoque (HU‑03)](https://github.com/viictorpaes/Rotavital/issues/5) | Fechada em 06/11: a `PaginaEstoque.tsx` saiu do placeholder e lê a API, com filtros e paginação (PRs #24, #26, #27 e #28). |
+| <img src="./img/issue-tracker_issue4-integracao-backend.png" width="260"/> | ✅ [#4 — Integrar o frontend ao backend](https://github.com/viictorpaes/Rotavital/issues/6) | Fechada em 06/11, com as tarefas da issue feitas: cliente HTTP, login real, CORS e tratamento de erro. O que ainda usa dado de exemplo está nas [pendências da Entrega 04](#issue-tracker-entrega-04). |
+
+<h3 id="-entrega-04" align="center">📌 Entrega 04 — 09/11 <br>
+<img src="https://img.shields.io/badge/-Campanhas_e_Doações-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="20"/>
+<img src="https://img.shields.io/badge/-Rotas_e_Mapas-111827?style=flat-square&logo=googlemaps&logoColor=4285F4" height="20"/>
+<img src="https://img.shields.io/badge/-ScreenCast_em_andamento-111827?style=flat-square&logo=youtube&logoColor=red" height="20"/>
+<img src="https://img.shields.io/badge/Status-Em_andamento-F59E0B?style=flat" height="20"/>
+</h3>
+
+<p align="center">
+Liga as duas pontas do sistema: o <b>doador</b>, com campanha, agendamento e rota até o hospital, e a <b>logística</b>,
+com mapa da rede, menor caminho por Dijkstra e envio de bolsas por FEFO, rastreado até a chegada. No Jira: <b>PI3-174</b>
+(Doações), <b>PI3-175</b> (Pacientes), <b>PI3-203 a PI3-205</b> (Portal do Doador), <b>PI3-236</b> (envio de bolsas) e
+<b>PI3-237</b> (Como chegar).
+</p>
+
+| Requisito da entrega | Descrição | Status |
+| :--- | :--- | :---: |
+| ✅ Histórias implementadas | Histórias restantes (mínimo de 2), descritas em post-it abaixo | <img src="https://img.shields.io/badge/4%2F2-22C55E?style=flat-square" height="18"/> **Feito** — 4 HUs completas e a HU‑08 em parte |
+| 🔁 Versionamento atuante | Commits de código na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/3_de_3_semanas-22C55E?style=flat-square" height="18"/> **Feito** — commits de código em todas as semanas desde 20/10, com os PRs #32, #33, #34, #36 e #37 ([histórico](https://github.com/viictorpaes/Rotavital/commits/main?since=2026-10-20&until=2026-11-09)) |
+| 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, com ênfase nas histórias novas | <img src="https://img.shields.io/badge/Em_andamento-F59E0B?style=flat-square" height="18"/> **Em andamento** |
+| 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das histórias | <img src="https://img.shields.io/badge/Em_andamento-F59E0B?style=flat-square" height="18"/> **Em andamento** |
+| 🐞 Issue/Bug Tracker | Uso do GitHub Issues + print no README | <img src="https://img.shields.io/badge/0_abertas_%2F_7_fechadas-F59E0B?style=flat-square" height="18"/> **Em andamento** — print em [Issue/Bug Tracker](#issue-tracker-entrega-04); falta abrir as 4 pendências novas |
+
+| Artefato | Link |
+| :--- | :--- |
+| 🎬 Screencast — uso do sistema | *em andamento* |
+| 🎬 Screencast — explicação do código | *em andamento* |
+
+<h4 align="center">📝 Histórias Implementadas — Entrega 04</h4>
+
+<p align="center">Resumo em <b>post-it</b>, como visto em sala; o detalhamento de cada HU está na <a href="#-entrega-01">Entrega 01</a>.</p>
+
+> 🟨 **HU‑06 · Campanha de doação (PI3‑174)** — Como **médico**, preciso publicar uma campanha para um paciente,
+> para que doadores voluntários vejam quem precisa e possam ajudar diretamente.
+>
+> ✅ Backend — `POST`, `PUT` e `PATCH /api/v1/campanhas`: publicar cria o paciente e a campanha na mesma transação;
+> encerrar cancela os agendamentos em aberto (PI3‑191):
+> [`CampanhaController.java`](./backend/src/main/java/com/rotavital/api/CampanhaController.java),
+> [`CampanhaService.java`](./backend/src/main/java/com/rotavital/servico/CampanhaService.java)
+> ✅ Frontend — formulário da aba Campanha e tela de Doações com editar e encerrar (PI3‑193):
+> [`FormularioCampanha.tsx`](./frontend/src/components/requisicao/FormularioCampanha.tsx),
+> [`PaginaDoacoes.tsx`](./frontend/src/pages/Doacoes/PaginaDoacoes.tsx)
+> 📎 Evidências — [`PI3-174_doacoes.md`](./docs/evidencias/PI3-174_doacoes.md)
+
+> 🟨 **HU‑09 · Agendar doação (PI3‑174)** — Como **doador**, preciso escolher dia e horário para doar a quem precisa,
+> para ir ao hemocentro com vaga garantida; como **médico**, preciso acompanhar esses agendamentos.
+>
+> ✅ Backend — doador agenda, remarca e cancela; médico registra doação feita, falta ou cancelamento. Agenda de segunda
+> a sábado, das 07h às 19h, com até 3 doadores por horário e um agendamento em aberto por doador (PI3‑192):
+> [`AgendamentoController.java`](./backend/src/main/java/com/rotavital/api/AgendamentoController.java),
+> [`AgendamentoService.java`](./backend/src/main/java/com/rotavital/servico/AgendamentoService.java),
+> [`AgendaDoHemocentro.java`](./backend/src/main/java/com/rotavital/dominio/AgendaDoHemocentro.java)
+> ✅ Frontend — [`ModalAgendarDoacao.tsx`](./frontend/src/components/donations/ModalAgendarDoacao.tsx),
+> [`MinhasDoacoes.tsx`](./frontend/src/components/donations/MinhasDoacoes.tsx),
+> [`ModalAgendamentosCampanha.tsx`](./frontend/src/components/donations/ModalAgendamentosCampanha.tsx) (PI3‑193)
+
+> 🟨 **HU‑10 · Portal do Doador (PI3‑203, PI3‑204, PI3‑205, PI3‑237)** — Como **doador**, preciso criar minha conta,
+> manter meu perfil e saber como chegar ao hospital, para doar sem depender do menu operacional do hospital.
+>
+> ✅ Backend — `POST /api/v1/doadores`, `GET` e `PUT /api/v1/doadores/eu`, hemocentros e horários livres:
+> [`DoadorController.java`](./backend/src/main/java/com/rotavital/api/DoadorController.java),
+> [`DoadorService.java`](./backend/src/main/java/com/rotavital/servico/DoadorService.java),
+> [`HemocentroController.java`](./backend/src/main/java/com/rotavital/api/HemocentroController.java)
+> ✅ Como chegar — localização só com o consentimento do doador (PI3‑261), distância e tempo pela Routes API do Google,
+> com estimativa própria se ela não responder (PI3‑262), e botões para o Google Maps e o Waze (PI3‑263):
+> [`RotaAteHospitalService.java`](./backend/src/main/java/com/rotavital/servico/RotaAteHospitalService.java),
+> [`GoogleRoutes.java`](./backend/src/main/java/com/rotavital/google/GoogleRoutes.java),
+> [`ModalComoChegar.tsx`](./frontend/src/components/donations/ModalComoChegar.tsx)
+> ✅ Frontend — [`PaginaCadastroDoador.tsx`](./frontend/src/pages/CadastroDoador/PaginaCadastroDoador.tsx),
+> [`PaginaPortalDoador.tsx`](./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx),
+> [`CartaoPerfilDoador.tsx`](./frontend/src/components/donations/CartaoPerfilDoador.tsx)
+
+> 🟨 **HU‑07 · Rede hospitalar e envio de bolsas (PI3‑236)** — Como **médico**, preciso ver a rede no mapa, calcular o
+> melhor caminho e acompanhar a bolsa até a chegada, para que ela chegue a tempo e na temperatura certa.
+>
+> ✅ Mapa e rota — pontos reais da rede (PI3‑258) e menor caminho por Dijkstra desenhado nas ruas, com origem selecionável (PI3‑259):
+> [`RotaNoMapaService.java`](./backend/src/main/java/com/rotavital/servico/RotaNoMapaService.java),
+> [`RedeDistribuicao.java`](./backend/src/main/java/com/rotavital/dominio/RedeDistribuicao.java),
+> [`MapaRede.tsx`](./frontend/src/components/rede/MapaRede.tsx)
+> ✅ Envio — `POST /api/v1/transferencias` despacha por FEFO só bolsa disponível, na validade e dentro da faixa de
+> temperatura; `POST /api/v1/transferencias/{id}/recebimento` confirma a chegada:
+> [`TransferenciaService.java`](./backend/src/main/java/com/rotavital/servico/TransferenciaService.java),
+> [`TransferenciaDeBolsa.java`](./backend/src/main/java/com/rotavital/dominio/TransferenciaDeBolsa.java),
+> [`PrioridadeEnvio.tsx`](./frontend/src/components/rede/PrioridadeEnvio.tsx)
+> ✅ Acompanhamento — linha do tempo com progresso estimado pelo tempo da rota, atualizada a cada 15 s (PI3‑260):
+> [`TransferenciasEmAndamento.tsx`](./frontend/src/components/rede/TransferenciasEmAndamento.tsx),
+> [`LinhaDoTempoTransferencia.tsx`](./frontend/src/components/rede/LinhaDoTempoTransferencia.tsx)
+
+> 🟨 **HU‑08 · Fila de pacientes (PI3‑175)** — Como **médico**, preciso cadastrar, editar e remover pacientes e vê-los
+> na fila clínica, para atender primeiro quem está em estado mais grave.
+>
+> ✅ Backend — `GET`, `POST`, `PUT` e `DELETE /api/v1/pacientes`, com filtros e a ordem da fila clínica (PI3‑194):
+> [`PacienteController.java`](./backend/src/main/java/com/rotavital/api/PacienteController.java),
+> [`PacienteService.java`](./backend/src/main/java/com/rotavital/servico/PacienteService.java)
+> ✅ Frontend — Novo paciente, Editar e Remover para o médico; o admin só consulta (PI3‑195):
+> [`PaginaPacientes.tsx`](./frontend/src/pages/Pacientes/PaginaPacientes.tsx),
+> [`ModalPaciente.tsx`](./frontend/src/components/pacientes/ModalPaciente.tsx)
+> 🔄 Concluir procedimento — a tela existe, mas a baixa ainda não é gravada no banco ([pendências](#issue-tracker-entrega-04))
+
+> [!NOTE]
+> **Ficaram em aberto:** a HU‑04 (a requisição gera o protocolo só na tela) e a HU‑05 (a aba Recebidas usa remessas de
+> exemplo). A API já tem a sugestão de lote em `GET /bancos/{bancoId}/sugestao-lote`, mas a tela ainda não a usa.
+
+<h4 align="center" id="issue-tracker-entrega-04">🐛 Issue/Bug Tracker — Entrega 04 <br>
+<img src="https://img.shields.io/badge/0_Issues_Abertas-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
+<img src="https://img.shields.io/badge/7_Issues_Fechadas-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
+</h4>
+
+<p align="center">
+Lista do <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> em 06/11/2026.
+As issues #6 e #7 também foram fechadas em 06/11. O teste de ponta a ponta do mesmo dia encontrou 4 pendências, listadas
+abaixo, que ainda precisam virar issues.
+</p>
+
+<p align="center">
+<img src="./img/issues_fechadas_atual.png" width="800"/>
+</p>
+
+| Imagem | Issue | Resumo |
+| :---: | :--- | :--- |
+| <img src="./img/issue-tracker_issue6-painel-operacional.png" width="260"/> | ✅ [#6 — Painel Operacional (HU‑02)](https://github.com/viictorpaes/Rotavital/issues/8) | Fechada em 06/11: números rápidos e caixa de avisos, hoje lendo o estoque e as campanhas do backend. |
+| <img src="./img/issue-tracker_issue7-doador-campanha.png" width="260"/> | ✅ [#7 — Modelar Doador e Campanha](https://github.com/viictorpaes/Rotavital/issues/9) | Fechada em 06/11: `CampanhaDoacao`, `AgendamentoDoacao` e o perfil do doador gravam no banco (PRs #32 e #34). |
+
+| Pendência a registrar | Onde | O que acontece |
+| :--- | :--- | :--- |
+| 🔴 Perfil do doador falha logo após o login | Portal do Doador | As primeiras chamadas a `/doadores/eu` e `/agendamentos/meus` saem antes de a sessão ser gravada e voltam 401; o aviso vermelho some com F5. |
+| 🔴 `GET /api/v1/diagnostico` responde 500 | Tela de Admin | `@CrossOrigin(origins = "*")` conflita com `allowCredentials(true)`, e a tela mostra valores de reserva (4 pontos, 6 conexões, 45 ms) no lugar dos reais. |
+| 🟠 Requisição e Recebidas não gravam | Requisição (HU‑04, HU‑05) | O protocolo `REQ-…` e a conferência de remessas valem só na sessão do navegador; as remessas são dados de exemplo. |
+| 🟠 Concluir procedimento não grava | Pacientes (HU‑08) | A baixa no estoque vale só na sessão: ao recarregar a página, o paciente volta para a fila. |
 
 <h2 align="center" id="modulos">📦 Módulos do Sistema <br>
 <img src="https://img.shields.io/badge/Módulos-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="22"/>
@@ -1033,6 +1175,7 @@ O protótipo ao lado da mesma tela rodando de verdade (prints com Playwright, 14
 | ⚙️ [`RELATORIO_ATIVIDADE_PARALELISMO.md`](./docs/RELATORIO_ATIVIDADE_PARALELISMO.md) | Auditoria sequencial × paralela (Atividade - Infraestrutura de Software (SO)) |
 | 🔁 [`TRADUCAO_C_JAVA_AV1.md`](./docs/TRADUCAO_C_JAVA_AV1.md) | Tradução comentada C ↔ Java: lista, fila e pilha (AV1) |
 | 🧾 [`evidencias/`](./docs/evidencias/) | Chamadas reais aos endpoints e prints por tarefa do Jira |
+| 🎬 [`ROTEIRO_MVP.md`](./docs/ROTEIRO_MVP.md) | Roteiro-exemplo dos screencasts e da apresentação final, ensaiado com o sistema rodando |
 | 📕 [`arquitetura-rotavital-paes-silva.pdf`](./pdf/arquitetura-rotavital-paes-silva.pdf) | PDF final entregue - Atividade de Infraestrutura de Redes (RSD) |
 | 🗺️ [`arquitetura-rotavital-paes-silva.drawio`](./docs/arquitetura-rotavital-paes-silva.drawio) | Arquivo-fonte do diagrama entregue junto com o PDF (RSD) |
 
