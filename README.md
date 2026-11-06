@@ -507,6 +507,91 @@ a #3 (tela de Estoque) e a #4 (integrar o frontend ao backend) saíram nesta ent
 encontradas nos testes e colocar aqui o print da lista atualizada.
 </p>
 
+<h3 id="-entrega-04" align="center">📌 Entrega 04 — 09/11 <br>
+<img src="https://img.shields.io/badge/-Campanhas_de_Doação-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="20"/>
+<img src="https://img.shields.io/badge/-Pacientes-111827?style=flat-square&logo=springboot&logoColor=green" height="20"/>
+<img src="https://img.shields.io/badge/-Portal_do_Doador-111827?style=flat-square&logo=react&logoColor=61DAFB" height="20"/>
+<img src="https://img.shields.io/badge/Status-Em_andamento-F59E0B?style=flat" height="20"/>
+</h3>
+
+<p align="center">
+As histórias que faltavam saem do protótipo e passam a gravar no <b>Supabase</b>: as <b>campanhas e os agendamentos
+de doação</b>, o <b>cadastro de pacientes</b> e o <b>Portal do Doador</b> com cadastro, perfil e agenda. No Jira:
+histórias <b>PI3-174</b> (Crud doações), <b>PI3-175</b> (Crud Pacientes) e <b>PI3-178</b> (Sistema de doador).
+</p>
+
+| Requisito da entrega | Descrição | Status |
+| :--- | :--- | :---: |
+| ✅ Histórias restantes implementadas | Mínimo de 2 HUs em código real, descritas em post-it abaixo | <img src="https://img.shields.io/badge/3%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
+| 🔁 Versionamento atuante | Commits de código na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/3_de_3_semanas-22C55E?style=flat-square" height="18"/> **Feito** — commits de código em todas as semanas desde 20/10 ([histórico](https://github.com/viictorpaes/Rotavital/commits/main?since=2026-10-20)) |
+| 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, com ênfase nas histórias novas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> **Pendente** (PI3-225) |
+| 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das histórias novas | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> **Pendente** (PI3-225) |
+| 🐞 Issue/Bug Tracker | GitHub Issues em uso no período + print no README | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> **Pendente** (PI3-226) |
+| 🎤 Apresentação final | Até 8 minutos, de 09/11 a 13/11, com todo o grupo | <img src="https://img.shields.io/badge/Pendente-F59E0B?style=flat-square" height="18"/> **Pendente** (PI3-313) |
+
+| Artefato | Link |
+| :--- | :--- |
+| 🎬 Screencast — uso do sistema | *a publicar* |
+| 🎬 Screencast — explicação do código | *a publicar* |
+
+<h4 align="center">📝 Histórias Implementadas — Entrega 04</h4>
+
+<p align="center">Resumo em <b>post-it</b>, como visto em sala; o detalhamento de cada HU está na <a href="#-entrega-01">Entrega 01</a>.</p>
+
+> 🟨 **HU‑06 e HU‑09 · Campanhas e agendamentos de doação (PI3‑174)** — Como **médico**, preciso publicar uma campanha
+> para um paciente e acompanhar quem agendou a doação, para levar doadores compatíveis até quem precisa.
+>
+> ✅ Backend — campanhas (`GET`, `POST`, `PUT /api/v1/campanhas` e o encerramento) e agendamentos dentro de cada
+> campanha (agendar, remarcar, registrar se a doação aconteceu ou se o doador faltou):
+> [`CampanhaController.java`](./backend/src/main/java/com/rotavital/api/CampanhaController.java),
+> [`AgendamentoController.java`](./backend/src/main/java/com/rotavital/api/AgendamentoController.java),
+> [`CampanhaService.java`](./backend/src/main/java/com/rotavital/servico/CampanhaService.java),
+> [`AgendamentoService.java`](./backend/src/main/java/com/rotavital/servico/AgendamentoService.java) (PI3‑191, PI3‑192)
+> ✅ Frontend — tela de Doações sem dados de exemplo, com encerrar campanha e registrar a doação:
+> [`PaginaDoacoes.tsx`](./frontend/src/pages/Doacoes/PaginaDoacoes.tsx),
+> [`ModalEncerrarCampanha.tsx`](./frontend/src/components/donations/ModalEncerrarCampanha.tsx) (PI3‑193)
+> 📎 Evidências — [`PI3-174_doacoes.md`](./docs/evidencias/PI3-174_doacoes.md)
+
+> 🟨 **HU‑08 · Cadastro de pacientes (PI3‑175)** — Como **médico**, preciso cadastrar, consultar, editar e remover os
+> pacientes que aguardam hemocomponente, para ter a fila clínica completa, com ou sem campanha de doação.
+>
+> ✅ Backend — `GET /api/v1/pacientes` com filtros, na ordem da fila (mais grave e mais antigo primeiro), e `POST`, `PUT`
+> e `DELETE` só para médico; a validação dos dados é a mesma da campanha:
+> [`PacienteController.java`](./backend/src/main/java/com/rotavital/api/PacienteController.java),
+> [`PacienteService.java`](./backend/src/main/java/com/rotavital/servico/PacienteService.java),
+> [`ValidadorPaciente.java`](./backend/src/main/java/com/rotavital/servico/ValidadorPaciente.java) (PI3‑194)
+> ✅ Frontend — tela de Pacientes lendo da API, com Novo paciente, Editar e Remover:
+> [`PaginaPacientes.tsx`](./frontend/src/pages/Pacientes/PaginaPacientes.tsx),
+> [`ModalPaciente.tsx`](./frontend/src/components/pacientes/ModalPaciente.tsx),
+> [`CamposPaciente.tsx`](./frontend/src/components/pacientes/CamposPaciente.tsx) (PI3‑195)
+
+> 🟨 **HU‑10 · Portal do Doador (PI3‑178)** — Como **doador**, preciso me cadastrar, manter meu perfil e agendar a
+> doação numa campanha aberta, escolhendo hemocentro, dia e horário livres, para ajudar quem precisa sem burocracia.
+>
+> ✅ Backend — cadastro e perfil do doador, hemocentros e horários livres:
+> [`DoadorController.java`](./backend/src/main/java/com/rotavital/api/DoadorController.java),
+> [`HemocentroController.java`](./backend/src/main/java/com/rotavital/api/HemocentroController.java),
+> [`DoadorService.java`](./backend/src/main/java/com/rotavital/servico/DoadorService.java) (PI3‑203, PI3‑204)
+> ✅ Frontend — cadastro do doador, Portal com perfil e agenda vindos do backend:
+> [`PaginaCadastroDoador.tsx`](./frontend/src/pages/CadastroDoador/PaginaCadastroDoador.tsx),
+> [`PaginaPortalDoador.tsx`](./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx),
+> [`ModalAgendarDoacao.tsx`](./frontend/src/components/donations/ModalAgendarDoacao.tsx) (PI3‑205)
+
+<h5 align="left">➕ Também entrou no sistema nesta entrega</h5>
+
+| História | O que faz | Código |
+| :--- | :--- | :--- |
+| HU‑05 e HU‑07 · Rede hospitalar (PI3‑236) | Envio e recebimento de bolsas entre hospitais com rastreabilidade e FEFO; mapa do Google com os pontos da rede e a rota do Dijkstra | [`TransferenciaController.java`](./backend/src/main/java/com/rotavital/api/TransferenciaController.java), [`RotaNoMapaController.java`](./backend/src/main/java/com/rotavital/api/RotaNoMapaController.java), [`PaginaRede.tsx`](./frontend/src/pages/RedeHospitalar/PaginaRede.tsx) |
+| Como chegar ao hospital (PI3‑237) | O doador vê distância, tempo e a rota até o hospital da campanha e abre no Google Maps ou no Waze | [`ModalComoChegar.tsx`](./frontend/src/components/donations/ModalComoChegar.tsx) |
+
+<h4 align="center" id="issue-tracker-entrega-04">🐛 Issue/Bug Tracker — Entrega 04</h4>
+
+<p align="center">
+<i>Pendente (PI3‑226):</i> usar o <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> no período — abrir as
+pendências encontradas, citar a issue no commit que a resolve e fechar o que já saiu — e colocar aqui o print da
+lista atualizada.
+</p>
+
 <h2 align="center" id="modulos">📦 Módulos do Sistema <br>
 <img src="https://img.shields.io/badge/Módulos-111827?style=flat&logo=openapiinitiative&logoColor=6BA539" height="22"/>
 </h2>
