@@ -384,7 +384,7 @@ Sai do protótipo e liga o domínio a código rodando: back-end em <b>Spring Boo
 | :--- | :--- | :---: |
 | ✅ Histórias implementadas | Mínimo de 2 HUs em código real (não só Figma) | <img src="https://img.shields.io/badge/5%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
 | 🔁 Versionamento atuante | Commits na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/Commits_semanais_na_main-22C55E?style=flat-square" height="18"/> **Feito** — PRs #2 e #10 mesclados em 14/09, com commits também em 23/08, 09/09 e 12/09 |
-| 🐞 Issue/Bug Tracker | GitHub Issues atualizado toda semana + print no README | <img src="https://img.shields.io/badge/5_abertas_%2F_2_fechadas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues com a label `bug`, prints em [Issue/Bug Tracker](#issue-tracker) |
+| 🐞 Issue/Bug Tracker | GitHub Issues atualizado toda semana + print no README | <img src="https://img.shields.io/badge/5_abertas_%2F_2_fechadas-22C55E?style=flat-square" height="18"/> **Feito** — 7 issues com a label `bug`, lista atual em [Issue/Bug Tracker](#issue-tracker-entrega-04) |
 
 | Artefato | Link |
 | :--- | :--- |
@@ -416,34 +416,6 @@ Sai do protótipo e liga o domínio a código rodando: back-end em <b>Spring Boo
 >
 > ✅ Frontend — [`PaginaPortalDoador.tsx`](./frontend/src/pages/PortalDoador/PaginaPortalDoador.tsx)
 
-<h4 align="center" id="issue-tracker">🐛 Issue/Bug Tracker — Entrega 02 <br>
-<img src="https://img.shields.io/badge/5_Issues_Abertas-red?style=flat-square&logo=github&logoColor=white" height="20"/>
-<img src="https://img.shields.io/badge/2_Issues_Fechadas-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
-</h4>
-
-<p align="center">
-7 issues no <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a>, todas com a label
-<code>bug</code>: gaps reais entre o protótipo, a documentação e o código. As Issues #2 e #5 foram fechadas; as demais
-viraram trabalho da Entrega 03.
-</p>
-
-<p align="center">
-<img src="./img/issues_abertas.png" width="800"/>
-<img src="./img/issues_fechadas.png" width="800"/>
-</p>
-
-| Imagem | Issue | Resumo |
-| :---: | :--- | :--- |
-| <img src="./img/issue-tracker_issue1-testes-junit_1.png" width="260"/> | 🔴 #1 — Testes JUnit 5 + CI (contexto) | Cobertura em 0%: o `TesteFluxo` usava `main()` em vez de `@Test`; tarefas para convertê-lo e cobrir os controllers. |
-| <img src="./img/issue-tracker_issue1-testes-junit_2.png" width="260"/> | 🔴 #1 — Testes JUnit 5 + CI (cenários) | Cenários mínimos por endpoint e uma esteira que bloqueia o merge quando o `mvn test` falha. |
-| <img src="./img/issue2_done.png" width="260"/> | ✅ #2 — Screencasts da Entrega 02 | Os 2 vídeos foram gravados e publicados no YouTube; issue fechada. |
-| <img src="./img/issue-tracker_issue3-estoque.png" width="260"/> | 🔴 #3 — Tela de Estoque (HU‑03) | A `PaginaEstoque.tsx` precisava sair do placeholder e consumir o endpoint de estoque. |
-| <img src="./img/issue-tracker_issue4-integracao-backend.png" width="260"/> | 🔴 #4 — Integrar o frontend ao backend | O frontend era 100% mockado; plano de `api.ts`, chamadas HTTP reais e CORS. |
-| <img src="./img/issue-tracker_issue5-docs-roteirizacao_1.png" width="260"/> | ✅ #5 — Docs de Roteirização (problema) | O `MODULOS.md` dizia "sem grafo", mas o código já tinha grafo e Dijkstra. |
-| <img src="./img/issue-tracker_issue5-docs-roteirizacao_2.png" width="260"/> | ✅ #5 — Docs de Roteirização (resolução) | Resolvida com o `RotaController` (`/pontos`, `/conexoes`, `/rotas`) e o `MODULOS.md` corrigido. |
-| <img src="./img/issue-tracker_issue6-painel-operacional.png" width="260"/> | 🟠 #6 — Painel Operacional (HU‑02) | Escopo e cenários BDD para os números rápidos e a caixa de avisos. |
-| <img src="./img/issue-tracker_issue7-doador-campanha.png" width="260"/> | 🟠 #7 — Modelar Doador e Campanha | Diagrama de `Doador`, `CampanhaDoacao` e `AgendamentoDoacao`, que destravava as HU‑06, 09 e 10. |
-
 <h3 id="-entrega-03" align="center">📌 Entrega 03 — 19/10 <br>
 <img src="https://img.shields.io/badge/-Supabase_Auth-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="20"/>
 <img src="https://img.shields.io/badge/-CRUD_de_Estoque-111827?style=flat-square&logo=springboot&logoColor=green" height="20"/>
@@ -463,7 +435,7 @@ mensagens de erro claras. No Jira: histórias <b>PI3-171</b> (Login) e <b>PI3-17
 | 🔁 Versionamento atuante | Commits de código na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/4_de_4_semanas-22C55E?style=flat-square" height="18"/> **Feito** — commits de código em todas as semanas de 22/09 a 19/10 ([histórico](https://github.com/viictorpaes/Rotavital/commits/main?since=2026-09-22&until=2026-10-19)) |
 | 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, mostrando as 2 histórias novas | <img src="https://img.shields.io/badge/Em_andamento-F59E0B?style=flat-square" height="18"/> **Em andamento** (PI3-221) |
 | 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das 2 histórias | <img src="https://img.shields.io/badge/Em_andamento-F59E0B?style=flat-square" height="18"/> **Em andamento** (PI3-222) |
-| 🐞 Issue/Bug Tracker | GitHub Issues atualizado + print no README | <img src="https://img.shields.io/badge/0_abertas_%2F_7_fechadas-22C55E?style=flat-square" height="18"/> **Feito** (PI3-223) — lista atualizada em 06/11, print em [Issue/Bug Tracker](#issue-tracker-entrega-03) |
+| 🐞 Issue/Bug Tracker | GitHub Issues atualizado + print no README | <img src="https://img.shields.io/badge/0_abertas_%2F_7_fechadas-22C55E?style=flat-square" height="18"/> **Feito** (PI3-223) — lista atualizada em 06/11, print em [Issue/Bug Tracker](#issue-tracker-entrega-04) |
 
 | Artefato | Link |
 | :--- | :--- |
@@ -499,26 +471,6 @@ mensagens de erro claras. No Jira: histórias <b>PI3-171</b> (Login) e <b>PI3-17
 > [`PaginaEstoque.tsx`](./frontend/src/pages/Estoque/PaginaEstoque.tsx),
 > [`ModalNovaBolsa.tsx`](./frontend/src/components/estoque/ModalNovaBolsa.tsx) (PI3‑180, PI3‑179)
 > 🔄 Edição e descarte de bolsas (PI3‑190) — implementados no [PR #29](https://github.com/viictorpaes/Rotavital/pull/29), aguardando merge
-
-<h4 align="center" id="issue-tracker-entrega-03">🐛 Issue/Bug Tracker — Entrega 03 <br>
-<img src="https://img.shields.io/badge/0_Issues_Abertas-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
-<img src="https://img.shields.io/badge/7_Issues_Fechadas-22C55E?style=flat-square&logo=github&logoColor=white" height="20"/>
-</h4>
-
-<p align="center">
-Lista do <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> em 06/11/2026.
-As issues #1, #3 e #4, resolvidas nesta entrega, foram fechadas em 06/11 (PI3‑223).
-</p>
-
-<p align="center">
-<img src="./img/issues_fechadas_atual.png" width="800"/>
-</p>
-
-| Imagem | Issue | Resumo |
-| :---: | :--- | :--- |
-| <img src="./img/issue-tracker_issue1-testes-junit_1.png" width="260"/> | ✅ [#1 — Testes JUnit 5 + CI](https://github.com/viictorpaes/Rotavital/issues/3) | Fechada em 06/11: o `TesteFluxo` virou `TesteFluxoTest`, domínio, serviços e controllers ganharam testes (PI3‑153) e a esteira do GitHub Actions roda `mvn verify` ([PR #31](https://github.com/viictorpaes/Rotavital/pull/31)). |
-| <img src="./img/issue-tracker_issue3-estoque.png" width="260"/> | ✅ [#3 — Tela de Estoque (HU‑03)](https://github.com/viictorpaes/Rotavital/issues/5) | Fechada em 06/11: a `PaginaEstoque.tsx` saiu do placeholder e lê a API, com filtros e paginação (PRs #24, #26, #27 e #28). |
-| <img src="./img/issue-tracker_issue4-integracao-backend.png" width="260"/> | ✅ [#4 — Integrar o frontend ao backend](https://github.com/viictorpaes/Rotavital/issues/6) | Fechada em 06/11, com as tarefas da issue feitas: cliente HTTP, login real, CORS e tratamento de erro. O que ainda usa dado de exemplo está nas [pendências da Entrega 04](#issue-tracker-entrega-04). |
 
 <h3 id="-entrega-04" align="center">📌 Entrega 04 — 09/11 <br>
 <img src="https://img.shields.io/badge/-Campanhas_e_Doações-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="20"/>
@@ -628,9 +580,9 @@ com mapa da rede, menor caminho por Dijkstra e envio de bolsas por FEFO, rastrea
 </h4>
 
 <p align="center">
-Lista do <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> em 06/11/2026.
-As issues #6 e #7 também foram fechadas em 06/11. O teste de ponta a ponta do mesmo dia encontrou 4 pendências, listadas
-abaixo, que ainda precisam virar issues.
+Lista do <a href="https://github.com/viictorpaes/Rotavital/issues" target="_blank">GitHub Issues</a> em 06/11/2026: as 7
+issues estão fechadas, e a tabela detalha as duas desta entrega. O teste de ponta a ponta do mesmo dia encontrou 4
+pendências, listadas abaixo, que ainda precisam virar issues.
 </p>
 
 <p align="center">
