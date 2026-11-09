@@ -419,8 +419,8 @@ Sai do protótipo e liga o domínio a código rodando: back-end em <b>Spring Boo
 <h3 id="-entrega-03" align="center">📌 Entrega 03 — 19/10 <br>
 <img src="https://img.shields.io/badge/-Supabase_Auth-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="20"/>
 <img src="https://img.shields.io/badge/-CRUD_de_Estoque-111827?style=flat-square&logo=springboot&logoColor=green" height="20"/>
-<img src="https://img.shields.io/badge/-ScreenCast_em_andamento-111827?style=flat-square&logo=youtube&logoColor=red" height="20"/>
-<img src="https://img.shields.io/badge/Status-Em_andamento-F59E0B?style=flat" height="20"/>
+<a href="https://youtu.be/pcgMnh8VSwU" target="_blank"><img src="https://img.shields.io/badge/-ScreenCast_3_e_4-111827?style=flat-square&logo=youtube&logoColor=red" height="20"/></a>
+<img src="https://img.shields.io/badge/Concluído-green?style=flat" height="20"/>
 </h3>
 
 <p align="center">
@@ -433,14 +433,13 @@ mensagens de erro claras. No Jira: histórias <b>PI3-171</b> (Login) e <b>PI3-17
 | :--- | :--- | :---: |
 | ✅ Histórias implementadas | Mais 2 HUs em código real, descritas em post-it abaixo | <img src="https://img.shields.io/badge/2%2F2-22C55E?style=flat-square" height="18"/> **Feito** |
 | 🔁 Versionamento atuante | Commits de código na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/4_de_4_semanas-22C55E?style=flat-square" height="18"/> **Feito** — commits de código em todas as semanas de 22/09 a 19/10 ([histórico](https://github.com/viictorpaes/Rotavital/commits/main?since=2026-09-22&until=2026-10-19)) |
-| 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, mostrando as 2 histórias novas | <img src="https://img.shields.io/badge/Em_andamento-F59E0B?style=flat-square" height="18"/> **Em andamento** (PI3-221) |
-| 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das 2 histórias | <img src="https://img.shields.io/badge/Em_andamento-F59E0B?style=flat-square" height="18"/> **Em andamento** (PI3-222) |
+| 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, mostrando as 2 histórias novas | <img src="https://img.shields.io/badge/Publicado-22C55E?style=flat-square" height="18"/> **Feito** (PI3-221) — [Assistir vídeo](https://youtu.be/pcgMnh8VSwU) |
+| 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das 2 histórias | <img src="https://img.shields.io/badge/Publicado-22C55E?style=flat-square" height="18"/> **Feito** (PI3-222) — [Assistir vídeo](https://youtu.be/pcgMnh8VSwU) |
 | 🐞 Issue/Bug Tracker | GitHub Issues atualizado + print no README | <img src="https://img.shields.io/badge/0_abertas_%2F_7_fechadas-22C55E?style=flat-square" height="18"/> **Feito** (PI3-223) — lista atualizada em 06/11, print em [Issue/Bug Tracker](#issue-tracker-entrega-04) |
 
 | Artefato | Link |
 | :--- | :--- |
-| 🎬 Screencast — uso do sistema | *em andamento* |
-| 🎬 Screencast — explicação do código | *em andamento* |
+| 🎬 Screencast — uso do sistema e explicação do código (vídeo único das Entregas 03 e 04) | [Assistir vídeo](https://youtu.be/pcgMnh8VSwU) |
 
 <h4 align="center">📝 Histórias Implementadas — Entrega 03</h4>
 
@@ -475,7 +474,7 @@ mensagens de erro claras. No Jira: histórias <b>PI3-171</b> (Login) e <b>PI3-17
 <h3 id="-entrega-04" align="center">📌 Entrega 04 — 09/11 <br>
 <img src="https://img.shields.io/badge/-Campanhas_e_Doações-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="20"/>
 <img src="https://img.shields.io/badge/-Rotas_e_Mapas-111827?style=flat-square&logo=googlemaps&logoColor=4285F4" height="20"/>
-<img src="https://img.shields.io/badge/-ScreenCast_em_andamento-111827?style=flat-square&logo=youtube&logoColor=red" height="20"/>
+<a href="https://youtu.be/pcgMnh8VSwU" target="_blank"><img src="https://img.shields.io/badge/-ScreenCast_3_e_4-111827?style=flat-square&logo=youtube&logoColor=red" height="20"/></a>
 <img src="https://img.shields.io/badge/Status-Em_andamento-F59E0B?style=flat" height="20"/>
 </h3>
 
@@ -490,14 +489,13 @@ com mapa da rede, menor caminho por Dijkstra e envio de bolsas por FEFO, rastrea
 | :--- | :--- | :---: |
 | ✅ Histórias implementadas | Histórias restantes (mínimo de 2), descritas em post-it abaixo | <img src="https://img.shields.io/badge/4%2F2-22C55E?style=flat-square" height="18"/> **Feito** — 4 HUs completas e a HU‑08 em parte |
 | 🔁 Versionamento atuante | Commits de código na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/3_de_3_semanas-22C55E?style=flat-square" height="18"/> **Feito** — commits de código em todas as semanas desde 20/10, com os PRs #32, #33, #34, #36 e #37 ([histórico](https://github.com/viictorpaes/Rotavital/commits/main?since=2026-10-20&until=2026-11-09)) |
-| 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, com ênfase nas histórias novas | <img src="https://img.shields.io/badge/Em_andamento-F59E0B?style=flat-square" height="18"/> **Em andamento** |
-| 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das histórias | <img src="https://img.shields.io/badge/Em_andamento-F59E0B?style=flat-square" height="18"/> **Em andamento** |
+| 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, com ênfase nas histórias novas | <img src="https://img.shields.io/badge/Publicado-22C55E?style=flat-square" height="18"/> **Feito** — [Assistir vídeo](https://youtu.be/pcgMnh8VSwU) |
+| 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das histórias | <img src="https://img.shields.io/badge/Publicado-22C55E?style=flat-square" height="18"/> **Feito** — [Assistir vídeo](https://youtu.be/pcgMnh8VSwU) |
 | 🐞 Issue/Bug Tracker | Uso do GitHub Issues + print no README | <img src="https://img.shields.io/badge/0_abertas_%2F_7_fechadas-F59E0B?style=flat-square" height="18"/> **Em andamento** — print em [Issue/Bug Tracker](#issue-tracker-entrega-04); falta abrir as 4 pendências novas |
 
 | Artefato | Link |
 | :--- | :--- |
-| 🎬 Screencast — uso do sistema | *em andamento* |
-| 🎬 Screencast — explicação do código | *em andamento* |
+| 🎬 Screencast — uso do sistema e explicação do código (vídeo único das Entregas 03 e 04) | [Assistir vídeo](https://youtu.be/pcgMnh8VSwU) |
 
 <h4 align="center">📝 Histórias Implementadas — Entrega 04</h4>
 
