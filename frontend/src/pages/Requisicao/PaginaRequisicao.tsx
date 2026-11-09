@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { AlertTriangle, Clock } from "lucide-react";
 import { useDados } from "@/context/ContextoDados";
 import { diasAteVencer, statusLote } from "@/lib/estoque";
@@ -20,7 +21,17 @@ const JANELA_VENCIMENTO_DIAS = 4;
 export default function PaginaRequisicao()
 {
   const { lotes, recebimentosPendentes } = useDados();
+  const location = useLocation();
   const [aba, setAba] = useState<Aba>("solicitar");
+
+  useEffect(() =>
+  {
+    const abaSolicitada = (location.state as { aba?: Aba } | null)?.aba;
+    if (abaSolicitada)
+    {
+      setAba(abaSolicitada);
+    }
+  }, [location.state]);
 
   const vencendo = useMemo(
     () => lotes.filter((lote) => diasAteVencer(lote) <= JANELA_VENCIMENTO_DIAS).length,

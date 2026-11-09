@@ -1,0 +1,212 @@
+{
+  "hc-pe": {
+    "Concentrado de Hemácias": {
+      "A+": 4,
+      "A-": 0,
+      "B+": 3,
+      "B-": 2,
+      "AB+": 2,
+      "AB-": 0,
+      "O+": 5,
+      "O-": 3
+    },
+    "Plasma Fresco Congelado": {
+      "A+": 3,
+      "A-": 0,
+      "B+": 2,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    },
+    "Concentrado de Plaquetas": {
+      "A+": 2,
+      "A-": 0,
+      "B+": 1,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    },
+    "Crioprecipitado": {
+      "A+": 2,
+      "A-": 0,
+      "B+": 1,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    }
+  },
+  "real-portugues": {
+    "Concentrado de Hemácias": {
+      "A+": 5,
+      "A-": 0,
+      "B+": 4,
+      "B-": 2,
+      "AB+": 3,
+      "AB-": 0,
+      "O+": 6,
+      "O-": 4
+    },
+    "Plasma Fresco Congelado": {
+      "A+": 4,
+      "A-": 0,
+      "B+": 3,
+      "B-": 1,
+      "AB+": 2,
+      "AB-": 0,
+      "O+": 3,
+      "O-": 2
+    },
+    "Concentrado de Plaquetas": {
+      "A+": 3,
+      "A-": 0,
+      "B+": 2,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 3,
+      "O-": 2
+    },
+    "Crioprecipitado": {
+      "A+": 1,
+      "A-": 0,
+      "B+": 2,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    }
+  },
+  "barao-lucena": {
+    "Concentrado de Hemácias": {
+      "A+": 4,
+      "A-": 0,
+      "B+": 3,
+      "B-": 2,
+      "AB+": 2,
+      "AB-": 0,
+      "O+": 5,
+      "O-": 3
+    },
+    "Plasma Fresco Congelado": {
+      "A+": 3,
+      "A-": 0,
+      "B+": 2,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    },
+    "Concentrado de Plaquetas": {
+      "A+": 2,
+      "A-": 0,
+      "B+": 1,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    },
+    "Crioprecipitado": {
+      "A+": 2,
+      "A-": 0,
+      "B+": 1,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    }
+  },
+  "getulio-vargas": {
+    "Concentrado de Hemácias": {
+      "A+": 3,
+      "A-": 0,
+      "B+": 2,
+      "B-": 2,
+      "AB+": 2,
+      "AB-": 0,
+      "O+": 4,
+      "O-": 3
+    },
+    "Plasma Fresco Congelado": {
+      "A+": 2,
+      "A-": 0,
+      "B+": 1,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    },
+    "Concentrado de Plaquetas": {
+      "A+": 1,
+      "A-": 0,
+      "B+": 1,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    },
+    "Crioprecipitado": {
+      "A+": 1,
+      "A-": 0,
+      "B+": 1,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    }
+  },
+  "upa-norte": {
+    "Concentrado de Hemácias": {
+      "A+": 4,
+      "A-": 0,
+      "B+": 3,
+      "B-": 2,
+      "AB+": 2,
+      "AB-": 0,
+      "O+": 5,
+      "O-": 4
+    },
+    "Plasma Fresco Congelado": {
+      "A+": 2,
+      "A-": 0,
+      "B+": 2,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    },
+    "Concentrado de Plaquetas": {
+      "A+": 2,
+      "A-": 0,
+      "B+": 1,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    },
+    "Crioprecipitado": {
+      "A+": 1,
+      "A-": 0,
+      "B+": 1,
+      "B-": 1,
+      "AB+": 1,
+      "AB-": 0,
+      "O+": 2,
+      "O-": 1
+    }
+  }
+}

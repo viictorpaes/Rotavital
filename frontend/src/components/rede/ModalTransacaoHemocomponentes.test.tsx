@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { ModalTransacaoHemocomponentes } from "./ModalTransacaoHemocomponentes";
 import { hospitais } from "@/data/redeMock";
@@ -14,15 +15,21 @@ const rotaMock = {
   doRoteador: false,
 };
 
-describe("ModalTransacaoHemocomponentes", () => {
-  it("exibe a melhor rota e o painel logístico do hospital selecionado", () => {
-    render(
+function renderModal() {
+  return render(
+    <MemoryRouter>
       <ModalTransacaoHemocomponentes
         hospital={hospitais[1]}
         rota={rotaMock}
         onClose={() => undefined}
-      />,
-    );
+      />
+    </MemoryRouter>,
+  );
+}
+
+describe("ModalTransacaoHemocomponentes", () => {
+  it("exibe a melhor rota e o painel logístico do hospital selecionado", () => {
+    renderModal();
 
     expect(screen.getByText(/melhor rota/i)).toBeInTheDocument();
     expect(screen.getByText(/Cesar Life/i)).toBeInTheDocument();
@@ -35,13 +42,7 @@ describe("ModalTransacaoHemocomponentes", () => {
   it("altera o componente selecionado e mostra a recomendação de transporte correspondente", async () => {
     const user = userEvent.setup();
 
-    render(
-      <ModalTransacaoHemocomponentes
-        hospital={hospitais[1]}
-        rota={rotaMock}
-        onClose={() => undefined}
-      />,
-    );
+    renderModal();
 
     await user.selectOptions(screen.getByLabelText(/hemocomponente/i), "Plasma Fresco Congelado");
 
