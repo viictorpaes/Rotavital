@@ -475,7 +475,7 @@ mensagens de erro claras. No Jira: histórias <b>PI3-171</b> (Login) e <b>PI3-17
 <img src="https://img.shields.io/badge/-Campanhas_e_Doações-111827?style=flat-square&logo=supabase&logoColor=3ECF8E" height="20"/>
 <img src="https://img.shields.io/badge/-Rotas_e_Mapas-111827?style=flat-square&logo=googlemaps&logoColor=4285F4" height="20"/>
 <a href="https://youtu.be/pcgMnh8VSwU" target="_blank"><img src="https://img.shields.io/badge/-ScreenCast_3_e_4-111827?style=flat-square&logo=youtube&logoColor=red" height="20"/></a>
-<img src="https://img.shields.io/badge/Status-Em_andamento-F59E0B?style=flat" height="20"/>
+<img src="https://img.shields.io/badge/Status-Concluído-green?style=flat" height="20"/>
 </h3>
 
 <p align="center">
@@ -491,7 +491,7 @@ com mapa da rede, menor caminho por Dijkstra e envio de bolsas por FEFO, rastrea
 | 🔁 Versionamento atuante | Commits de código na `main`, no mínimo semanais | <img src="https://img.shields.io/badge/3_de_3_semanas-22C55E?style=flat-square" height="18"/> **Feito** — commits de código em todas as semanas desde 20/10, com os PRs #32, #33, #34, #36 e #37 ([histórico](https://github.com/viictorpaes/Rotavital/commits/main?since=2026-10-20&until=2026-11-09)) |
 | 🎬 Screencast — uso do sistema | Vídeo no YouTube, com áudio ou legenda, com ênfase nas histórias novas | <img src="https://img.shields.io/badge/Publicado-22C55E?style=flat-square" height="18"/> **Feito** — [Assistir vídeo](https://youtu.be/pcgMnh8VSwU) |
 | 🎬 Screencast — explicação do código | Vídeo no YouTube, com áudio ou legenda, explicando o código das histórias | <img src="https://img.shields.io/badge/Publicado-22C55E?style=flat-square" height="18"/> **Feito** — [Assistir vídeo](https://youtu.be/pcgMnh8VSwU) |
-| 🐞 Issue/Bug Tracker | Uso do GitHub Issues + print no README | <img src="https://img.shields.io/badge/0_abertas_%2F_7_fechadas-F59E0B?style=flat-square" height="18"/> **Em andamento** — print em [Issue/Bug Tracker](#issue-tracker-entrega-04); falta abrir as 4 pendências novas |
+| 🐞 Issue/Bug Tracker | Uso do GitHub Issues + print no README | <img src="https://img.shields.io/badge/0_abertas_%2F_7_fechadas-22C55E?style=flat-square" height="18"/> **Feito** — print em [Issue/Bug Tracker](#issue-tracker-entrega-04) |
 
 | Artefato | Link |
 | :--- | :--- |
@@ -798,7 +798,7 @@ O jeito recomendado é o <b>Docker</b>: um comando sobe banco, API e site, sem i
 ```bash
 git clone https://github.com/viictorpaes/Rotavital.git
 cd Rotavital
-cp .env.example .env          # Windows (PowerShell): Copy-Item .env.example .env
+cp .env.example .env # Windows (PowerShell): Copy-Item .env.example .env
 ```
 
 **2. Preencher o `.env`:** o `DB_PASSWORD` de exemplo já serve. Para o login, preencha a `SUPABASE_KEY`; para o modo
@@ -813,7 +813,8 @@ nuvem, também a `SUPABASE_DB_PASSWORD` (peça os valores ao líder do grupo).
 | **Use para** | desenvolver e testar sem medo | conferir com os dados reais |
 
 ```bash
-npm run docker:local        # ou: npm run docker:cloud
+npm run docker:local 
+# ou: npm run docker:cloud
 ```
 
 O `up` reconstrói sozinho as imagens do que mudou no código (`pull_policy: build`), então o que sobe é sempre o que está na
@@ -838,7 +839,7 @@ http://localhost:8080/versao.json.
 
 <sub>Sem Node, rode o comando da última coluna. Os atalhos também funcionam dentro de <code>frontend/</code> (menos <code>build</code> e <code>logs</code>).</sub>
 
-<h4 align="left" id="variaveis">🔑 Variáveis de ambiente</h4>
+<h4 align="left" id="variaveis">🔑 Variáveis de ambiente: </h4>
 
 | Arquivo | Variável | Para quê |
 | :--- | :--- | :--- |
