@@ -652,6 +652,8 @@ Rotavital🩸/
 │   ├── migrations <img src="https://img.shields.io/badge/-9_migrations_·_15_tabelas_·_2_views-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>/
 │   └── seed.sql · usuarios_de_teste.sql <img src="https://img.shields.io/badge/-Dados_e_usuários_de_teste-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 ├── db <img src="https://img.shields.io/badge/-Postgres_17_do_Compose-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>/
+│   ├── 00_rotavital.sh · Dockerfile
+│   └── 01_seed_local.sql <img src="https://img.shields.io/badge/-Seed_local_·_rede_·_bolsas_·_pacientes-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>
 ├── c <img src="https://img.shields.io/badge/-C99_·_Estruturas_de_Dados_(AV1)-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>/
 ├── docs <img src="https://img.shields.io/badge/Docs-111827?style=flat&logo=markdown&logoColor=blue" height="18"/>/ · pdf <img src="https://img.shields.io/badge/-PDF-111827?style=flat-square&logo=adobeacrobatreader&logoColor=EC1C24" height="18"/>/ · img <img src="https://img.shields.io/badge/Assets-green?style=flat&logo=image&logoColor=white" height="18"/>/
 ├── .github/workflows/esteira.yml <img src="https://img.shields.io/badge/-testes_→_imagens_→_deploy-111827?style=flat&logo=githubactions&logoColor=2088FF" height="18"/>
@@ -820,6 +822,17 @@ npm run docker:local
 
 O `up` reconstrói sozinho as imagens do que mudou no código (`pull_policy: build`), então o que sobe é sempre o que está na
 pasta. Não precisa rodar `docker:build` antes.
+
+No modo local, `db/01_seed_local.sql` carrega bancos de sangue, hospitais, rotas, bolsas e pacientes fictícios depois das
+migrations. A carga acontece somente na primeira inicialização do volume. Para recriar o banco e executar a seed novamente,
+use `npm run docker:down:v` antes de subir — esse comando apaga os dados locais. Para conferir a carga:
+
+```bash
+docker compose exec db psql -U rotavital -d rotavital -c "select count(*) from public.paciente;"
+docker compose exec db psql -U rotavital -d rotavital -c "select id, data_validade - current_date as dias_ate_validade, temperatura_celsius from public.bolsa_hemocomponente where id in ('CH-1101', 'CH-1102', 'CH-1103', 'CH-1104', 'CH-1106');"
+```
+
+Se `DB_USER` ou `DB_NAME` tiverem sido personalizados no `.env`, use esses valores nos comandos.
 
 **4. Conferir:** `npm run docker:status` deve mostrar os containers `(healthy)`. Tudo passa por uma porta só: o **site** abre
 em http://localhost:8080 (entre com um dos [usuários de teste](#usuarios-teste)), a **API** responde em
