@@ -72,6 +72,7 @@ export interface BolsaHemocomponenteDTO
   bancoOrigemId?: string;
   /** Hospital onde a bolsa está; nulo no hemocentro de origem e em trânsito (PI3-236). */
   hospitalAtualId?: string | null;
+  motivoDescarte?: string | null;
 }
 
 /** Filtros opcionais e combináveis de GET /hemocomponentes; page começa em 0 e size vai de 1 a 100. */
@@ -108,6 +109,21 @@ export interface EstoqueDTO
   bancoDeSangueId: string;
   totalBolsas: number;
   bolsas: BolsaHemocomponenteDTO[];
+}
+
+export interface TotalPerdaDTO
+{
+  categoria: string;
+  bolsas: number;
+  volumeMl: number;
+}
+
+export interface ResumoPerdasDTO
+{
+  totalBolsas: number;
+  totalVolumeMl: number;
+  porTipoSanguineo: TotalPerdaDTO[];
+  porComponente: TotalPerdaDTO[];
 }
 
 // ======================================================================

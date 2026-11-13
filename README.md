@@ -649,7 +649,7 @@ Rotavital🩸/
 │       ├── context · hooks · lib <img src="https://img.shields.io/badge/-Sessão_·_dados_·_regras_de_tela-111827?style=flat&logo=react&logoColor=61DAFB" height="18"/>/
 │       └── data <img src="https://img.shields.io/badge/-Dados_de_exemplo_(Rede_e_Recebidas)-111827?style=flat-square&logo=json&logoColor=yellow" height="18"/>/
 ├── supabase <img src="https://img.shields.io/badge/-Supabase-111827?style=flat&logo=supabase&logoColor=3ECF8E" height="18"/> <img src="https://img.shields.io/badge/-PostgreSQL-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>/
-│   ├── migrations <img src="https://img.shields.io/badge/-7_migrations_·_14_tabelas_·_2_views-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>/
+│   ├── migrations <img src="https://img.shields.io/badge/-9_migrations_·_15_tabelas_·_2_views-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>/
 │   └── seed.sql · usuarios_de_teste.sql <img src="https://img.shields.io/badge/-Dados_e_usuários_de_teste-111827?style=flat&logo=postgresql&logoColor=4169E1" height="18"/>
 ├── db <img src="https://img.shields.io/badge/-Postgres_17_do_Compose-111827?style=flat-square&logo=postgresql&logoColor=4169E1" height="18"/>/
 ├── c <img src="https://img.shields.io/badge/-C99_·_Estruturas_de_Dados_(AV1)-111827?style=flat&logo=c&logoColor=A8B9CC" height="18"/>/
@@ -736,8 +736,9 @@ spring.jpa.hibernate.ddl-auto=validate
 | 6️⃣ | [`20261015010623_papel_admin.sql`](./supabase/migrations/20261015010623_papel_admin.sql) | Inclui o papel `ADMIN` no `CHECK` de `usuario.papel` (PI3-183) |
 | 7️⃣ | [`20261030120000_perfil_doador.sql`](./supabase/migrations/20261030120000_perfil_doador.sql) | Perfil do doador em `usuario`: e-mail (único), telefone e data de nascimento (PI3-203) |
 | 8️⃣ | [`20261104120000_transferencia_bolsa.sql`](./supabase/migrations/20261104120000_transferencia_bolsa.sql) | Rastreabilidade das bolsas (PI3-236): `hospital_atual_id` e a tabela `transferencia_bolsa`, com de onde saíram, para onde foram, quem despachou e quem recebeu |
+| 9️⃣ | [`20261113120000_motivo_descarte_bolsa.sql`](./supabase/migrations/20261113120000_motivo_descarte_bolsa.sql) | Registra o motivo do descarte em `bolsa_hemocomponente` |
 
-> ⚠️ Os prints abaixo foram tirados depois das duas primeiras migrations (7 tabelas); as migrations 3 a 8 ainda não têm print.
+> ⚠️ Os prints abaixo foram tirados depois das duas primeiras migrations (7 tabelas); as migrations 3 a 9 ainda não têm print.
 </details>
 
 <details>
@@ -753,7 +754,7 @@ spring.jpa.hibernate.ddl-auto=validate
 <details>
 <summary>▶️🚀 <b>Como aplicar as migrations</b></summary>
 
-**Opção A — SQL Editor:** abrir o projeto → **SQL Editor** → rodar as 8 migrations em ordem (pelo prefixo de data) → rodar `supabase/seed.sql` para carregar os dados de exemplo → criar os usuários de teste seguindo [`supabase/usuarios_de_teste.sql`](./supabase/usuarios_de_teste.sql) → conferir em **Table Editor**.
+**Opção A — SQL Editor:** abrir o projeto → **SQL Editor** → rodar as 9 migrations em ordem (pelo prefixo de data) → rodar `supabase/seed.sql` para carregar os dados de exemplo → criar os usuários de teste seguindo [`supabase/usuarios_de_teste.sql`](./supabase/usuarios_de_teste.sql) → conferir em **Table Editor**.
 
 **Opção B — Supabase CLI:**
 

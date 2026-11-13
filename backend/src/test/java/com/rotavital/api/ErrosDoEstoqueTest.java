@@ -65,7 +65,7 @@ public class ErrosDoEstoqueTest
         EstoqueService servico = new EstoqueService(bancosFalsos, bolsasFalsas, relogio);
 
         // O resumo do estoque não é chamado nestes testes.
-        api = MockMvcBuilders.standaloneSetup(new EstoqueController(servico, null))
+        api = MockMvcBuilders.standaloneSetup(new EstoqueController(servico, null, null))
                 .setControllerAdvice(new TratadorDeErros())
                 .build();
     }

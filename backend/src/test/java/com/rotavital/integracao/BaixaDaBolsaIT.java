@@ -93,4 +93,35 @@ public class BaixaDaBolsaIT
     {
         Assertions.assertEquals(400, patch("CH-1", Map.of()).getStatusCode().value());
     }
+
+    @Test
+    public void descarteExigeMotivo()
+    {
+        ResponseEntity<JsonNode> resposta = patch("CH-1", Map.of("status", "DESCARTADA"));
+
+        Assertions.assertEquals(400, resposta.getStatusCode().value());
+        Assertions.assertEquals("RESERVADA", dados.statusDaBolsa("CH-1"));
+    }
+
+    @Test
+    public void descarteGravaMotivoEResumoDePerdas()
+    {
+        ResponseEntity<JsonNode> descarte = patch("CH-1",
+                Map.of("status", "DESCARTADA", "motivoDescarte", "Quebra da cadeia fria"));
+
+        Assertions.assertEquals(200, descarte.getStatusCode().value());
+        Assertions.assertEquals("Quebra da cadeia fria", descarte.getBody().get("motivoDescarte").asText());
+        Assertions.assertEquals("Quebra da cadeia fria", jdbc.queryForObject(
+                "select motivo_descarte from public.bolsa_hemocomponente where id = ?", String.class, "CH-1"));
+
+        ResponseEntity<JsonNode> resumo = api.getForEntity("/api/v1/bancos/BS-01/estoque/perdas", JsonNode.class);
+
+        Assertions.assertEquals(200, resumo.getStatusCode().value());
+        Assertions.assertEquals(1, resumo.getBody().get("totalBolsas").asInt());
+        Assertions.assertEquals(450.0, resumo.getBody().get("totalVolumeMl").asDouble());
+        Assertions.assertEquals("O_NEGATIVO",
+                resumo.getBody().get("porTipoSanguineo").get(0).get("categoria").asText());
+        Assertions.assertEquals("HEMACIAS",
+                resumo.getBody().get("porComponente").get(0).get("categoria").asText());
+    }
 }

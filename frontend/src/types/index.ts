@@ -99,6 +99,8 @@ export interface LoteHemocomponente
   localizacao: string;
   /** Status da bolsa no backend (DISPONIVEL, RESERVADA…); ausente nos dados de exemplo. */
   statusBolsa?: string;
+  /** Motivo informado no descarte, quando aplicável. */
+  motivoDescarte?: string;
 }
 
 /** Origem de um aviso do painel operacional (HU-02). */
@@ -161,4 +163,3 @@ export interface RequisicaoRecebida
 }
 
 export * from "./dtos";
-

@@ -140,6 +140,7 @@ erDiagram
         numeric temperatura_celsius "opcional"
         text localizacao "opcional"
         text status "default DISPONIVEL"
+        text motivo_descarte "opcional · justificativa"
         uuid remessa_id FK "novo · opcional"
         timestamptz criado_em
         timestamptz atualizado_em "novo"
@@ -327,6 +328,7 @@ calculadas, não armazenadas.
 | `temperatura_celsius` | numeric(5,2) | sim | — | `-80..60` (faixa física do sensor) | ✅ |
 | `localizacao` | text | sim | — | refrigerador · prateleira · nível | ✅ |
 | `status` | text | — | `'DISPONIVEL'` | `DISPONIVEL` \| `RESERVADA` \| `EM_TRANSITO` \| `ENTREGUE` \| `DESCARTADA` \| **`UTILIZADA`** | 🔧 |
+| `motivo_descarte` | varchar(500) | sim | — | justificativa registrada ao descartar | 🆕 |
 | `remessa_id` | uuid | sim | — | FK composta → `remessa` (ver abaixo) | 🆕 |
 | `hospital_atual_id` + `hospital_atual_tipo` | text | sim | `'HOSPITAL'` | FK composta; **hospital onde a bolsa está**, nulo no hemocentro e em trânsito (PI3-236) | 🆕 |
 | `criado_em` | timestamptz | — | `now()` | — | ✅ |
@@ -527,7 +529,7 @@ PK `(procedimento_id, bolsa_id)`.
 
 <h2 align="left" id="8-migrations">📜 8. Plano de migrations</h2>
 
-As seis migrations estão aplicadas no Supabase. As duas primeiras **não foram alteradas**: as mudanças entraram em migrations
+As migrations são a fonte da verdade do schema. As duas primeiras **não foram alteradas**: as mudanças entraram em migrations
 novas, com timestamp posterior:
 
 | # | Arquivo | Conteúdo | |
@@ -538,7 +540,9 @@ novas, com timestamp posterior:
 | 4 | `20260925120100_escopo_clinico.sql` | `usuario`, `paciente`, `remessa`, `campanha_doacao`, `agendamento_doacao`, `procedimento`, `procedimento_bolsa`, gatilhos novos e RLS | ✅ aplicada |
 | 5 | `20260925120200_views_painel.sql` | `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ✅ aplicada |
 | 6 | `20261015010623_papel_admin.sql` | `ADMIN` no `ck_usuario_papel` (PI3-183, decisão 3 de [`PERFIS_DE_ACESSO.md`](PERFIS_DE_ACESSO.md)) | ✅ aplicada |
+| 7 | `20261030120000_perfil_doador.sql` | E-mail, telefone e data de nascimento do perfil do doador (PI3-203) | ✅ aplicada |
 | 8 | `20261104120000_transferencia_bolsa.sql` | `hospital_atual_id` em `bolsa_hemocomponente` e a tabela `transferencia_bolsa` (PI3-236) | ⏳ falta aplicar no Supabase |
+| 9 | `20261113120000_motivo_descarte_bolsa.sql` | `motivo_descarte` em `bolsa_hemocomponente` para auditoria do descarte | ⏳ falta aplicar no Supabase |
 | — | `supabase/seed.sql` | Pontos e conexões de `RedeDistribuicaoEmMemoria` e bolsas de `BancosEmMemoria` (PI3-149). Pacientes e remessas dos mocks do frontend ainda não entraram | ✅ criado |
 
 > A migration 4 cria `remessa` e `paciente`, que são alvo das FKs novas de `bolsa_hemocomponente` e

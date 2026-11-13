@@ -268,6 +268,26 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  /bancos/{bancoId}/estoque/perdas:
+    get:
+      tags: [Estoque]
+      summary: Totais de bolsas descartadas por tipo sanguíneo e componente
+      description: Calcula os totais e rankings diretamente no banco, sem limitar os resultados à paginação do estoque.
+      operationId: resumirPerdas
+      parameters:
+        - $ref: '#/components/parameters/BancoIdPath'
+      responses:
+        '200':
+          description: Totais de bolsas e volume descartados no banco informado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoPerdas'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
   /bancos/{bancoId}/sugestao-lote:
     get:
       tags: [Estoque]
@@ -475,6 +495,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/BolsaHemocomponente' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
         '422':
@@ -1583,7 +1605,7 @@ components:
 
     StatusBolsa:
       type: string
-      enum: [DISPONIVEL, RESERVADA, EM_TRANSITO, ENTREGUE, DESCARTADA]
+      enum: [DISPONIVEL, RESERVADA, EM_TRANSITO, ENTREGUE, DESCARTADA, UTILIZADA]
 
     StatusRequisicao:
       type: string
@@ -1660,6 +1682,10 @@ components:
           nullable: true
           description: Hospital onde a bolsa está; nulo no hemocentro de origem e em trânsito (PI3-236).
           example: hc-pe
+        motivoDescarte:
+          type: string
+          nullable: true
+          description: Justificativa registrada ao descartar a bolsa.
       required: [id, tipoComponente, tipoSanguineo, dataColeta, dataValidade, loteSintetico, volumeMl, status, bancoOrigemId]
 
     NovaBolsaHemocomponenteRequest:
@@ -1694,6 +1720,10 @@ components:
       type: object
       properties:
         status: { $ref: '#/components/schemas/StatusBolsa' }
+        motivoDescarte:
+          type: string
+          maxLength: 500
+          description: Obrigatório quando status for DESCARTADA.
       required: [status]
 
     Estoque:
@@ -1720,6 +1750,27 @@ components:
           description: Total de cada componente somando todos os tipos.
           items: { $ref: '#/components/schemas/TotalPorComponente' }
       required: [bancoDeSangueId, totalUnidades, tiposSanguineos, componentes]
+
+    ResumoPerdas:
+      type: object
+      properties:
+        totalBolsas: { type: integer, format: int64 }
+        totalVolumeMl: { type: number, format: double }
+        porTipoSanguineo:
+          type: array
+          items: { $ref: '#/components/schemas/TotalPerda' }
+        porComponente:
+          type: array
+          items: { $ref: '#/components/schemas/TotalPerda' }
+      required: [totalBolsas, totalVolumeMl, porTipoSanguineo, porComponente]
+
+    TotalPerda:
+      type: object
+      properties:
+        categoria: { type: string }
+        bolsas: { type: integer, format: int64 }
+        volumeMl: { type: number, format: double }
+      required: [categoria, bolsas, volumeMl]
 
     TotalPorTipoSanguineo:
       type: object
