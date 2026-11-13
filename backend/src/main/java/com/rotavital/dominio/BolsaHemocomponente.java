@@ -59,6 +59,9 @@ public class BolsaHemocomponente implements Persistable<String>
     @Column(name = "status", nullable = false)
     private StatusBolsa status;
 
+    @Column(name = "motivo_descarte", length = 500)
+    private String motivoDescarte;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "banco_origem_id", nullable = false)
     private BancoDeSangue bancoOrigem;
@@ -250,6 +253,16 @@ public class BolsaHemocomponente implements Persistable<String>
     public StatusBolsa getStatus()
     {
         return status;
+    }
+
+    public String getMotivoDescarte()
+    {
+        return motivoDescarte;
+    }
+
+    public void registrarMotivoDescarte(String motivo)
+    {
+        this.motivoDescarte = motivo;
     }
 
     public BancoDeSangue getBancoOrigem()

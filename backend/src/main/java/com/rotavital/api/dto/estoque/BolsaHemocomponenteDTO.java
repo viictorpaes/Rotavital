@@ -20,7 +20,8 @@ public record BolsaHemocomponenteDTO(
         boolean foraDaFaixa,
         StatusBolsa status,
         String bancoOrigemId,
-        String hospitalAtualId
+        String hospitalAtualId,
+        String motivoDescarte
 )
 
 {
@@ -40,7 +41,8 @@ public record BolsaHemocomponenteDTO(
                         bolsa.estaForaDaFaixa(),
                         bolsa.getStatus(),
                         bolsa.getBancoOrigem().getId(),
-                        bolsa.getHospitalAtual() == null ? null : bolsa.getHospitalAtual().getId()
+                        bolsa.getHospitalAtual() == null ? null : bolsa.getHospitalAtual().getId(),
+                        bolsa.getMotivoDescarte()
                 );
         }
 }

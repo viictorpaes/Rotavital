@@ -5,7 +5,8 @@
 # Roda uma única vez, na primeira subida do container com o volume vazio
 # (é o comportamento do /docker-entrypoint-initdb.d da imagem oficial do Postgres).
 # A fonte de verdade do schema continua sendo supabase/migrations/: este script
-# só aplica as mesmas migrations, na ordem do prefixo de data, e depois o seed.
+# só aplica as mesmas migrations, na ordem do prefixo de data, e depois
+# carrega os dados locais de demonstração.
 #
 # Vai para dentro da imagem (db/Dockerfile) em vez de ser montado da máquina:
 # o Docker Desktop do macOS não deixa executar scripts de um bind mount.
@@ -36,11 +37,12 @@ done
 # a linha em usuario mesmo no Postgres local. No Supabase a FK continua valendo.
 psql_rotavital -c "alter table public.usuario drop constraint fk_usuario_auth_user;"
 
-# O seed é opcional: os testes de integração não montam o arquivo e criam os próprios dados.
-if [ -f /rotavital/seed.sql ]
+# Seed local, empacotado na imagem. Este entrypoint só roda quando o volume de dados
+# está vazio; a seed também usa ON CONFLICT para ser segura em uma execução manual.
+if [ -f /rotavital/01_seed_local.sql ]
 then
-    echo "Rota Vital: carregando seed.sql"
-    psql_rotavital -f /rotavital/seed.sql
+    echo "Rota Vital: carregando 01_seed_local.sql"
+    psql_rotavital -f /rotavital/01_seed_local.sql
 fi
 
 # Usuários de teste (médico, doador e admin), ligados às contas do Supabase Auth: com eles

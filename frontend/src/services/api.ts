@@ -23,6 +23,7 @@ import type {
   LoginPayloadDTO,
   RespostaAcesso,
   EstoqueDTO,
+  ResumoPerdasDTO,
   BolsaHemocomponenteDTO,
   FiltrosHemocomponentesDTO,
   NovaBolsaHemocomponenteDTO,
@@ -77,6 +78,23 @@ export async function listarHemocomponentes(filtros: FiltrosHemocomponentesDTO =
 export async function cadastrarHemocomponente(dados: NovaBolsaHemocomponenteDTO): Promise<BolsaHemocomponenteDTO>
 {
   return clienteHttp.post<BolsaHemocomponenteDTO>("/hemocomponentes", dados, { silencioso: true });
+}
+
+/** Totais e rankings de bolsas descartadas, calculados no banco sem limitar a paginação do estoque. */
+export async function buscarResumoPerdas(bancoId: string): Promise<ResumoPerdasDTO>
+{
+  return clienteHttp.get<ResumoPerdasDTO>(`/bancos/${encodeURIComponent(bancoId)}/estoque/perdas`, {
+    silencioso: true,
+  });
+}
+
+/** Descarta uma bolsa com justificativa obrigatória e devolve seus dados atualizados. */
+export async function descartarHemocomponente(id: string, motivoDescarte: string): Promise<BolsaHemocomponenteDTO>
+{
+  return clienteHttp.patch<BolsaHemocomponenteDTO>(`/hemocomponentes/${encodeURIComponent(id)}`, {
+    status: "DESCARTADA",
+    motivoDescarte,
+  }, { silencioso: true });
 }
 
 /**
@@ -272,4 +290,3 @@ export async function obterDiagnostico(): Promise<DiagnosticoDados>
 {
   return clienteHttp.get<DiagnosticoDados>("/diagnostico", { silencioso: true });
 }
-

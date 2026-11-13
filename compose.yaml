@@ -33,10 +33,9 @@ services:
     volumes:
       # Volume nomeado: os dados sobrevivem ao "docker compose down" (só somem com "down -v").
       - dados-postgres:/var/lib/postgresql/data
-      # Na primeira subida (volume vazio), db/00_rotavital.sh aplica estas migrations, o seed
-      # e liga os usuários de teste (médico, doador e admin) às contas do Supabase Auth.
+      # Na primeira subida (volume vazio), db/00_rotavital.sh aplica estas migrations,
+      # carrega db/01_seed_local.sql (na imagem) e liga os usuários de teste às contas do Auth.
       - ./supabase/migrations:/rotavital/migrations:ro
-      - ./supabase/seed.sql:/rotavital/seed.sql:ro
       - ./supabase/usuarios_de_teste.sql:/rotavital/usuarios_de_teste.sql:ro
       - ./db/usuarios_de_teste_local.sql:/rotavital/usuarios_de_teste_local.sql:ro
     # Sem "ports": o banco só é alcançável pela rede interna do Compose (pelo backend).

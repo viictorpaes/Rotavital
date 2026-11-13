@@ -41,6 +41,12 @@ public class MovimentacaoDeBolsaService
     @Transactional
     public BolsaHemocomponente alterarStatus(String bolsaId, StatusBolsa novoStatus)
     {
+        return alterarStatus(bolsaId, novoStatus, null);
+    }
+
+    @Transactional
+    public BolsaHemocomponente alterarStatus(String bolsaId, StatusBolsa novoStatus, String motivoDescarte)
+    {
         if (novoStatus == null)
         {
             throw new DadosInvalidosException("O campo 'status' é obrigatório.");
@@ -48,6 +54,13 @@ public class MovimentacaoDeBolsaService
 
         BolsaHemocomponente bolsa = bolsas.findById(bolsaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Nenhuma bolsa encontrada com id " + bolsaId + "."));
+
+        if (novoStatus == StatusBolsa.DESCARTADA
+                && (motivoDescarte == null || motivoDescarte.isBlank() || motivoDescarte.strip().length() > 500))
+        {
+            throw new DadosInvalidosException(
+                    "Informe um motivo para o descarte com no máximo 500 caracteres.");
+        }
 
         Optional<TransferenciaDeBolsa> transferencia =
                 transferencias.findByBolsaIdAndStatus(bolsaId, StatusTransferencia.EM_TRANSITO);
@@ -65,6 +78,11 @@ public class MovimentacaoDeBolsaService
         catch (MovimentacaoInvalidaException e)
         {
             throw new RegraDeNegocioException(e.getMessage());
+        }
+
+        if (novoStatus == StatusBolsa.DESCARTADA)
+        {
+            bolsa.registrarMotivoDescarte(motivoDescarte.strip());
         }
 
         transferencia.ifPresent(TransferenciaDeBolsa::cancelar);
