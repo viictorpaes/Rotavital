@@ -1141,6 +1141,7 @@ O protótipo ao lado da mesma tela rodando de verdade (prints com Playwright, 14
 | 🔁 [`TRADUCAO_C_JAVA_AV1.md`](./docs/TRADUCAO_C_JAVA_AV1.md) | Tradução comentada C ↔ Java: lista, fila e pilha (AV1) |
 | 🧾 [`evidencias/`](./docs/evidencias/) | Chamadas reais aos endpoints e prints por tarefa do Jira |
 | 🎬 [`ROTEIRO_MVP.md`](./docs/ROTEIRO_MVP.md) | Roteiro-exemplo dos screencasts e da apresentação final, ensaiado com o sistema rodando |
+| 🏗️ [`arquitetura_SO/`](./docs/arquitetura_SO/) | Planejamento da remodelagem: DDD, três camadas, microsserviços e orçamento (Trabalho U2 · Parte 2 - Infraestrutura de Software) |
 | 📕 [`arquitetura-rotavital-paes-silva.pdf`](./pdf/arquitetura-rotavital-paes-silva.pdf) | PDF final entregue - Atividade de Infraestrutura de Redes (RSD) |
 | 🗺️ [`arquitetura-rotavital-paes-silva.drawio`](./docs/arquitetura-rotavital-paes-silva.drawio) | Arquivo-fonte do diagrama entregue junto com o PDF (RSD) |
 
