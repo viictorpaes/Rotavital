@@ -99,7 +99,7 @@ export default function PaginaRequisicao()
         ))}
       </div>
 
-      {aba === "solicitar" && <FormularioRequisicao />}
+      {aba === "solicitar" && <FormularioRequisicao onAbrirCampanha={() => setAba("campanha")} />}
       {aba === "recebidas" && <ListaRecebimentos />}
       {aba === "campanha" && <FormularioCampanha />}
     </div>

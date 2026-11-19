@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, Thermometer, Trash2, X } from "lucide-react";
+import { BedDouble, Building2, MapPin, Thermometer, Trash2, Truck, X } from "lucide-react";
 import type { LoteHemocomponente } from "@/types";
 import { cn } from "@/lib/utilitarios";
 import {
@@ -10,6 +10,7 @@ import {
   statusLote,
   temperaturaForaDaFaixa,
 } from "@/lib/estoque";
+import { descreverLocalizacao, destinoDaBolsa } from "@/lib/requisicao";
 
 const CLASSES_STATUS =
 {
@@ -38,6 +39,7 @@ export function CartaoLote({ lote, onDescarte }: Readonly<{
   const status = statusLote(lote);
   const dias = diasAteVencer(lote);
   const foraDaFaixa = temperaturaForaDaFaixa(lote);
+  const destino = destinoDaBolsa(lote.localizacao);
   const [modalAberto, setModalAberto] = useState(false);
   const [motivo, setMotivo] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -110,11 +112,38 @@ export function CartaoLote({ lote, onDescarte }: Readonly<{
         </Campo>
       </div>
 
+      {destino && (
+        <div
+          aria-label={`Destino da bolsa: ${lote.localizacao}`}
+          className="mt-4 rounded-lg border border-rota-red/30 bg-red-50 p-3"
+        >
+          <p className="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-widest text-rota-red">
+            {destino.emTransito ? <Truck className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
+            {destino.emTransito ? "Em transporte para" : "Destino"}
+          </p>
+          <p className="mt-1.5 text-base font-bold leading-tight text-gray-900">{destino.ala}</p>
+          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-700">
+            <span className="inline-flex items-center gap-1">
+              <Building2 className="h-3.5 w-3.5 text-gray-400" />
+              {destino.hospital}
+            </span>
+            {destino.leito && (
+              <span className="inline-flex items-center gap-1 font-mono font-semibold">
+                <BedDouble className="h-3.5 w-3.5 text-gray-400" />
+                Leito {destino.leito}
+              </span>
+            )}
+          </p>
+        </div>
+      )}
+
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-1.5 font-mono text-xs text-gray-500">
-          <MapPin className="h-3.5 w-3.5 text-rota-red" />
-          {lote.localizacao}
-        </p>
+        {!destino && (
+          <p className="flex items-center gap-1.5 font-mono text-xs text-gray-500" title={lote.localizacao}>
+            <MapPin className="h-3.5 w-3.5 text-rota-red" />
+            {descreverLocalizacao(lote.localizacao).join(" · ") || lote.localizacao}
+          </p>
+        )}
         {lote.statusBolsa && lote.statusBolsa !== "DISPONIVEL" && (
           <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide text-gray-600">
             {rotuloStatusBolsa(lote.statusBolsa)}

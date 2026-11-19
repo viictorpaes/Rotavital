@@ -27,6 +27,11 @@ import type {
   BolsaHemocomponenteDTO,
   FiltrosHemocomponentesDTO,
   NovaBolsaHemocomponenteDTO,
+  NovaRequisicaoPayloadDTO,
+  RequisicaoRegistradaDTO,
+  SugestaoDeLoteDTO,
+  TipoComponenteBackend,
+  TipoSanguineoBackend,
   PontoRedeDTO,
   RotaCalculadaDTO,
   RotaNoMapaDTO,
@@ -95,6 +100,34 @@ export async function descartarHemocomponente(id: string, motivoDescarte: string
     status: "DESCARTADA",
     motivoDescarte,
   }, { silencioso: true });
+}
+
+// ----------------------------------------------------------------------
+// Requisição de hemocomponente (HU-04). A sugestão é livre; registrar exige um médico
+// (X-Usuario-Id). Silenciosas: o formulário mostra o erro (ex.: 422 sem estoque) perto do botão.
+// ----------------------------------------------------------------------
+
+/** Bolsas aptas e compatíveis que o FEFO escolheria para o pedido; faltam > 0 quando não dá. */
+export async function sugerirLotes(
+  bancoId: string,
+  tipoComponente: TipoComponenteBackend,
+  tipoSanguineo: TipoSanguineoBackend,
+  quantidade: number,
+): Promise<SugestaoDeLoteDTO>
+{
+  return clienteHttp.get<SugestaoDeLoteDTO>(`/bancos/${encodeURIComponent(bancoId)}/sugestao-lote`, {
+    params: { tipoComponente, tipoSanguineo, quantidade },
+    silencioso: true,
+  });
+}
+
+/**
+ * Registra o pedido e reserva as bolsas: cada uma passa a ter como localização o destino
+ * ("Hospital · Ala · Leito"). Estoque insuficiente responde 422 e nada é reservado.
+ */
+export async function registrarRequisicao(dados: NovaRequisicaoPayloadDTO): Promise<RequisicaoRegistradaDTO>
+{
+  return clienteHttp.post<RequisicaoRegistradaDTO>("/requisicoes", dados, { silencioso: true });
 }
 
 /**

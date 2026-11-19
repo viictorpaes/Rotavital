@@ -1,9 +1,12 @@
 import type {
+  AlaHospitalarBackend,
   AlaMedica,
   LoteHemocomponente,
+  NivelUrgenciaBackend,
   RequisicaoRecebida,
   TipoComponente,
   TipoSanguineo,
+  UrgenciaNecessidade,
 } from "@/types";
 import { FAIXAS_IDEAIS } from "@/data/estoqueMock";
 import { diasAteVencer } from "@/lib/estoque";
@@ -53,25 +56,132 @@ const PREFIXO_CODIGO: Record<TipoComponente, string> =
   "Crioprecipitado": "CR",
 };
 
+export const ALA_PARA_BACKEND: Record<AlaMedica, AlaHospitalarBackend> =
+{
+  "UTI Adulto": "UTI_ADULTO",
+  "UTI Neonatal": "UTI_NEONATAL",
+  "Centro Cirúrgico": "CENTRO_CIRURGICO",
+  "Emergência": "EMERGENCIA",
+  "Oncologia": "ONCOLOGIA",
+  "Hemodiálise": "HEMODIALISE",
+  "Maternidade": "MATERNIDADE",
+};
+
+export const URGENCIA_PARA_BACKEND: Record<UrgenciaNecessidade, NivelUrgenciaBackend> =
+{
+  critico: "ALTA",
+  atencao: "MEDIA",
+  estavel: "BAIXA",
+};
+
+/** Mesmo separador que o backend usa entre hospital, ala e leito (AlaHospitalar.SEPARADOR). */
+const SEPARADOR_LOCALIZACAO = " · ";
+const PREFIXO_TRANSPORTE = "Em transporte refrigerado → ";
+
+/** Destino mostrado antes de enviar, no mesmo formato que o backend grava na bolsa. */
+export function descreverDestino(hospital: string, ala: AlaMedica, leito: string)
+{
+  const partes = [hospital, ala];
+  if (leito.trim()) partes.push(`Leito ${leito.trim()}`);
+  return partes.join(SEPARADOR_LOCALIZACAO);
+}
+
+const NOMES_COMPARTIMENTO: Record<string, string> =
+{
+  R: "Refrigerador",
+  F: "Freezer",
+  C: "Câmara",
+  G: "Gaveta",
+  P: "Prateleira",
+  N: "Nível",
+};
+
 /**
- * FEFO (*first expired, first out*): entre os lotes compatíveis com o pedido,
- * sugere o que vence primeiro, para reduzir descarte por validade (HU-04).
+ * Explica o código de posição física da bolsa no hemocentro: "R1 · P3 · N2" vira
+ * ["Refrigerador 1", "Prateleira 3", "Nível 2"]. Trecho que não for código fica como veio
+ * ("Câmara 01", "Gaveta B").
  */
-export function sugerirLoteFefo(
+export function descreverLocalizacao(localizacao: string | null | undefined): string[]
+{
+  if (!localizacao?.trim()) return [];
+
+  return localizacao
+    .split(/\s*[·|,/]\s*/)
+    .map((trecho) => trecho.trim())
+    .filter(Boolean)
+    .map((trecho) =>
+    {
+      const codigo = /^([A-Za-z])\s*-?\s*([0-9]+|[A-Za-z])$/.exec(trecho);
+      const nome = codigo && NOMES_COMPARTIMENTO[codigo[1].toUpperCase()];
+      return nome ? `${nome} ${codigo[2].toUpperCase()}` : trecho;
+    });
+}
+
+export interface DestinoDaBolsa
+{
+  hospital: string;
+  ala: AlaMedica;
+  leito?: string;
+  /** Ainda no caminho entre o hemocentro e o hospital. */
+  emTransito: boolean;
+}
+
+/**
+ * Lê a localização gravada por uma requisição (HU-04): "Hospital X · UTI Adulto · Leito 04",
+ * com o prefixo de transporte enquanto a bolsa viaja. Localização de geladeira devolve null.
+ */
+export function destinoDaBolsa(localizacao: string | null | undefined): DestinoDaBolsa | null
+{
+  if (!localizacao) return null;
+
+  const emTransito = localizacao.startsWith(PREFIXO_TRANSPORTE);
+  const texto = emTransito ? localizacao.slice(PREFIXO_TRANSPORTE.length) : localizacao;
+  const partes = texto.split(SEPARADOR_LOCALIZACAO);
+  const indiceAla = partes.findIndex((parte, indice) => indice > 0 && ALAS_MEDICAS.includes(parte as AlaMedica));
+
+  if (indiceAla < 1) return null;
+
+  const leito = partes[indiceAla + 1]?.replace(/^Leito\s+/i, "");
+  return {
+    hospital: partes.slice(0, indiceAla).join(SEPARADOR_LOCALIZACAO),
+    ala: partes[indiceAla] as AlaMedica,
+    leito: leito || undefined,
+    emTransito,
+  };
+}
+
+/**
+ * Contingência do FEFO quando o backend não responde: lotes do mesmo tipo e componente, do que
+ * vence primeiro ao último, até cobrir as unidades pedidas.
+ */
+export function sugerirLotesFefo(
   lotes: LoteHemocomponente[],
   componente: TipoComponente,
   tipoSanguineo: TipoSanguineo,
-): LoteHemocomponente | undefined
+  unidades: number,
+): { lotes: LoteHemocomponente[]; disponiveis: number }
 {
-  return lotes
+  const candidatos = lotes
     .filter(
       (lote) =>
         lote.componente === componente &&
         lote.tipoSanguineo === tipoSanguineo &&
         lote.unidades > 0 &&
+        (lote.statusBolsa ?? "DISPONIVEL") === "DISPONIVEL" &&
         diasAteVencer(lote) >= 0,
     )
-    .sort((a, b) => diasAteVencer(a) - diasAteVencer(b))[0];
+    .sort((a, b) => diasAteVencer(a) - diasAteVencer(b));
+
+  const escolhidos: LoteHemocomponente[] = [];
+  let acumulado = 0;
+  for (const lote of candidatos)
+  {
+    if (acumulado >= unidades) break;
+    escolhidos.push(lote);
+    acumulado += lote.unidades;
+  }
+
+  return { lotes: escolhidos, disponiveis: Math.min(acumulado, unidades) };
 }
 
 /** Data ISO (AAAA-MM-DD) daqui a `dias`. */

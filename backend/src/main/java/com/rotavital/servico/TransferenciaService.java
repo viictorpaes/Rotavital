@@ -84,7 +84,7 @@ public class TransferenciaService
         try
         {
             // Antes do Google: uma bolsa que não pode sair não gasta a cota da Routes API.
-            bolsa.conferirEnvio(agora.toLocalDate());
+            bolsa.conferirEnvio(destino, agora.toLocalDate());
             Trajeto trajeto = rotas.calcular(bolsa.getBancoOrigem().getId(), destinoId).trajeto();
 
             return transacao.execute(status -> transferencias.save(
