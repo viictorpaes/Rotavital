@@ -64,7 +64,7 @@ flowchart LR
 |---|---|---|---|:---:|
 | 🔑 Acesso | HU-01 | `/acessos` | `Usuario` (senha conferida pelo Supabase Auth) | ✅ |
 | 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (inclui `GET /bancos/{bancoId}/estoque/perdas` e descarte via `PATCH /hemocomponentes/{id}`) |
-| 🏥 Requisições e Alocação | PI3-47 | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ❌ sem controller |
+| 🏥 Requisições e Alocação | PI3-47 | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | 🟡 só `POST /requisicoes` (HU-04) |
 | 🚚 Roteirização e Logística | PI3-48 | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ |
 | 🌡️ Telemetria e Cadeia Fria | PI3-49 | `/entregas/{id}/leituras` | *(gap — sem classe de domínio)* | ❌ sem controller |
 
@@ -178,7 +178,7 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | `PATCH` | `/api/v1/hemocomponentes/{id}` | ✅ Transição de status; `DESCARTADA` exige `motivoDescarte` | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `400` · `404` · `422` |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | 🕓 Remove um cadastro feito por engano | Nenhuma no MVP (alvo: médico) | *(sem corpo)* | `204` · `404` |
 | **🏥 Requisições** | *`RequisicaoController` (planejado)* | | | | |
-| `POST` | `/api/v1/requisicoes` | 🕓 Registra o pedido de um hospital (status `PENDENTE`) | Nenhuma no MVP (alvo: médico) | `RequisicaoHospitalar` | `201` · `400` |
+| `POST` | `/api/v1/requisicoes` | ✅ Confere o estoque (FEFO + compatibilidade) e reserva as bolsas; a localização de cada uma vira o destino `Hospital · Ala · Leito` (HU-04) | `X-Usuario-Id` de médico | `RequisicaoRegistrada` | `201` · `400` · `401` · `403` · `404` · `422` |
 | `GET` | `/api/v1/requisicoes?hospitalId=&status=&page=0&size=20` | 🕓 Lista requisições com filtros e paginação | Nenhuma no MVP (alvo: médico) | `RequisicaoHospitalar[]` | `200` |
 | `GET` | `/api/v1/requisicoes/{id}` | 🕓 Detalhe de uma requisição | Nenhuma no MVP (alvo: médico) | `RequisicaoHospitalar` | `200` · `404` |
 | `PATCH` | `/api/v1/requisicoes/{id}` | 🕓 Transição de status; cancelar = `{"status":"CANCELADA"}` | Nenhuma no MVP (alvo: médico) | `RequisicaoHospitalar` | `200` · `400` · `404` · `422` |
@@ -267,17 +267,39 @@ GET /api/v1/hemocomponentes?bancoId=BS-01&tipoSanguineo=O_POSITIVO&status=DISPON
 | `200` | Filtros válidos (lista vazia se nada bater). Todos os filtros são opcionais e combináveis; ordem por `dataValidade` (FEFO); padrão `page=0`, `size=20` | `BolsaHemocomponente[]` |
 | `400` | Filtro fora do enum, `page` negativa, `size` fora de 1 a 100 ou `page` × `size` acima de 2147483647 | `Erro`: `"O parâmetro 'size' deve estar entre 1 e 100."` |
 
-**4. `POST /api/v1/requisicoes`** 🕓 · Nenhuma no MVP (alvo: médico)
+**4. `POST /api/v1/requisicoes`** ✅ · `X-Usuario-Id` de médico (HU-04)
 ```http
 POST /api/v1/requisicoes
 Content-Type: application/json
+X-Usuario-Id: <id do médico>
 
-{ "hospitalId": "HOSP-01", "tipoComponente": "HEMACIAS", "tipoSanguineo": "O_POSITIVO", "quantidade": 1, "urgencia": "ALTA" }
+{ "bancoId": "BS-01", "hospitalId": "hc-pe", "ala": "UTI_ADULTO", "leito": "04",
+  "tipoComponente": "HEMACIAS", "tipoSanguineo": "O_NEGATIVO", "quantidade": 2, "urgencia": "ALTA", "paciente": "João Batista" }
 ```
+`ala` aceita `UTI_ADULTO`, `UTI_NEONATAL`, `CENTRO_CIRURGICO`, `EMERGENCIA`, `ONCOLOGIA`, `HEMODIALISE` e `MATERNIDADE`;
+`leito` e `paciente` são opcionais. As bolsas são escolhidas pela mesma regra de `GET /bancos/{bancoId}/sugestao-lote`
+(mesmo tipo primeiro, compatíveis depois, FEFO, só bolsas aptas). Cada bolsa escolhida fica `RESERVADA` e a
+`localizacao` dela passa a ser o destino (`"Hospital das Clínicas de PE · UTI Adulto · Leito 04"`); ao ser
+despachada e recebida pela tela de Rede, a bolsa mantém a ala e o leito do pedido.
+
+Decisões da HU-04:
+- **O pedido não é gravado** em `requisicao_hospitalar`/`alocacao` e a resposta `201` não traz `Location`. As
+  FKs `fk_alocacao_*_compativel` exigem o mesmo tipo sanguíneo pedido, e o FEFO da HU-04 também aceita tipos
+  compatíveis; gravar o pedido depende de mudar esse contrato do banco (PI3-47). O registro da reserva é a
+  própria bolsa: `status = RESERVADA` e `localizacao` no destino.
+- **`hospital_atual_id` não muda na reserva**: ele diz onde a bolsa está, e ela continua no hemocentro até ser
+  despachada.
+- **Concorrência**: as bolsas disponíveis do componente são travadas (`SELECT … FOR UPDATE`) antes da escolha;
+  despacho e mudança de status também travam a bolsa. Requisições simultâneas passam uma depois da outra, e a
+  segunda recebe `422` se não sobrar estoque.
+
 | Status | Quando | Corpo |
 |---|---|---|
-| `201` | Requisição criada com status `PENDENTE` | `RequisicaoHospitalar` |
-| `400` | Campo obrigatório ausente ou `quantidade < 1` | `Erro` |
+| `201` | Estoque suficiente: bolsas reservadas | `RequisicaoRegistrada`: `{protocolo, hospitalNome, ala, alaRotulo, leito, destino, quantidade, status: "ALOCADA", bolsas: [{id, retirarDe, localizacao, status}]}` |
+| `400` | Campo obrigatório ausente, `quantidade` fora de 1 a 100 ou `leito` com mais de 20 caracteres | `Erro` |
+| `401` / `403` | Sem `X-Usuario-Id` / usuário que não é médico | `Erro` |
+| `404` | Banco de sangue ou hospital inexistente | `Erro` |
+| `422` | Estoque sem bolsas aptas e compatíveis para a quantidade inteira — nada é reservado | `Erro`: `"Estoque insuficiente em Hemope Central: há só 1 bolsa apta e compatível de HEMACIAS para O_NEGATIVO, e foram pedidas 2. ..."` |
 
 **5. `POST /api/v1/requisicoes/{id}/alocacoes`** 🕓 · Nenhuma no MVP (alvo: médico)
 ```http

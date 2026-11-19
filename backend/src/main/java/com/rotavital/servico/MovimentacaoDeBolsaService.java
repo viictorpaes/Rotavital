@@ -52,7 +52,8 @@ public class MovimentacaoDeBolsaService
             throw new DadosInvalidosException("O campo 'status' é obrigatório.");
         }
 
-        BolsaHemocomponente bolsa = bolsas.findById(bolsaId)
+        // Com trava: uma requisição ou um despacho da mesma bolsa espera esta mudança terminar.
+        BolsaHemocomponente bolsa = bolsas.travarPorId(bolsaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Nenhuma bolsa encontrada com id " + bolsaId + "."));
 
         if (novoStatus == StatusBolsa.DESCARTADA

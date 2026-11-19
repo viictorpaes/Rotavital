@@ -105,8 +105,9 @@ public class TransferenciaServiceTest
 
         servico = new TransferenciaService(
                 RepositorioFalso.respondendo(TransferenciaDeBolsaRepository.class, repositorioDeTransferencias),
-                RepositorioFalso.respondendo(BolsaHemocomponenteRepository.class, "findById",
-                        argumentos -> List.of(bolsa, quente).stream().filter(b -> b.getId().equals(argumentos[0])).findFirst()),
+                RepositorioFalso.respondendo(BolsaHemocomponenteRepository.class, Map.<String, Function<Object[], Object>>of(
+                        "findById", argumentos -> List.of(bolsa, quente).stream().filter(b -> b.getId().equals(argumentos[0])).findFirst(),
+                        "travarPorId", argumentos -> List.of(bolsa, quente).stream().filter(b -> b.getId().equals(argumentos[0])).findFirst())),
                 RepositorioFalso.respondendo(HospitalRepository.class, "findById",
                         argumentos -> Optional.ofNullable("hc-pe".equals(argumentos[0]) ? clinicas : null)),
                 new RotaNoMapaService(rede, google, identificacao),

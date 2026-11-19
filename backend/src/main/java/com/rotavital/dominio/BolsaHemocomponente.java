@@ -22,6 +22,8 @@ import jakarta.persistence.Transient;
 @Table(name = "bolsa_hemocomponente")
 public class BolsaHemocomponente implements Persistable<String>
 {
+    private static final String EM_TRANSPORTE = "Em transporte refrigerado → ";
+
     @Id
     @Column(name = "id")
     private String id;
@@ -158,7 +160,16 @@ public class BolsaHemocomponente implements Persistable<String>
      */
     public void conferirEnvio(LocalDate hoje)
     {
-        if (!estaDisponivel())
+        conferirEnvio(null, hoje);
+    }
+
+    /**
+     * Igual a conferirEnvio(hoje), mas aceita também a bolsa já reservada por uma requisição (HU-04)
+     * para este mesmo hospital: ela sai do hemocentro rumo à ala que o pedido informou.
+     */
+    public void conferirEnvio(Hospital destino, LocalDate hoje)
+    {
+        if (!estaDisponivel() && !estaReservadaPara(destino))
         {
             throw new MovimentacaoInvalidaException("A bolsa " + id + " está " + status + " e não pode ser enviada.");
         }
@@ -174,21 +185,72 @@ public class BolsaHemocomponente implements Persistable<String>
         }
     }
 
-    /** Sai do estoque para o hospital (PI3-236), pelo mesmo caminho de status de toda bolsa. */
-    public void despacharPara(Hospital destino, LocalDate hoje)
+    /**
+     * Reserva a bolsa para uma requisição (HU-04): sai de DISPONIVEL para RESERVADA e a localização
+     * passa a ser o destino físico do pedido ("Hospital X · UTI Adulto · Leito 04"), para a tela de
+     * Estoque mostrar em que ala a bolsa vai ficar. Bolsa vencida, fora da faixa ou que não esteja
+     * disponível lança MovimentacaoInvalidaException e fica como estava.
+     */
+    public void alocarPara(String destino, LocalDate hoje)
     {
-        conferirEnvio(hoje);
+        if (destino == null || destino.isBlank())
+        {
+            throw new IllegalArgumentException("Informe o destino da bolsa.");
+        }
+        if (estaDisponivel() && estaForaDaFaixa())
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " está a " + temperaturaCelsius
+                    + " °C, fora da faixa ideal, e não pode ser alocada.");
+        }
+
         alterarStatus(StatusBolsa.RESERVADA, hoje);
-        alterarStatus(StatusBolsa.EM_TRANSITO, hoje);
-        this.localizacao = "Em transporte refrigerado → " + destino.getNome();
+        this.localizacao = destino.strip();
     }
 
-    /** Chegou ao hospital (PI3-236): a partir daqui, é onde a bolsa está. */
+    /** Reservada por uma requisição deste hospital: a localização começa pelo nome dele (alocarPara). */
+    public boolean estaReservadaPara(Hospital hospital)
+    {
+        return hospital != null
+                && status == StatusBolsa.RESERVADA
+                && localizacao != null
+                && localizacao.startsWith(hospital.getNome() + AlaHospitalar.SEPARADOR);
+    }
+
+    /**
+     * Sai do estoque para o hospital (PI3-236), pelo mesmo caminho de status de toda bolsa. A bolsa
+     * reservada por uma requisição desse hospital leva junto a ala e o leito do pedido.
+     */
+    public void despacharPara(Hospital destino, LocalDate hoje)
+    {
+        conferirEnvio(destino, hoje);
+
+        String chegada = destino.getNome();
+        if (estaReservadaPara(destino))
+        {
+            chegada = localizacao;
+        }
+        else
+        {
+            alterarStatus(StatusBolsa.RESERVADA, hoje);
+        }
+
+        alterarStatus(StatusBolsa.EM_TRANSITO, hoje);
+        this.localizacao = EM_TRANSPORTE + chegada;
+    }
+
+    /**
+     * Chegou ao hospital (PI3-236): a partir daqui, é onde a bolsa está. Se ela veio de uma
+     * requisição (HU-04), a localização guarda a ala e o leito do pedido, não só o hospital.
+     */
     public void receberEm(Hospital hospital, LocalDate hoje)
     {
         alterarStatus(StatusBolsa.ENTREGUE, hoje);
         this.hospitalAtual = hospital;
-        this.localizacao = hospital.getNome();
+
+        String destinoDoPedido = EM_TRANSPORTE + hospital.getNome() + AlaHospitalar.SEPARADOR;
+        this.localizacao = localizacao != null && localizacao.startsWith(destinoDoPedido)
+                ? localizacao.substring(EM_TRANSPORTE.length())
+                : hospital.getNome();
     }
 
     @PostLoad

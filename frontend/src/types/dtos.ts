@@ -151,6 +151,76 @@ export interface CriarRequisicaoPayloadDTO
   urgencia: NivelUrgenciaBackend;
 }
 
+/** Ala do hospital de destino de uma requisição (HU-04); bate com ck_requisicao_ala. */
+export type AlaHospitalarBackend =
+  | "UTI_ADULTO"
+  | "UTI_NEONATAL"
+  | "CENTRO_CIRURGICO"
+  | "EMERGENCIA"
+  | "ONCOLOGIA"
+  | "HEMODIALISE"
+  | "MATERNIDADE";
+
+/** Resposta de GET /bancos/{bancoId}/sugestao-lote: faltam > 0 quando o estoque não cobre o pedido. */
+export interface SugestaoDeLoteDTO
+{
+  bancoDeSangueId: string;
+  tipoComponente: TipoComponenteBackend;
+  tipoSanguineoPaciente: TipoSanguineoBackend;
+  quantidadeSolicitada: number;
+  quantidadeSugerida: number;
+  faltam: number;
+  lotes: BolsaHemocomponenteDTO[];
+}
+
+/** Corpo de POST /requisicoes (HU-04). */
+export interface NovaRequisicaoPayloadDTO
+{
+  bancoId: string;
+  hospitalId: string;
+  ala: AlaHospitalarBackend;
+  leito?: string;
+  tipoComponente: TipoComponenteBackend;
+  tipoSanguineo: TipoSanguineoBackend;
+  quantidade: number;
+  urgencia: NivelUrgenciaBackend;
+  paciente?: string;
+}
+
+/** Bolsa reservada por uma requisição: de onde retirar no hemocentro e a localização nova (o destino). */
+export interface BolsaAlocadaDTO
+{
+  id: string;
+  loteSintetico: string;
+  tipoSanguineo: TipoSanguineoBackend;
+  dataValidade: string;
+  retirarDe: string | null;
+  localizacao: string;
+  status: StatusBolsaBackend;
+}
+
+/** Resposta 201 de POST /requisicoes (HU-04). */
+export interface RequisicaoRegistradaDTO
+{
+  protocolo: string;
+  bancoId: string;
+  hospitalId: string;
+  hospitalNome: string;
+  ala: AlaHospitalarBackend;
+  alaRotulo: string;
+  leito: string | null;
+  destino: string;
+  tipoComponente: TipoComponenteBackend;
+  tipoSanguineo: TipoSanguineoBackend;
+  quantidade: number;
+  urgencia: NivelUrgenciaBackend;
+  paciente: string | null;
+  solicitanteNome: string;
+  status: StatusRequisicaoBackend;
+  registradaEm: string;
+  bolsas: BolsaAlocadaDTO[];
+}
+
 export interface AlocacaoDTO
 {
   requisicaoId: string;
