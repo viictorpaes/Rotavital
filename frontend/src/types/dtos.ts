@@ -70,6 +70,9 @@ export interface BolsaHemocomponenteDTO
   localizacao?: string;
   localizacaoFisica?: string;
   bancoOrigemId?: string;
+  /** Hospital onde a bolsa está; nulo no hemocentro de origem e em trânsito (PI3-236). */
+  hospitalAtualId?: string | null;
+  motivoDescarte?: string | null;
 }
 
 /** Filtros opcionais e combináveis de GET /hemocomponentes; page começa em 0 e size vai de 1 a 100. */
@@ -106,6 +109,21 @@ export interface EstoqueDTO
   bancoDeSangueId: string;
   totalBolsas: number;
   bolsas: BolsaHemocomponenteDTO[];
+}
+
+export interface TotalPerdaDTO
+{
+  categoria: string;
+  bolsas: number;
+  volumeMl: number;
+}
+
+export interface ResumoPerdasDTO
+{
+  totalBolsas: number;
+  totalVolumeMl: number;
+  porTipoSanguineo: TotalPerdaDTO[];
+  porComponente: TotalPerdaDTO[];
 }
 
 // ======================================================================
@@ -152,6 +170,9 @@ export interface PontoRedeDTO
   tipo: TipoPontoRedeBackend;
   latitude: number;
   longitude: number;
+  logradouro: string;
+  cidade: string | null;
+  uf: string | null;
 }
 
 export interface ConexaoDTO
@@ -162,18 +183,55 @@ export interface ConexaoDTO
   tempoEstimadoMin: number;
 }
 
+/** Menor caminho pelo Dijkstra (GET /rotas), com a distância e o tempo das conexões cadastradas. */
 export interface RotaCalculadaDTO
 {
+  origemId: string;
+  destinoId: string;
+  /** Ids dos pontos do caminho, da origem ao destino. */
+  nos: string[];
+  distanciaTotalKm: number;
+  tempoEstimadoMin: number;
+  dentroDaJanela: boolean;
+}
+
+/** Rota para o mapa (GET /rotas/trajeto, PI3-259): o caminho do Dijkstra levado para as ruas. */
+export interface RotaNoMapaDTO
+{
+  origemId: string;
+  destinoId: string;
+  nos: string[];
+  distanciaKm: number;
+  duracaoMinutos: number;
+  fonte: FonteDoTrajetoBackend;
+  /** Traçado do Google ("encoded polyline"); nulo quando a rota não passou por ele. */
+  polyline: string | null;
+}
+
+export type StatusTransferenciaBackend = "EM_TRANSITO" | "RECEBIDA" | "CANCELADA";
+
+/** Uma bolsa saindo do hemocentro para um hospital pela tela de Rede (PI3-236). */
+export interface TransferenciaDTO
+{
+  id: string;
+  bolsaId: string;
+  tipoComponente: TipoComponenteBackend;
+  tipoSanguineo: TipoSanguineoBackend;
   origemId: string;
   origemNome: string;
   destinoId: string;
   destinoNome: string;
-  distanciaKmTotal: number;
-  duracaoMinutosTotal: number;
-  partidaEstimada: string;
-  chegadaEstimada: string;
-  atendeJanelaTempo: boolean;
-  caminho: PontoRedeDTO[];
+  status: StatusTransferenciaBackend;
+  distanciaKm: number;
+  duracaoMinutos: number;
+  fonte: FonteDoTrajetoBackend;
+  /** Datas com fuso (ISO 8601). */
+  despachadaEm: string;
+  chegadaPrevistaEm: string;
+  recebidaEm: string | null;
+  despachadaPorNome: string | null;
+  recebidaPorNome: string | null;
+  localizacaoDaBolsa: string | null;
 }
 
 // ======================================================================
@@ -264,8 +322,8 @@ export interface CampanhaDTO
   paciente: PacienteDTO;
 }
 
-/** Corpo do POST e do PUT de /campanhas. */
-export interface CampanhaPayloadDTO
+/** Corpo do POST e do PUT de /pacientes (PI3-194) e de /campanhas: os dados clínicos do paciente. */
+export interface PacientePayloadDTO
 {
   hospitalId: string;
   nome: string;
@@ -276,6 +334,18 @@ export interface CampanhaPayloadDTO
   unidadesNecessarias: number;
   causa: string;
   gravidade: GravidadeBackend;
+}
+
+/** A campanha publica um paciente: o corpo é o mesmo do cadastro de pacientes. */
+export type CampanhaPayloadDTO = PacientePayloadDTO;
+
+/** Filtros opcionais e combináveis de GET /pacientes. */
+export interface FiltrosPacientesDTO
+{
+  status?: StatusPacienteBackend;
+  tipoSanguineo?: TipoSanguineoBackend;
+  gravidade?: GravidadeBackend;
+  hospitalId?: string;
 }
 
 export interface AgendamentoDTO
@@ -292,6 +362,122 @@ export interface AgendamentoDTO
   agendadoPara: string;
   status: StatusAgendamentoBackend;
   criadoEm: string;
+}
+
+// ======================================================================
+// DTOs - PORTAL DO DOADOR (PI3-203, PI3-204, PI3-205)
+// ======================================================================
+
+/** Perfil do doador: os dados do cadastro e o resumo das doações dele. */
+export interface DoadorDTO
+{
+  id: string;
+  nome: string;
+  email: string | null;
+  /** AAAA-MM-DD */
+  dataNascimento: string | null;
+  idade: number | null;
+  /** Nulo para quem ainda não sabe o tipo (descobre na primeira doação). */
+  tipoSanguineo: TipoSanguineoBackend | null;
+  /** Só dígitos, com DDD. */
+  telefone: string | null;
+  doacoesRealizadas: number;
+  ultimaDoacao: string | null;
+  proximaDoacao: string | null;
+}
+
+/** Corpo do POST /doadores. */
+export interface NovoDoadorPayloadDTO
+{
+  nome: string;
+  email: string;
+  senha: string;
+  dataNascimento: string;
+  tipoSanguineo: TipoSanguineoBackend | null;
+  telefone: string | null;
+}
+
+/** Corpo do PUT /doadores/eu: e-mail e senha ficam de fora (são o login). */
+export type AtualizarPerfilDoadorPayloadDTO = Omit<NovoDoadorPayloadDTO, "email" | "senha">;
+
+/** Resposta do POST /doadores. Sem acesso quando o Supabase exige confirmar o e-mail antes do 1º login. */
+export interface CadastroDoadorDTO
+{
+  doador: DoadorDTO;
+  acesso: RespostaAcesso | null;
+  precisaConfirmarEmail: boolean;
+}
+
+/** Hemocentro onde o doador marca a doação. */
+export interface HemocentroDTO
+{
+  id: string;
+  nome: string;
+  logradouro: string;
+  cidade: string | null;
+  uf: string | null;
+  latitude: number;
+  longitude: number;
+  /** Ex.: "Segunda a sábado, das 07h às 19h". */
+  atendimento: string;
+  vagasPorHorario: number;
+}
+
+/** Um horário da agenda do hemocentro num dia. */
+export interface HorarioDTO
+{
+  /** "09:30", no fuso de Recife. */
+  hora: string;
+  /** Data e hora com fuso (ISO 8601): é o que vai no agendamento. */
+  inicio: string;
+  vagasRestantes: number;
+  disponivel: boolean;
+}
+
+// ======================================================================
+// DTOs - ROTA ATÉ O HOSPITAL DA CAMPANHA (PI3-237, PI3-262)
+// ======================================================================
+
+/**
+ * GOOGLE_ROUTES: ruas e trânsito do Google · ESTIMATIVA: linha reta × 1,3 a 25 km/h (sem o Google) ·
+ * CONEXOES_DA_REDE: distância e tempo das conexões cadastradas no caminho do Dijkstra (sem o Google).
+ */
+export type FonteDoTrajetoBackend = "GOOGLE_ROUTES" | "ESTIMATIVA" | "CONEXOES_DA_REDE";
+
+/** Corpo do POST /campanhas/{id}/rota: onde o doador está agora. */
+export interface OrigemPayloadDTO
+{
+  latitude: number;
+  longitude: number;
+}
+
+/** Hospital do paciente, com as coordenadas cadastradas: é o destino do Google Maps e do Waze. */
+export interface DestinoHospitalDTO
+{
+  hospitalId: string;
+  nome: string;
+  logradouro: string;
+  cidade: string | null;
+  uf: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+export interface TrajetoDTO
+{
+  /** De carro, com uma casa decimal. */
+  distanciaKm: number;
+  /** Tempo estimado de chegada, arredondado para cima. */
+  duracaoMinutos: number;
+  fonte: FonteDoTrajetoBackend;
+}
+
+export interface RotaAteHospitalDTO
+{
+  campanhaId: string;
+  destino: DestinoHospitalDTO;
+  /** Nulo quando o doador não mandou a localização. */
+  trajeto: TrajetoDTO | null;
 }
 
 // ======================================================================

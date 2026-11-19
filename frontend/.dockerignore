@@ -4,4 +4,8 @@ dist/
 .gitignore
 .vscode
 *.log
+# Configuração da máquina não entra na imagem: um VITE_* do .env.local ficaria gravado no build.
+.env*
+# Cache do tsc: com ele copiado, o tsc -b pode pular a checagem de tipos do build.
+*.tsbuildinfo
 

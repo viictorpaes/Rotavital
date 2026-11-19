@@ -8,6 +8,7 @@ import PaginaRede from "@/pages/RedeHospitalar/PaginaRede";
 import PaginaPacientes from "@/pages/Pacientes/PaginaPacientes";
 import PaginaDoacoes from "@/pages/Doacoes/PaginaDoacoes";
 import PaginaPortalDoador from "@/pages/PortalDoador/PaginaPortalDoador";
+import PaginaCadastroDoador from "@/pages/CadastroDoador/PaginaCadastroDoador";
 import PaginaAdmin from "@/pages/Admin/PaginaAdmin";
 
 import { useAutenticacao } from "@/context/ContextoAutenticacao";
@@ -34,6 +35,7 @@ export function AppRoutes()
     <Routes>
       <Route path="/" element={<Navigate to={usuario ? usuario.telaInicial : "/login"} replace />} />
       <Route path="/login" element={<PaginaLogin />} />
+      <Route path="/cadastro-doador" element={<PaginaCadastroDoador />} />
 
       <Route path="/portal-doador" element={<PaginaPortalDoador />} />
 

@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, Database, Plus, RefreshCw } from "lucide-react";
 import type { LoteHemocomponente, TipoSanguineo } from "@/types";
-import type { BolsaHemocomponenteDTO, StatusBolsaBackend, TipoComponenteBackend } from "@/types/dtos";
+import type {
+  BolsaHemocomponenteDTO,
+  ResumoPerdasDTO,
+  StatusBolsaBackend,
+  TipoComponenteBackend,
+} from "@/types/dtos";
 import {
   COMPONENTES_FILTRO,
   STATUS_FILTRO,
@@ -12,12 +17,13 @@ import {
   paraTipoSanguineoBackend,
   statusGrupo,
 } from "@/lib/estoque";
-import { listarHemocomponentes } from "@/services/api";
+import { buscarResumoPerdas, descartarHemocomponente, listarHemocomponentes } from "@/services/api";
 import { FiltroTipoEstoque } from "@/components/estoque/FiltroTipoEstoque";
 import { SeletorFiltro } from "@/components/estoque/SeletorFiltro";
 import { PaginacaoEstoque } from "@/components/estoque/PaginacaoEstoque";
 import { CartaoLote } from "@/components/estoque/CartaoLote";
 import { ModalNovaBolsa } from "@/components/estoque/ModalNovaBolsa";
+import { PainelPerdas } from "@/components/estoque/PainelPerdas";
 import { PontoStatus } from "@/components/ui/PontoStatus";
 import { useNotificacao } from "@/context/ContextoNotificacao";
 
@@ -50,6 +56,9 @@ export default function PaginaEstoque()
   const [filtroStatus, setFiltroStatus] = useState<StatusBolsaBackend | "todos">("todos");
   const [pagina, setPagina] = useState(0);
   const [recarga, setRecarga] = useState(0);
+  const [resumoPerdas, setResumoPerdas] = useState<ResumoPerdasDTO | null>(null);
+  const [carregandoPerdas, setCarregandoPerdas] = useState(true);
+  const [erroPerdas, setErroPerdas] = useState<string | null>(null);
   // Só a resposta da consulta mais recente atualiza a tela (filtros trocados rápido não embaralham a lista).
   const ultimaConsulta = useRef(0);
   const [cadastroAberto, setCadastroAberto] = useState(false);
@@ -86,6 +95,35 @@ export default function PaginaEstoque()
       });
   }, [filtroTipo, filtroComponente, filtroStatus, pagina, recarga]);
 
+  useEffect(() =>
+  {
+    let ativa = true;
+    setCarregandoPerdas(true);
+
+    buscarResumoPerdas(BANCO_ID)
+      .then((resumo) =>
+      {
+        if (!ativa) return;
+        setResumoPerdas(resumo);
+        setErroPerdas(null);
+      })
+      .catch((falha: unknown) =>
+      {
+        if (!ativa) return;
+        setResumoPerdas(null);
+        setErroPerdas(falha instanceof Error && falha.message ? falha.message : "Não foi possível conectar com o back-end");
+      })
+      .finally(() =>
+      {
+        if (ativa) setCarregandoPerdas(false);
+      });
+
+    return () =>
+    {
+      ativa = false;
+    };
+  }, [recarga]);
+
   // Trocar um filtro volta para a primeira página, para não abrir uma página que não existe mais.
   function aoMudarFiltro<T>(definir: (valor: T) => void)
   {
@@ -107,6 +145,13 @@ export default function PaginaEstoque()
     setFiltroComponente(bolsa.tipoComponente as TipoComponenteBackend);
     setFiltroStatus("todos");
     setPagina(0);
+    setRecarga((valor) => valor + 1);
+  }
+
+  async function aoDescartarBolsa(id: string, motivo: string)
+  {
+    await descartarHemocomponente(id, motivo);
+    notificarSucesso("Bolsa descartada", `${id} · justificativa registrada`);
     setRecarga((valor) => valor + 1);
   }
 
@@ -190,6 +235,8 @@ export default function PaginaEstoque()
         </div>
       </div>
 
+      <PainelPerdas resumo={resumoPerdas} carregando={carregandoPerdas} erro={erroPerdas} />
+
       {erro ? (
         <div role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
           <AlertCircle className="h-5 w-5 shrink-0 text-rose-600" />
@@ -229,7 +276,7 @@ export default function PaginaEstoque()
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {grupo.lotes.map((lote) => (
-                  <CartaoLote key={lote.id} lote={lote} />
+                  <CartaoLote key={lote.id} lote={lote} onDescarte={aoDescartarBolsa} />
                 ))}
               </div>
             </section>

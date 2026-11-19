@@ -112,7 +112,8 @@ As migrations ficam em [`supabase/migrations/`](../supabase/migrations/), no for
 | :--- | :--- | :--- | :--- |
 | 📍 `ponto_rede` | `Hospital`, `BancoDeSangue` (+ `Endereco`) | `id` (text, ex.: `BS-01`) | origem/destino de conexões, bolsas, requisições e entregas |
 | 🛣️ `conexao` | `Conexao` | `id` (identity) | `ponto_rede` × 2 |
-| 🩸 `bolsa_hemocomponente` | `BolsaHemocomponente` | `id` (text, ex.: `CH-1042`) | `ponto_rede` (banco de origem) |
+| 🩸 `bolsa_hemocomponente` | `BolsaHemocomponente` | `id` (text, ex.: `CH-1042`) | `ponto_rede` (banco de origem e hospital atual) |
+| 🚚 `transferencia_bolsa` | `TransferenciaDeBolsa` | `id` (uuid) | `bolsa_hemocomponente`, `ponto_rede` (origem e destino), `usuario` (quem despachou e quem recebeu) |
 | 🏥 `requisicao_hospitalar` | `RequisicaoHospitalar` | `id` (uuid) | `ponto_rede` (hospital) |
 | 🔗 `alocacao` | `AlocacaoDTO` | `id` (uuid) | `requisicao_hospitalar`, `bolsa_hemocomponente` |
 | 🚑 `entrega` | `MonitoramentoEntregaDTO` | `id` (uuid) | `requisicao_hospitalar`, `ponto_rede` × 2 |
@@ -128,7 +129,7 @@ Colunas de cada tabela como estão hoje no banco (exportadas do painel do Supaba
 tabelas e colunas criadas pelas migrations posteriores ao schema inicial.
 
 <details>
-<summary>▶️🧾 <b>Colunas das 14 tabelas</b></summary>
+<summary>▶️🧾 <b>Colunas das 15 tabelas</b></summary>
 
 #### 📋 `ponto_rede`
 

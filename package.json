@@ -1,0 +1,16 @@
+{
+  "name": "rotavital",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Rota Vital - Sistema de Gestão e Logística de Hemocomponentes",
+  "scripts": {
+    "docker:local": "docker compose -f compose.yaml up -d",
+    "docker:cloud": "docker compose -f compose.yaml -f compose.supabase.yaml up -d",
+    "docker:build": "docker compose build",
+    "docker:down": "docker compose down",
+    "docker:down:v": "docker compose down -v",
+    "docker:logs": "docker compose logs -f",
+    "docker:status": "docker compose ps"
+  }
+}
+

@@ -1,7 +1,6 @@
-import type { LoteHemocomponente, PontoDeRede, TipoComponente } from "@/types";
-import { lotesEstoque, FAIXAS_IDEAIS } from "@/data/estoqueMock";
-import { conexoes, hemocentro, hospitais } from "@/data/redeMock";
-import { diasAteVencer } from "@/lib/estoque";
+import type { Coordenada, LoteHemocomponente, TipoComponente } from "@/types";
+import type { BolsaHemocomponenteDTO, PontoRedeDTO } from "@/types/dtos";
+import { converterBolsaParaLote, diasAteVencer, obterFaixaTemperatura, temperaturaForaDaFaixa } from "@/lib/estoque";
 
 export const COMPONENTES: TipoComponente[] = [
   "Concentrado de Hemácias",
@@ -19,33 +18,66 @@ export const TRANSPORTE_POR_COMPONENTE: Record<TipoComponente, string> =
   "Crioprecipitado": "caixa térmica com gelo seco",
 };
 
-export function conexaoDe(hospitalId: string)
+/** "Av. Prof. Moraes Rego, 1235 — Recife/PE": cidade e UF são opcionais no cadastro. */
+export function enderecoDoPonto(ponto: PontoRedeDTO)
 {
-  return conexoes.find((conexao) => conexao.hospitalId === hospitalId);
+  const local = [ponto.cidade, ponto.uf].filter(Boolean).join("/");
+  return local ? `${ponto.logradouro} — ${local}` : ponto.logradouro;
 }
-
-export function hospitalDe(hospitalId: string)
-{
-  return hospitais.find((hospital) => hospital.id === hospitalId);
-}
-
-/** Todos os pontos da rede — hemocentro de origem + hospitais conectados. */
-export const pontosDaRede: PontoDeRede[] = [hemocentro, ...hospitais];
 
 export function formatarFaixa(componente: TipoComponente)
 {
-  const faixa = FAIXAS_IDEAIS[componente];
+  const faixa = obterFaixaTemperatura(componente);
   return `${faixa.minima} a ${faixa.maxima} °C`;
 }
 
 /**
- * Prioridade de envio por FEFO (*first expired, first out*): entre os lotes do
- * hemocomponente escolhido, saem primeiro os mais próximos do vencimento.
+ * Traçado do Google em coordenadas: o formato "encoded polyline" guarda cada ponto como a diferença
+ * para o anterior, em blocos de 5 bits (developers.google.com/maps/documentation/utilities/polylinealgorithm).
  */
-export function prioridadeFefo(componente: TipoComponente, limite = 3): LoteHemocomponente[]
+export function decodificarPolyline(polyline: string): Coordenada[]
 {
-  return lotesEstoque
-    .filter((lote) => lote.componente === componente)
-    .sort((a, b) => diasAteVencer(a) - diasAteVencer(b))
+  const pontos: Coordenada[] = [];
+  let indice = 0;
+  let latitude = 0;
+  let longitude = 0;
+
+  function proximaDiferenca()
+  {
+    let valor = 0;
+    let deslocamento = 0;
+    let bloco: number;
+
+    do
+    {
+      bloco = polyline.charCodeAt(indice++) - 63;
+      valor |= (bloco & 0x1f) << deslocamento;
+      deslocamento += 5;
+    }
+    while (bloco >= 0x20);
+
+    return valor & 1 ? ~(valor >> 1) : valor >> 1;
+  }
+
+  while (indice < polyline.length)
+  {
+    latitude += proximaDiferenca();
+    longitude += proximaDiferenca();
+    pontos.push({ latitude: latitude / 1e5, longitude: longitude / 1e5 });
+  }
+
+  return pontos;
+}
+
+/**
+ * Fila de envio por FEFO (*first expired, first out*): a API devolve as bolsas da que vence primeiro
+ * para a última, e aqui só ficam as que podem sair, com a mesma regra do backend: na validade e com
+ * a cadeia fria intacta.
+ */
+export function filaFefo(bolsas: BolsaHemocomponenteDTO[], limite = 3): LoteHemocomponente[]
+{
+  return bolsas
+    .map(converterBolsaParaLote)
+    .filter((lote) => diasAteVencer(lote) >= 0 && !temperaturaForaDaFaixa(lote))
     .slice(0, limite);
 }

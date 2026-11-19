@@ -1,12 +1,18 @@
-import { MapPin, Route, Thermometer, Truck } from "lucide-react";
-import type { PontoDeRede, TipoComponente } from "@/types";
-import { COMPONENTES, formatarFaixa, TRANSPORTE_POR_COMPONENTE } from "@/lib/rede";
-import type { RotaCalculada } from "@/lib/roteirizacao";
+import { MapPin, Route, Thermometer, Truck, Waypoints } from "lucide-react";
+import type { TipoComponente } from "@/types";
+import type { PontoRedeDTO, RotaNoMapaDTO } from "@/types/dtos";
+import { COMPONENTES, enderecoDoPonto, formatarFaixa, TRANSPORTE_POR_COMPONENTE } from "@/lib/rede";
+import { DESCRICAO_FONTE, formatarDistancia, formatarDuracao } from "@/lib/rotaAteHospital";
 
 interface Props
 {
-  destino: PontoDeRede;
-  rota: RotaCalculada;
+  origem: PontoRedeDTO;
+  destino: PontoRedeDTO;
+  rota: RotaNoMapaDTO | null;
+  /** Pontos do menor caminho, na ordem. */
+  caminho: PontoRedeDTO[];
+  /** Mensagem no lugar da rota, enquanto ela é calculada ou quando não existe. */
+  semRota: string | null;
   componente: TipoComponente;
   onComponenteChange: (componente: TipoComponente) => void;
 }
@@ -31,7 +37,7 @@ function Linha({
 }
 
 /** Plano de transporte na cadeia fria para o hospital selecionado (HU-07). */
-export function PlanoTransporte({ destino, rota, componente, onComponenteChange }: Readonly<Props>)
+export function PlanoTransporte({ origem, destino, rota, caminho, semRota, componente, onComponenteChange }: Readonly<Props>)
 {
   return (
     <section className="space-y-4 rounded-xl border border-rota-border bg-white p-5">
@@ -40,18 +46,26 @@ export function PlanoTransporte({ destino, rota, componente, onComponenteChange 
       </h2>
 
       <div className="space-y-3">
+        <Linha icone={<MapPin className="h-4 w-4" />} rotulo="Origem">
+          {origem.nome}
+        </Linha>
         <Linha icone={<MapPin className="h-4 w-4" />} rotulo="Destino">
           {destino.nome}
         </Linha>
         <Linha icone={<MapPin className="h-4 w-4" />} rotulo="Endereço">
-          <span className="text-gray-500">{destino.endereco}</span>
+          <span className="text-gray-500">{enderecoDoPonto(destino)}</span>
         </Linha>
         <Linha icone={<Route className="h-4 w-4" />} rotulo="Melhor rota">
-          {rota.distanciaKm} km · {rota.tempoMin} min estimados
-          {!rota.doRoteador && (
-            <span className="ml-2 font-mono text-[11px] text-gray-400">valor previsto</span>
+          {rota ? `${formatarDistancia(rota.distanciaKm)} · ${formatarDuracao(rota.duracaoMinutos)} estimados` : semRota}
+          {rota && (
+            <span className="block font-mono text-[11px] text-gray-400">{DESCRICAO_FONTE[rota.fonte]}</span>
           )}
         </Linha>
+        {caminho.length > 0 && (
+          <Linha icone={<Waypoints className="h-4 w-4" />} rotulo="Menor caminho (Dijkstra)">
+            {caminho.map((ponto) => ponto.nome).join(" → ")}
+          </Linha>
+        )}
         <Linha icone={<Truck className="h-4 w-4" />} rotulo="Transporte">
           Veículo refrigerado monitorado
         </Linha>

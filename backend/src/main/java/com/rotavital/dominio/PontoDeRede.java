@@ -6,4 +6,5 @@ public interface PontoDeRede
     String getNome();
     double getLatitude();
     double getLongitude();
+    Endereco getEndereco();
 }

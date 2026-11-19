@@ -140,6 +140,7 @@ erDiagram
         numeric temperatura_celsius "opcional"
         text localizacao "opcional"
         text status "default DISPONIVEL"
+        text motivo_descarte "opcional · justificativa"
         uuid remessa_id FK "novo · opcional"
         timestamptz criado_em
         timestamptz atualizado_em "novo"
@@ -327,7 +328,9 @@ calculadas, não armazenadas.
 | `temperatura_celsius` | numeric(5,2) | sim | — | `-80..60` (faixa física do sensor) | ✅ |
 | `localizacao` | text | sim | — | refrigerador · prateleira · nível | ✅ |
 | `status` | text | — | `'DISPONIVEL'` | `DISPONIVEL` \| `RESERVADA` \| `EM_TRANSITO` \| `ENTREGUE` \| `DESCARTADA` \| **`UTILIZADA`** | 🔧 |
+| `motivo_descarte` | varchar(500) | sim | — | justificativa registrada ao descartar | 🆕 |
 | `remessa_id` | uuid | sim | — | FK composta → `remessa` (ver abaixo) | 🆕 |
+| `hospital_atual_id` + `hospital_atual_tipo` | text | sim | `'HOSPITAL'` | FK composta; **hospital onde a bolsa está**, nulo no hemocentro e em trânsito (PI3-236) | 🆕 |
 | `criado_em` | timestamptz | — | `now()` | — | ✅ |
 | `atualizado_em` | timestamptz | — | `now()` | gatilho de atualização | 🆕 |
 
@@ -461,6 +464,24 @@ As unidades baixadas são `count(procedimento_bolsa)`, não uma coluna.
 
 PK `(procedimento_id, bolsa_id)`.
 
+<h3 align="left">4.15 <code>transferencia_bolsa</code> 🆕 — bolsa saindo do hemocentro para um hospital (PI3-236)</h3>
+
+| Coluna | Tipo | Nulo | Default | Regra |
+| :--- | :--- | :---: | :--- | :--- |
+| `id` | uuid PK | — | `gen_random_uuid()` | — |
+| `bolsa_id` | text FK → `bolsa_hemocomponente` | — | — | único entre as ativas (`uq_transferencia_bolsa_ativa`); `on delete restrict` |
+| `origem_id` + `origem_tipo` | text | — | `'BANCO_DE_SANGUE'` | FK composta: a origem é sempre um hemocentro |
+| `destino_id` + `destino_tipo` | text | — | `'HOSPITAL'` | FK composta: o destino é sempre um hospital |
+| `status` | text | — | `'EM_TRANSITO'` | `EM_TRANSITO` \| `RECEBIDA` \| `CANCELADA` |
+| `distancia_km` / `duracao_minutos` | numeric(8,2) / integer | — | — | `>= 0`; o trajeto calculado no despacho (PI3-259) |
+| `fonte_trajeto` | text | — | — | `GOOGLE_ROUTES` \| `ESTIMATIVA` \| `CONEXOES_DA_REDE` |
+| `despachada_em` | timestamptz | — | `now()` | — |
+| `chegada_prevista_em` | timestamptz | — | — | `>= despachada_em` |
+| `recebida_em` | timestamptz | sim | — | obrigatória só com `status = 'RECEBIDA'` |
+| `despachada_por` / `recebida_por` | uuid FK → `usuario` | sim | — | `on delete set null` |
+
+`CANCELADA` é a bolsa descartada no caminho (cadeia fria rompida): o descarte encerra a transferência.
+
 <h2 align="left" id="5-relacionamentos">🔗 5. Relacionamentos</h2>
 
 | Origem → Destino | Cardinalidade | FK | On delete | |
@@ -508,7 +529,7 @@ PK `(procedimento_id, bolsa_id)`.
 
 <h2 align="left" id="8-migrations">📜 8. Plano de migrations</h2>
 
-As seis migrations estão aplicadas no Supabase. As duas primeiras **não foram alteradas**: as mudanças entraram em migrations
+As migrations são a fonte da verdade do schema. As duas primeiras **não foram alteradas**: as mudanças entraram em migrations
 novas, com timestamp posterior:
 
 | # | Arquivo | Conteúdo | |
@@ -519,6 +540,9 @@ novas, com timestamp posterior:
 | 4 | `20260925120100_escopo_clinico.sql` | `usuario`, `paciente`, `remessa`, `campanha_doacao`, `agendamento_doacao`, `procedimento`, `procedimento_bolsa`, gatilhos novos e RLS | ✅ aplicada |
 | 5 | `20260925120200_views_painel.sql` | `vw_estoque_por_tipo`, `vw_estoque_agrupado` | ✅ aplicada |
 | 6 | `20261015010623_papel_admin.sql` | `ADMIN` no `ck_usuario_papel` (PI3-183, decisão 3 de [`PERFIS_DE_ACESSO.md`](PERFIS_DE_ACESSO.md)) | ✅ aplicada |
+| 7 | `20261030120000_perfil_doador.sql` | E-mail, telefone e data de nascimento do perfil do doador (PI3-203) | ✅ aplicada |
+| 8 | `20261104120000_transferencia_bolsa.sql` | `hospital_atual_id` em `bolsa_hemocomponente` e a tabela `transferencia_bolsa` (PI3-236) | ⏳ falta aplicar no Supabase |
+| 9 | `20261113120000_motivo_descarte_bolsa.sql` | `motivo_descarte` em `bolsa_hemocomponente` para auditoria do descarte | ⏳ falta aplicar no Supabase |
 | — | `supabase/seed.sql` | Pontos e conexões de `RedeDistribuicaoEmMemoria` e bolsas de `BancosEmMemoria` (PI3-149). Pacientes e remessas dos mocks do frontend ainda não entraram | ✅ criado |
 
 > A migration 4 cria `remessa` e `paciente`, que são alvo das FKs novas de `bolsa_hemocomponente` e
@@ -537,6 +561,8 @@ novas, com timestamp posterior:
 | 7 | `urgencia` da requisição (`BAIXA`/`MEDIA`/`ALTA`) separada da `gravidade` do paciente (`CRITICO`/`ATENCAO`/`ESTAVEL`) | Escala única | Urgência do pedido ≠ estado clínico; mantém o enum `NivelUrgencia` do contrato |
 | 8 | Bolsas da entrega derivadas das alocações ativas | Tabela `entrega_bolsa` | Uma entrega atende uma requisição; evita duplicar a informação |
 | 9 | Idade, distância e unidades baixadas calculadas | Colunas armazenadas | Evita dado que fica desatualizado |
+| 10 | Tabela própria `transferencia_bolsa` para o envio pela tela de Rede | Reaproveitar `entrega` ou `remessa` | `entrega` pertence a uma requisição, com várias bolsas, e `remessa` só liga hemocentros; a transferência é de uma bolsa, sem requisição |
+| 11 | `hospital_atual_id` na bolsa, além do histórico em `transferencia_bolsa` | Descobrir pela última transferência recebida | Consulta direta de onde a bolsa está; `banco_origem_id` continua dizendo de onde ela veio |
 
 <h2 align="left" id="10-fora-do-escopo">🚧 10. Fora do escopo do MVP</h2>
 

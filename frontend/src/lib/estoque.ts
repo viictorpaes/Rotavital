@@ -142,6 +142,7 @@ export function converterBolsaParaLote(bolsa: BolsaHemocomponenteDTO): LoteHemoc
     temperaturaIdeal: obterFaixaTemperatura(bolsa.tipoComponente),
     localizacao: bolsa.localizacao || bolsa.localizacaoFisica || "Câmara Fria",
     statusBolsa: bolsa.status,
+    motivoDescarte: bolsa.motivoDescarte ?? undefined,
   };
 }
 

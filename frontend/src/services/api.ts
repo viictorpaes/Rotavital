@@ -5,18 +5,33 @@ export { clienteHttp, ErroHttp };
 export * from "@/types/dtos";
 import type {
   AgendamentoDTO,
+  AtualizarPerfilDoadorPayloadDTO,
+  CadastroDoadorDTO,
   CampanhaDTO,
+  DoadorDTO,
+  HemocentroDTO,
+  HorarioDTO,
+  OrigemPayloadDTO,
+  RotaAteHospitalDTO,
+  NovoDoadorPayloadDTO,
   CampanhaPayloadDTO,
+  FiltrosPacientesDTO,
+  PacienteDTO,
+  PacientePayloadDTO,
   StatusAgendamentoBackend,
   StatusCampanhaBackend,
   LoginPayloadDTO,
   RespostaAcesso,
   EstoqueDTO,
+  ResumoPerdasDTO,
   BolsaHemocomponenteDTO,
   FiltrosHemocomponentesDTO,
   NovaBolsaHemocomponenteDTO,
   PontoRedeDTO,
   RotaCalculadaDTO,
+  RotaNoMapaDTO,
+  StatusTransferenciaBackend,
+  TransferenciaDTO,
   DiagnosticoDados,
 } from "@/types/dtos";
 
@@ -65,22 +80,95 @@ export async function cadastrarHemocomponente(dados: NovaBolsaHemocomponenteDTO)
   return clienteHttp.post<BolsaHemocomponenteDTO>("/hemocomponentes", dados, { silencioso: true });
 }
 
-/**
- * Lista todos os pontos cadastrados na rede hospitalar (bancos de sangue e hospitais).
- */
-export async function listarPontosRede(): Promise<PontoRedeDTO[]>
+/** Totais e rankings de bolsas descartadas, calculados no banco sem limitar a paginação do estoque. */
+export async function buscarResumoPerdas(bancoId: string): Promise<ResumoPerdasDTO>
 {
-  return clienteHttp.get<PontoRedeDTO[]>("/pontos");
+  return clienteHttp.get<ResumoPerdasDTO>(`/bancos/${encodeURIComponent(bancoId)}/estoque/perdas`, {
+    silencioso: true,
+  });
+}
+
+/** Descarta uma bolsa com justificativa obrigatória e devolve seus dados atualizados. */
+export async function descartarHemocomponente(id: string, motivoDescarte: string): Promise<BolsaHemocomponenteDTO>
+{
+  return clienteHttp.patch<BolsaHemocomponenteDTO>(`/hemocomponentes/${encodeURIComponent(id)}`, {
+    status: "DESCARTADA",
+    motivoDescarte,
+  }, { silencioso: true });
 }
 
 /**
- * Calcula a rota ótima entre dois pontos da rede com previsão de chegada.
+ * Lista todos os pontos cadastrados na rede hospitalar (bancos de sangue e hospitais).
+ * Silencioso: as telas que usam a lista mostram o erro no próprio corpo.
  */
-export async function calcularRota(origemId: string, destinoId: string, partida?: string): Promise<RotaCalculadaDTO>
+export async function listarPontosRede(): Promise<PontoRedeDTO[]>
 {
-  return clienteHttp.get<RotaCalculadaDTO>("/rotas", {
-    params: { origemId, destinoId, partida },
-  });
+  return clienteHttp.get<PontoRedeDTO[]>("/pontos", { silencioso: true });
+}
+
+/** Menor caminho entre dois pontos da rede (Dijkstra). Silencioso: sem caminho, a lista mostra "sem rota". */
+export async function calcularRota(origemId: string, destinoId: string): Promise<RotaCalculadaDTO>
+{
+  return clienteHttp.get<RotaCalculadaDTO>("/rotas", { params: { origemId, destinoId }, silencioso: true });
+}
+
+/**
+ * Rota para desenhar no mapa (PI3-259): o caminho do Dijkstra levado para as ruas pelo Google.
+ * Cada chamada consome a cota da Routes API: é pedida só para o destino selecionado.
+ */
+export async function calcularRotaNoMapa(origemId: string, destinoId: string): Promise<RotaNoMapaDTO>
+{
+  return clienteHttp.get<RotaNoMapaDTO>("/rotas/trajeto", { params: { origemId, destinoId }, silencioso: true });
+}
+
+// ----------------------------------------------------------------------
+// Transferências de bolsas pela tela de Rede (PI3-236). Consultar é livre; despachar e confirmar
+// o recebimento exigem um médico (X-Usuario-Id). Silenciosas: a tela mostra o erro perto da ação.
+// ----------------------------------------------------------------------
+
+export async function listarTransferencias(status?: StatusTransferenciaBackend): Promise<TransferenciaDTO[]>
+{
+  return clienteHttp.get<TransferenciaDTO[]>("/transferencias", { params: { status }, silencioso: true });
+}
+
+/** A bolsa sai do hemocentro dela para o hospital: fica EM_TRANSITO, com a chegada prevista pela rota. */
+export async function despacharBolsa(bolsaId: string, destinoId: string): Promise<TransferenciaDTO>
+{
+  return clienteHttp.post<TransferenciaDTO>("/transferencias", { bolsaId, destinoId }, { silencioso: true });
+}
+
+/** Confirma a chegada: a bolsa fica ENTREGUE e passa a estar no hospital de destino. */
+export async function confirmarRecebimentoDaBolsa(transferenciaId: string): Promise<TransferenciaDTO>
+{
+  return clienteHttp.post<TransferenciaDTO>(`/transferencias/${transferenciaId}/recebimento`, undefined, { silencioso: true });
+}
+
+// ----------------------------------------------------------------------
+// Pacientes (PI3-194). Consultar é livre; cadastrar, editar e remover exigem um médico
+// (header X-Usuario-Id, mandado pelo clienteHttp). Silenciosas: a tela mostra o erro perto da ação.
+// ----------------------------------------------------------------------
+
+/** Pacientes com os filtros informados, na ordem da fila clínica (mais grave e mais antigo primeiro). */
+export async function listarPacientes(filtros: FiltrosPacientesDTO = {}): Promise<PacienteDTO[]>
+{
+  return clienteHttp.get<PacienteDTO[]>("/pacientes", { params: { ...filtros }, silencioso: true });
+}
+
+export async function cadastrarPaciente(dados: PacientePayloadDTO): Promise<PacienteDTO>
+{
+  return clienteHttp.post<PacienteDTO>("/pacientes", dados, { silencioso: true });
+}
+
+/** Troca os dados clínicos (só paciente aguardando). */
+export async function editarPaciente(id: string, dados: PacientePayloadDTO): Promise<PacienteDTO>
+{
+  return clienteHttp.put<PacienteDTO>(`/pacientes/${encodeURIComponent(id)}`, dados, { silencioso: true });
+}
+
+/** Remove um cadastro feito por engano; paciente com campanha, procedimento ou requisição fica (422). */
+export async function removerPaciente(id: string): Promise<void>
+{
+  return clienteHttp.delete<void>(`/pacientes/${encodeURIComponent(id)}`, { silencioso: true });
 }
 
 // ----------------------------------------------------------------------
@@ -119,8 +207,8 @@ export async function listarAgendamentosDaCampanha(campanhaId: string): Promise<
   return clienteHttp.get<AgendamentoDTO[]>(`/campanhas/${campanhaId}/agendamentos`, { silencioso: true });
 }
 
-/** O doador da sessão marca uma doação na campanha. */
-export async function agendarDoacao(campanhaId: string, agendadoPara: string, bancoId: string = "BS-01"): Promise<AgendamentoDTO>
+/** O doador da sessão marca uma doação na campanha, no hemocentro e horário escolhidos. */
+export async function agendarDoacao(campanhaId: string, agendadoPara: string, bancoId: string): Promise<AgendamentoDTO>
 {
   return clienteHttp.post<AgendamentoDTO>(
     `/campanhas/${campanhaId}/agendamentos`,
@@ -150,6 +238,51 @@ export async function mudarStatusAgendamento(
   return clienteHttp.patch<AgendamentoDTO>(`/agendamentos/${id}/status`, { status }, { silencioso: true });
 }
 
+// ----------------------------------------------------------------------
+// Portal do Doador (PI3-203, PI3-204, PI3-205). Cadastrar e consultar hemocentros e horários
+// é livre; o perfil é o do doador da sessão (header X-Usuario-Id). Silenciosas, como as acima.
+// ----------------------------------------------------------------------
+
+/** Cria a conta do doador; com o acesso na resposta, o portal já entra. */
+export async function cadastrarDoador(dados: NovoDoadorPayloadDTO): Promise<CadastroDoadorDTO>
+{
+  return clienteHttp.post<CadastroDoadorDTO>("/doadores", dados, { silencioso: true });
+}
+
+export async function buscarMeuPerfil(): Promise<DoadorDTO>
+{
+  return clienteHttp.get<DoadorDTO>("/doadores/eu", { silencioso: true });
+}
+
+export async function atualizarMeuPerfil(dados: AtualizarPerfilDoadorPayloadDTO): Promise<DoadorDTO>
+{
+  return clienteHttp.put<DoadorDTO>("/doadores/eu", dados, { silencioso: true });
+}
+
+/** Hemocentros com endereço, posição no mapa e expediente. */
+export async function listarHemocentros(): Promise<HemocentroDTO[]>
+{
+  return clienteHttp.get<HemocentroDTO[]>("/hemocentros", { silencioso: true });
+}
+
+/** Horários de um dia (AAAA-MM-DD) no hemocentro, com as vagas; vazio no domingo. */
+export async function listarHorarios(hemocentroId: string, data: string): Promise<HorarioDTO[]>
+{
+  return clienteHttp.get<HorarioDTO[]>(`/hemocentros/${encodeURIComponent(hemocentroId)}/horarios`, {
+    params: { data },
+    silencioso: true,
+  });
+}
+
+/**
+ * Rota até o hospital do paciente da campanha (PI3-262). Sem origem, devolve só o destino.
+ * A posição vai no corpo (POST), não na URL, para não ficar nos logs de acesso.
+ */
+export async function calcularRotaAteHospital(campanhaId: string, origem?: OrigemPayloadDTO): Promise<RotaAteHospitalDTO>
+{
+  return clienteHttp.post<RotaAteHospitalDTO>(`/campanhas/${campanhaId}/rota`, origem, { silencioso: true });
+}
+
 /**
  * Obtém diagnóstico em tempo real do backend, banco Supabase e logs HTTP.
  */
@@ -157,4 +290,3 @@ export async function obterDiagnostico(): Promise<DiagnosticoDados>
 {
   return clienteHttp.get<DiagnosticoDados>("/diagnostico", { silencioso: true });
 }
-

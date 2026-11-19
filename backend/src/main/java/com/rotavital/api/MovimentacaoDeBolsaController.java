@@ -27,6 +27,7 @@ public class MovimentacaoDeBolsaController
     public BolsaHemocomponenteDTO alterarStatus(@PathVariable("id") String id,
     @RequestBody AtualizarStatusBolsaRequest dados)
     {
-        return BolsaHemocomponenteDTO.de(movimentacaoDeBolsaService.alterarStatus(id, dados.status()));
+        return BolsaHemocomponenteDTO.de(
+                movimentacaoDeBolsaService.alterarStatus(id, dados.status(), dados.motivoDescarte()));
     }
 }

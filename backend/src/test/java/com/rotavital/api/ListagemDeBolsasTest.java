@@ -56,7 +56,7 @@ public class ListagemDeBolsasTest
                 });
 
         // A listagem não usa o repositório de bancos nem o resumo do estoque.
-        api = MockMvcBuilders.standaloneSetup(new EstoqueController(new EstoqueService(null, bolsasFalsas), null))
+        api = MockMvcBuilders.standaloneSetup(new EstoqueController(new EstoqueService(null, bolsasFalsas), null, null))
                 .setControllerAdvice(new TratadorDeErros())
                 .build();
     }

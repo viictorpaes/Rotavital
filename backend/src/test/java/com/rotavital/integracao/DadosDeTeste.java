@@ -1,6 +1,7 @@
 package com.rotavital.integracao;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -33,6 +34,28 @@ public class DadosDeTeste
                 insert into public.ponto_rede (id, tipo, nome, logradouro, cidade, uf, latitude, longitude)
                 values (?, 'BANCO_DE_SANGUE', ?, 'Av. Central, 100', 'Recife', 'PE', -8.0578, -34.8829)
                 """, id, "Hemocentro " + id);
+    }
+
+    public void hospital(String id, String nome)
+    {
+        jdbc.update("""
+                insert into public.ponto_rede (id, tipo, nome, logradouro, cidade, uf, latitude, longitude)
+                values (?, 'HOSPITAL', ?, 'Av. Prof. Moraes Rego, 1235', 'Recife', 'PE', -8.0512, -34.9478)
+                """, id, nome);
+    }
+
+    // Aresta de ida e de volta, como o seed grava.
+    public void conexao(String pontoA, String pontoB, double distanciaKm, double tempoMin)
+    {
+        String sql = "insert into public.conexao (origem_id, destino_id, distancia_km, tempo_estimado_min) values (?, ?, ?, ?)";
+        jdbc.update(sql, pontoA, pontoB, distanciaKm, tempoMin);
+        jdbc.update(sql, pontoB, pontoA, distanciaKm, tempoMin);
+    }
+
+    public UUID medico()
+    {
+        return jdbc.queryForObject("insert into public.usuario (nome, papel) values ('Dra. Ana Lima', 'MEDICO') returning id",
+                UUID.class);
     }
 
     public void bolsa(String id, String bancoId, TipoComponente componente, TipoSanguineo tipo,

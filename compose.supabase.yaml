@@ -1,0 +1,20 @@
+# ===================================================================
+# Rota Vital — variante do compose.yaml com o banco do Supabase (o mesmo da produção):
+#
+#   docker compose -f compose.yaml -f compose.supabase.yaml up -d --build
+#
+# O backend conecta no Session Pooler do Supabase (IPv4) com SUPABASE_DB_PASSWORD do .env,
+# e o Postgres local nem sobe. Cuidado: tudo o que for gravado aqui vai para o banco do time.
+# ===================================================================
+
+services:
+  db:
+    # O banco local não é usado nesta variante.
+    scale: 0
+
+  backend:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require
+      SPRING_DATASOURCE_USERNAME: postgres.gilyfswvezmvtmlxgvrd
+      SPRING_DATASOURCE_PASSWORD: ${SUPABASE_DB_PASSWORD:?Defina SUPABASE_DB_PASSWORD no arquivo .env (copie de .env.example)}
+    depends_on: !reset {}

@@ -28,6 +28,10 @@ services:
       # e as telas do site não abrem. Em Project Settings > API Keys; também digitada só no Render.
       - key: SUPABASE_KEY
         sync: false
+      # Chave da Routes API do Google (PI3-262): distância e tempo até o hospital da campanha.
+      # Sem ela, a rota usa a estimativa em linha reta. Digitada só no Render.
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
       - key: SPRING_JPA_SHOW_SQL
         value: "false"
       - key: TZ

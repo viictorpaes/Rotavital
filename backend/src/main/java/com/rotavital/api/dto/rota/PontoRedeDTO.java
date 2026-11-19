@@ -5,7 +5,10 @@ public record PontoRedeDTO(
         String nome,
         TipoPontoRede tipo,
         double latitude,
-        double longitude
+        double longitude,
+        String logradouro,
+        String cidade,
+        String uf
 )
 
 {

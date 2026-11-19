@@ -24,7 +24,8 @@ export type TipoComponente =
   | "Concentrado de Plaquetas"
   | "Crioprecipitado";
 
-export interface PessoaNecessitada
+/** Paciente aguardando hemocomponente, como as telas de Pacientes mostram (HU-08, PI3-195). */
+export interface PacienteNaFila
 {
   id: string;
   nome: string;
@@ -38,6 +39,11 @@ export interface PessoaNecessitada
   hospital: string;
   status: UrgenciaNecessidade;
   causa: string;
+}
+
+/** Paciente divulgado numa campanha de doação (HU-06, HU-09): o da fila, mais a campanha. */
+export interface PessoaNecessitada extends PacienteNaFila
+{
   /** Campanha de doação que divulga o paciente (HU-06). */
   campanhaId: string;
   /** Quando a campanha foi publicada (ISO 8601). */
@@ -93,6 +99,8 @@ export interface LoteHemocomponente
   localizacao: string;
   /** Status da bolsa no backend (DISPONIVEL, RESERVADA…); ausente nos dados de exemplo. */
   statusBolsa?: string;
+  /** Motivo informado no descarte, quando aplicável. */
+  motivoDescarte?: string;
 }
 
 /** Origem de um aviso do painel operacional (HU-02). */
@@ -111,31 +119,11 @@ export interface AvisoPainel
   destino: string;
 }
 
-/** Ponto da rede de distribuição (HU-07) — hemocentro ou hospital conectado. */
-export interface PontoDeRede
-{
-  id: string;
-  nome: string;
-  endereco: string;
-  latitude: number;
-  longitude: number;
-  /** `true` para o hemocentro de origem (Cesar Life). */
-  origem?: boolean;
-}
-
 /** Coordenada geográfica de um vértice do trajeto. */
 export interface Coordenada
 {
   latitude: number;
   longitude: number;
-}
-
-export interface Conexao
-{
-  hospitalId: string;
-  distanciaKm: number;
-  tempoMin: number;
-  status: UrgenciaNecessidade;
 }
 
 /** Ala médica de destino de uma requisição (HU-04). */
@@ -175,4 +163,3 @@ export interface RequisicaoRecebida
 }
 
 export * from "./dtos";
-

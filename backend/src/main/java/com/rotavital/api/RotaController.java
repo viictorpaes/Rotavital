@@ -18,6 +18,7 @@ import com.rotavital.api.dto.rota.RotaCalculadaDTO;
 import com.rotavital.api.dto.rota.TipoPontoRede;
 import com.rotavital.dominio.BancoDeSangue;
 import com.rotavital.dominio.Conexao;
+import com.rotavital.dominio.Endereco;
 import com.rotavital.dominio.PontoDeRede;
 import com.rotavital.dominio.RedeDistribuicao;
 import com.rotavital.dominio.RotaCalculada;
@@ -105,7 +106,9 @@ public class RotaController
     private PontoRedeDTO paraPontoRedeDTO(PontoDeRede ponto)
     {
         TipoPontoRede tipo = ponto instanceof BancoDeSangue ? TipoPontoRede.BANCO_DE_SANGUE : TipoPontoRede.HOSPITAL;
-        return new PontoRedeDTO(ponto.getId(), ponto.getNome(), tipo, ponto.getLatitude(), ponto.getLongitude());
+        Endereco endereco = ponto.getEndereco();
+        return new PontoRedeDTO(ponto.getId(), ponto.getNome(), tipo, ponto.getLatitude(), ponto.getLongitude(),
+                endereco.getLogradouro(), endereco.getCidade(), endereco.getUf());
     }
 
     private ConexaoDTO paraConexaoDTO(Conexao conexao)

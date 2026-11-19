@@ -1,61 +1,38 @@
 import { useEffect, useState } from "react";
-import { conexoes, hemocentro, hospitais } from "@/data/redeMock";
-import { calcularRota, rotaDeReferencia, type RotaCalculada } from "@/lib/roteirizacao";
+import type { PontoRedeDTO, RotaCalculadaDTO } from "@/types/dtos";
+import { calcularRota } from "@/services/api";
 
-/** Rotas por id de hospital. */
-export type RotasDaRede = Record<string, RotaCalculada>;
-
-function rotasDeReferencia(): RotasDaRede
-{
-  return Object.fromEntries(
-    hospitais.flatMap((hospital) =>
-    {
-      const conexao = conexoes.find((c) => c.hospitalId === hospital.id);
-      return conexao ? [[hospital.id, rotaDeReferencia(conexao, hospital, hemocentro)]] : [];
-    }),
-  );
-}
+/** Menor caminho por id de hospital. */
+export type RotasDaRede = Record<string, RotaCalculadaDTO>;
 
 /**
- * Roteiriza a rede inteira uma vez (HU-07): começa pelos valores mockados e
- * substitui cada hospital assim que o roteador responde, para que a lista, o
- * mapa e o plano de transporte mostrem sempre os mesmos números.
+ * Distância e tempo do menor caminho (GET /rotas, Dijkstra) da origem até cada destino, para a
+ * lista de hospitais. Um destino sem caminho fica de fora: a lista mostra "sem rota".
  */
-export function useRotasDaRede()
+export function useRotasDaRede(origemId: string, destinos: PontoRedeDTO[])
 {
-  const [rotas, setRotas] = useState<RotasDaRede>(rotasDeReferencia);
-  const [carregando, setCarregando] = useState(true);
+  const [rotas, setRotas] = useState<RotasDaRede>({});
 
   useEffect(() =>
   {
-    const controlador = new AbortController();
-    const referencias = rotasDeReferencia();
+    let ativo = true;
+    setRotas({});
 
-    Promise.all(
-      hospitais.map(async (hospital) =>
-      {
-        const referencia = referencias[hospital.id];
-        
-        if (!referencia) 
-        {
-          return;
-        }
-
-        const rota = await calcularRota(hemocentro, hospital, referencia, controlador.signal);
-        if (controlador.signal.aborted) return;
-        setRotas((anteriores) => ({ ...anteriores, [hospital.id]: rota }));
-      }),
-
-    ).finally(() =>
+    destinos.forEach((destino) =>
     {
-      if (!controlador.signal.aborted) 
-      {
-          setCarregando(false)
-      };
+      calcularRota(origemId, destino.id)
+        .then((rota) =>
+        {
+          if (ativo) setRotas((anteriores) => ({ ...anteriores, [destino.id]: rota }));
+        })
+        .catch(() => undefined);
     });
 
-    return () => controlador.abort();
-  }, []);
+    return () =>
+    {
+      ativo = false;
+    };
+  }, [origemId, destinos]);
 
-  return { rotas, carregando };
+  return rotas;
 }

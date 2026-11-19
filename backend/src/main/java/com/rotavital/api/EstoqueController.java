@@ -19,12 +19,14 @@ import com.rotavital.api.dto.comum.ErroDTO;
 import com.rotavital.api.dto.estoque.BolsaHemocomponenteDTO;
 import com.rotavital.api.dto.estoque.EstoqueDTO;
 import com.rotavital.api.dto.estoque.NovaBolsaHemocomponenteRequest;
+import com.rotavital.api.dto.estoque.ResumoPerdasDTO;
 import com.rotavital.api.dto.estoque.ResumoEstoqueDTO;
 import com.rotavital.dominio.BolsaHemocomponente;
 import com.rotavital.dominio.StatusBolsa;
 import com.rotavital.dominio.TipoComponente;
 import com.rotavital.dominio.TipoSanguineo;
 import com.rotavital.servico.EstoqueService;
+import com.rotavital.servico.ResumoPerdasService;
 import com.rotavital.servico.ResumoEstoqueService;
 
 @RestController
@@ -32,12 +34,15 @@ import com.rotavital.servico.ResumoEstoqueService;
 public class EstoqueController
 {
     private final EstoqueService estoqueService;
+    private final ResumoPerdasService resumoPerdasService;
     private final ResumoEstoqueService resumoEstoqueService;
 
-    public EstoqueController(EstoqueService estoqueService, ResumoEstoqueService resumoEstoqueService)
+    public EstoqueController(EstoqueService estoqueService, ResumoEstoqueService resumoEstoqueService,
+            ResumoPerdasService resumoPerdasService)
     {
         this.estoqueService = estoqueService;
         this.resumoEstoqueService = resumoEstoqueService;
+        this.resumoPerdasService = resumoPerdasService;
     }
 
     @GetMapping("/bancos/{bancoId}/estoque/resumo")
@@ -48,6 +53,19 @@ public class EstoqueController
         if (resumo.isEmpty())
         {
             return bancoNaoEncontrado(bancoId, "/api/v1/bancos/" + bancoId + "/estoque/resumo");
+        }
+
+        return ResponseEntity.ok(resumo.get());
+    }
+
+    @GetMapping("/bancos/{bancoId}/estoque/perdas")
+    public ResponseEntity<?> resumirPerdas(@PathVariable("bancoId") String bancoId)
+    {
+        Optional<ResumoPerdasDTO> resumo = resumoPerdasService.resumir(bancoId);
+
+        if (resumo.isEmpty())
+        {
+            return bancoNaoEncontrado(bancoId, "/api/v1/bancos/" + bancoId + "/estoque/perdas");
         }
 
         return ResponseEntity.ok(resumo.get());

@@ -37,4 +37,35 @@ public interface BolsaHemocomponenteRepository extends JpaRepository<BolsaHemoco
             @Param("tipoSanguineo") TipoSanguineo tipoSanguineo,
             @Param("status") StatusBolsa status,
             Pageable pagina);
+
+    @Query(value = """
+            select tipo_sanguineo as "categoria",
+                   count(*) as "bolsas",
+                   coalesce(sum(volume_ml), 0) as "volumeMl"
+            from public.bolsa_hemocomponente
+            where banco_origem_id = :bancoId and status = 'DESCARTADA'
+            group by tipo_sanguineo
+            order by sum(volume_ml) desc, count(*) desc, tipo_sanguineo asc
+            """, nativeQuery = true)
+    List<TotalPerda> perdasPorTipoSanguineo(@Param("bancoId") String bancoId);
+
+    @Query(value = """
+            select tipo_componente as "categoria",
+                   count(*) as "bolsas",
+                   coalesce(sum(volume_ml), 0) as "volumeMl"
+            from public.bolsa_hemocomponente
+            where banco_origem_id = :bancoId and status = 'DESCARTADA'
+            group by tipo_componente
+            order by sum(volume_ml) desc, count(*) desc, tipo_componente asc
+            """, nativeQuery = true)
+    List<TotalPerda> perdasPorComponente(@Param("bancoId") String bancoId);
+
+    interface TotalPerda
+    {
+        String getCategoria();
+
+        Long getBolsas();
+
+        Double getVolumeMl();
+    }
 }

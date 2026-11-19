@@ -59,9 +59,17 @@ public class BolsaHemocomponente implements Persistable<String>
     @Column(name = "status", nullable = false)
     private StatusBolsa status;
 
+    @Column(name = "motivo_descarte", length = 500)
+    private String motivoDescarte;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "banco_origem_id", nullable = false)
     private BancoDeSangue bancoOrigem;
+
+    // Hospital onde a bolsa está (PI3-236). Nulo enquanto ela está no hemocentro de origem ou em trânsito.
+    @ManyToOne
+    @JoinColumn(name = "hospital_atual_id")
+    private Hospital hospitalAtual;
 
     // O id é preenchido pelo sistema, então o save() não sabe sozinho se a bolsa é nova e faria um merge,
     // que sobrescreve a bolsa que já tiver esse id. Com isto, bolsa criada com new vira sempre INSERT
@@ -144,6 +152,45 @@ public class BolsaHemocomponente implements Persistable<String>
         this.status = novoStatus;
     }
 
+    /**
+     * Confere se a bolsa pode sair para outro hospital: precisa estar disponível, na validade e com
+     * a cadeia fria intacta. Se não puder, lança MovimentacaoInvalidaException dizendo o motivo.
+     */
+    public void conferirEnvio(LocalDate hoje)
+    {
+        if (!estaDisponivel())
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " está " + status + " e não pode ser enviada.");
+        }
+        if (estaVencida(hoje))
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " venceu em "
+                    + DateTimeFormatter.ofPattern("dd/MM/yyyy").format(dataValidade) + " e não pode ser enviada.");
+        }
+        if (estaForaDaFaixa())
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " está a " + temperaturaCelsius
+                    + " °C, fora da faixa ideal, e não pode ser enviada.");
+        }
+    }
+
+    /** Sai do estoque para o hospital (PI3-236), pelo mesmo caminho de status de toda bolsa. */
+    public void despacharPara(Hospital destino, LocalDate hoje)
+    {
+        conferirEnvio(hoje);
+        alterarStatus(StatusBolsa.RESERVADA, hoje);
+        alterarStatus(StatusBolsa.EM_TRANSITO, hoje);
+        this.localizacao = "Em transporte refrigerado → " + destino.getNome();
+    }
+
+    /** Chegou ao hospital (PI3-236): a partir daqui, é onde a bolsa está. */
+    public void receberEm(Hospital hospital, LocalDate hoje)
+    {
+        alterarStatus(StatusBolsa.ENTREGUE, hoje);
+        this.hospitalAtual = hospital;
+        this.localizacao = hospital.getNome();
+    }
+
     @PostLoad
     @PostPersist
     void marcarComoGravada()
@@ -208,9 +255,24 @@ public class BolsaHemocomponente implements Persistable<String>
         return status;
     }
 
+    public String getMotivoDescarte()
+    {
+        return motivoDescarte;
+    }
+
+    public void registrarMotivoDescarte(String motivo)
+    {
+        this.motivoDescarte = motivo;
+    }
+
     public BancoDeSangue getBancoOrigem()
     {
         return bancoOrigem;
+    }
+
+    public Hospital getHospitalAtual()
+    {
+        return hospitalAtual;
     }
 
     @Override

@@ -17,18 +17,18 @@ import jakarta.servlet.http.HttpServletResponse;
  * pela API do Rota Vital, incluindo método, rota, status HTTP e tempo de resposta.
  */
 @Component
+
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class HttpLoggingFilter extends OncePerRequestFilter
 {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException
+    HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException
     {
         long inicio = System.currentTimeMillis();
         String metodo = request.getMethod();
         String uri = request.getRequestURI();
-        String query = request.getQueryString() != null ? "?" + request.getQueryString() : "";
+        String query = request.getQueryString() != null ? "?" + request.getQueryString() : " ";
 
         // Ignora requisições de pre-flight OPTIONS do CORS e os healthchecks do Docker/Render
         // (/actuator, a cada poucos segundos) para não poluir o terminal
@@ -42,24 +42,29 @@ public class HttpLoggingFilter extends OncePerRequestFilter
         {
             filterChain.doFilter(request, response);
         }
+
         finally
         {
             long duracao = System.currentTimeMillis() - inicio;
             int status = response.getStatus();
 
             String icone;
+
             if (status >= 200 && status < 300)
             {
                 icone = "✅";
             }
+
             else if (status >= 400 && status < 500)
             {
                 icone = "⚠️";
             }
+
             else if (status >= 500)
             {
                 icone = "❌";
             }
+            
             else
             {
                 icone = "ℹ️";
@@ -70,4 +75,3 @@ public class HttpLoggingFilter extends OncePerRequestFilter
         }
     }
 }
-

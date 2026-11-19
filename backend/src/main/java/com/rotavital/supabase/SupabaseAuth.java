@@ -1,6 +1,7 @@
 package com.rotavital.supabase;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +21,9 @@ import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rotavital.servico.AutenticacaoIndisponivelException;
+import com.rotavital.servico.ContaCriada;
+import com.rotavital.servico.CriadorDeContas;
+import com.rotavital.servico.DadosInvalidosException;
 import com.rotavital.servico.SessaoAutenticada;
 import com.rotavital.servico.VerificadorDeCredenciais;
 
@@ -30,9 +34,11 @@ import com.rotavital.servico.VerificadorDeCredenciais;
  *
  * O Supabase responde 400 tanto para senha errada quanto para e-mail sem cadastro, então os dois
  * casos já chegam aqui iguais.
+ *
+ * Também cria a conta do doador que se cadastra pelo portal (POST /auth/v1/signup, PI3-203).
  */
 @Component
-public class SupabaseAuth implements VerificadorDeCredenciais
+public class SupabaseAuth implements VerificadorDeCredenciais, CriadorDeContas
 {
     private static final Logger LOG = LoggerFactory.getLogger(SupabaseAuth.class);
     private static final Duration TEMPO_LIMITE = Duration.ofSeconds(5);
@@ -105,6 +111,81 @@ public class SupabaseAuth implements VerificadorDeCredenciais
         }
     }
 
+    /**
+     * Com "Confirm email" desligado no Supabase, o signup já devolve a sessão. Ligado, devolve só o
+     * usuário, e a pessoa precisa confirmar o e-mail antes de entrar. Para um e-mail que já tem conta,
+     * o Supabase responde 422 user_already_exists (sem confirmação) ou um usuário sem identities
+     * (com confirmação, para não revelar quem tem conta): os dois viram vazio.
+     */
+    @Override
+    public Optional<ContaCriada> criar(String email, String senha)
+    {
+        if (!chaveConfigurada)
+        {
+            throw new AutenticacaoIndisponivelException(
+                    "Cadastro indisponível: a variável SUPABASE_KEY não está configurada no backend.");
+        }
+
+        try
+        {
+            RespostaCadastro resposta = cliente.post()
+                    .uri("/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("email", email, "password", senha))
+                    .retrieve()
+                    .body(RespostaCadastro.class);
+
+            if (resposta != null && resposta.accessToken() != null && resposta.user() != null && resposta.user().id() != null)
+            {
+                SessaoAutenticada sessao = new SessaoAutenticada(resposta.user().id(), resposta.accessToken(),
+                        resposta.expiresIn());
+                return Optional.of(new ContaCriada(resposta.user().id(), sessao));
+            }
+            if (resposta != null && resposta.id() != null)
+            {
+                if (resposta.identities() != null && resposta.identities().isEmpty())
+                {
+                    return Optional.empty();
+                }
+                return Optional.of(new ContaCriada(resposta.id(), null));
+            }
+
+            throw new AutenticacaoIndisponivelException("O Supabase Auth respondeu o cadastro sem o usuário criado.");
+        }
+        catch (HttpClientErrorException e)
+        {
+            String corpo = e.getResponseBodyAsString();
+            if (corpo.contains("user_already_exists") || corpo.contains("email_exists"))
+            {
+                return Optional.empty();
+            }
+            if (corpo.contains("weak_password"))
+            {
+                throw new DadosInvalidosException("Senha fraca: escolha uma senha mais forte, com pelo menos 6 caracteres "
+                        + "misturando letras e números.");
+            }
+            if (corpo.contains("email_address_invalid") || corpo.contains("validation_failed"))
+            {
+                throw new DadosInvalidosException("O e-mail " + email + " não foi aceito. Confira se está escrito certo.");
+            }
+            if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS)
+            {
+                LOG.warn("Supabase Auth limitou os cadastros: {}", corpo);
+                throw new AutenticacaoIndisponivelException(
+                        "Muitos cadastros em pouco tempo. Tente de novo em alguns minutos.", e);
+            }
+            // Ex.: email_address_not_authorized, quando o projeto exige confirmar o e-mail e o SMTP padrão
+            // do Supabase só envia para a equipe. Quem resolve é a configuração do projeto, não o doador.
+            LOG.error("Supabase Auth recusou o cadastro: {}", corpo);
+            throw new AutenticacaoIndisponivelException(
+                    "Não foi possível criar a conta agora. Tente novamente em instantes.", e);
+        }
+        catch (RestClientException e)
+        {
+            throw indisponivel(e);
+        }
+    }
+
     private static AutenticacaoIndisponivelException indisponivel(RestClientException e)
     {
         LOG.error("Falha ao consultar o Supabase Auth: {}", e.getMessage());
@@ -144,6 +225,18 @@ public class SupabaseAuth implements VerificadorDeCredenciais
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     record UsuarioAuth(UUID id)
+    {
+    }
+
+    // O signup devolve a sessão (access_token + user) ou, quando o e-mail precisa ser confirmado, só o usuário.
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record RespostaCadastro(
+            @JsonProperty("access_token") String accessToken,
+            @JsonProperty("expires_in") long expiresIn,
+            UsuarioAuth user,
+            UUID id,
+            List<Object> identities
+    )
     {
     }
 }

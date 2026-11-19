@@ -9,12 +9,31 @@ server
         root /usr/share/nginx/html;
         index index.html index.htm;
         try_files $uri $uri/ /index.html;
+        # versao.json e o que mais ficar na raiz: sem hash no nome, então sempre confere com o servidor.
+        add_header Cache-Control "no-cache" always;
     }
 
-    # Encaminha chamadas /api/ para o backend preservando o prefixo
+    # O index.html aponta para os arquivos da versão atual (assets/index-<hash>.js). Sem este cabeçalho,
+    # o navegador guardava a página e, depois de um novo build, continuava abrindo a versão antiga.
+    # no-cache: pode guardar, mas confere com o servidor antes de usar (304 se nada mudou).
+    location = /index.html
+    {
+        root /usr/share/nginx/html;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    # O Vite põe o hash do conteúdo no nome dos arquivos: um arquivo nunca muda, então pode ficar em cache.
+    location /assets/
+    {
+        root /usr/share/nginx/html;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        try_files $uri =404;
+    }
+
+    # Encaminha chamadas /api/ e /actuator/ para o backend preservando o prefixo
     # (o backend expõe tudo em /api/v1/..., então o caminho vai intacto).
     # API_UPSTREAM: http://backend:8080 no Compose; pode ser a URL https da API no Render.
-    location /api/
+    location ~ ^/(api|actuator)/
     {
         proxy_pass ${API_UPSTREAM};
         # Host do próprio backend (não o do frontend): o Render roteia pelo Host.
