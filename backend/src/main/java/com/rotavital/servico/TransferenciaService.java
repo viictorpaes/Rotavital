@@ -87,8 +87,10 @@ public class TransferenciaService
             bolsa.conferirEnvio(destino, agora.toLocalDate());
             Trajeto trajeto = rotas.calcular(bolsa.getBancoOrigem().getId(), destinoId).trajeto();
 
+            // Relida com trava dentro da transação: se uma requisição reservou a bolsa para outro hospital
+            // enquanto a rota era calculada, o despacho vê isso e responde 422.
             return transacao.execute(status -> transferencias.save(
-                    TransferenciaDeBolsa.despachar(buscarBolsa(bolsaId), destino, trajeto, responsavel, agora)));
+                    TransferenciaDeBolsa.despachar(travarBolsa(bolsaId), destino, trajeto, responsavel, agora)));
         }
         catch (MovimentacaoInvalidaException e)
         {
@@ -121,6 +123,12 @@ public class TransferenciaService
         {
             throw new RegraDeNegocioException(e.getMessage());
         }
+    }
+
+    private BolsaHemocomponente travarBolsa(String bolsaId)
+    {
+        return bolsas.travarPorId(bolsaId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Nenhuma bolsa encontrada com id " + bolsaId + "."));
     }
 
     private BolsaHemocomponente buscarBolsa(String bolsaId)

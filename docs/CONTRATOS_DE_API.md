@@ -282,6 +282,17 @@ X-Usuario-Id: <id do médico>
 `localizacao` dela passa a ser o destino (`"Hospital das Clínicas de PE · UTI Adulto · Leito 04"`); ao ser
 despachada e recebida pela tela de Rede, a bolsa mantém a ala e o leito do pedido.
 
+Decisões da HU-04:
+- **O pedido não é gravado** em `requisicao_hospitalar`/`alocacao` e a resposta `201` não traz `Location`. As
+  FKs `fk_alocacao_*_compativel` exigem o mesmo tipo sanguíneo pedido, e o FEFO da HU-04 também aceita tipos
+  compatíveis; gravar o pedido depende de mudar esse contrato do banco (PI3-47). O registro da reserva é a
+  própria bolsa: `status = RESERVADA` e `localizacao` no destino.
+- **`hospital_atual_id` não muda na reserva**: ele diz onde a bolsa está, e ela continua no hemocentro até ser
+  despachada.
+- **Concorrência**: as bolsas disponíveis do componente são travadas (`SELECT … FOR UPDATE`) antes da escolha;
+  despacho e mudança de status também travam a bolsa. Requisições simultâneas passam uma depois da outra, e a
+  segunda recebe `422` se não sobrar estoque.
+
 | Status | Quando | Corpo |
 |---|---|---|
 | `201` | Estoque suficiente: bolsas reservadas | `RequisicaoRegistrada`: `{protocolo, hospitalNome, ala, alaRotulo, leito, destino, quantidade, status: "ALOCADA", bolsas: [{id, retirarDe, localizacao, status}]}` |

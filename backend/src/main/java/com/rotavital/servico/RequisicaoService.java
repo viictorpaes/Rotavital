@@ -30,6 +30,16 @@ import com.rotavital.repositorio.HospitalRepository;
  * para a quantidade inteira (a mesma regra FEFO da sugestão de lote). Faltando bolsa, nada é
  * reservado e a API responde 422. Havendo, cada bolsa escolhida fica RESERVADA e a localização
  * dela passa a ser o destino do pedido ("Hospital X · UTI Adulto · Leito 04").
+ *
+ * Decisões desta HU:
+ * - O pedido não é gravado em requisicao_hospitalar/alocacao. Essas tabelas exigem que a bolsa seja do
+ *   mesmo tipo sanguíneo pedido (fk_alocacao_*_compativel), e o FEFO da HU-04 também aceita tipos
+ *   compatíveis (O- para A+). Gravar o pedido depende de mudar esse contrato do banco (PI3-47); até lá,
+ *   o registro da reserva é a própria bolsa: status RESERVADA e localização no destino.
+ * - O destino fica na localização, não em hospital_atual_id: essa coluna diz onde a bolsa está, e a
+ *   bolsa reservada continua no hemocentro até ser despachada pela tela de Rede.
+ * - Concorrência: as bolsas disponíveis do componente são travadas (FOR UPDATE) antes da escolha, e o
+ *   despacho e a mudança de status também travam a bolsa. Quem chega depois espera e vê o que sobrou.
  */
 @Service
 public class RequisicaoService
@@ -55,7 +65,7 @@ public class RequisicaoService
     }
 
     /**
-     * Registra o pedido e reserva as bolsas. Só um médico pede (401/403). Campo ausente ou fora do
+     * Confere o estoque e reserva as bolsas. Só um médico pede (401/403). Campo ausente ou fora do
      * limite: 400; banco ou hospital inexistente: 404; estoque sem bolsas suficientes: 422.
      */
     @Transactional
@@ -72,6 +82,10 @@ public class RequisicaoService
         OffsetDateTime agora = OffsetDateTime.now(relogio);
         LocalDate hoje = agora.toLocalDate();
         int quantidade = dados.quantidade();
+
+        // Antes de ler o estoque: as bolsas já vêm travadas e com o status que outra transação acabou
+        // de gravar, e o estoque do banco reaproveita essas mesmas instâncias.
+        bolsas.travarDisponiveis(banco.getId(), dados.tipoComponente());
 
         List<BolsaHemocomponente> escolhidas = banco.getEstoque()
                 .sugerirLotes(dados.tipoComponente(), dados.tipoSanguineo(), quantidade, hoje);
@@ -96,7 +110,7 @@ public class RequisicaoService
         }
         catch (MovimentacaoInvalidaException e)
         {
-            // A sugestão já filtra bolsas aptas; chegar aqui é uma corrida com outra movimentação.
+            // A sugestão já filtra bolsas aptas, e elas estão travadas: não deveria acontecer.
             throw new RegraDeNegocioException(e.getMessage());
         }
 

@@ -46,6 +46,7 @@ public class RequisicaoServiceTest
     private final Usuario doador = new Usuario(UUID.randomUUID(), null, "Carlos", PapelUsuario.DOADOR, null, null);
 
     private final List<BolsaHemocomponente> gravadas = new ArrayList<>();
+    private final List<String> travas = new ArrayList<>();
     private RequisicaoService servico;
 
     private BolsaHemocomponente bolsa(String id, TipoSanguineo tipo, int diasParaVencer, String localizacao)
@@ -62,14 +63,22 @@ public class RequisicaoServiceTest
         UsuarioRepository usuarios = RepositorioFalso.respondendo(UsuarioRepository.class, "findById",
                 argumentos -> List.of(medico, doador).stream().filter(u -> u.getId().equals(argumentos[0])).findFirst());
 
-        Map<String, Function<Object[], Object>> repositorioDeBolsas = Map.of("saveAll", argumentos ->
-        {
-            for (Object bolsa : (Iterable<?>) argumentos[0])
-            {
-                gravadas.add((BolsaHemocomponente) bolsa);
-            }
-            return argumentos[0];
-        });
+        Map<String, Function<Object[], Object>> repositorioDeBolsas = Map.of(
+                "saveAll", argumentos ->
+                {
+                    for (Object bolsa : (Iterable<?>) argumentos[0])
+                    {
+                        gravadas.add((BolsaHemocomponente) bolsa);
+                    }
+                    return argumentos[0];
+                },
+                "travarDisponiveis", argumentos ->
+                {
+                    travas.add(argumentos[0] + "/" + argumentos[1]);
+                    return hemope.getEstoque().getBolsas().stream()
+                            .filter(b -> b.getTipoComponente() == argumentos[1] && b.getStatus() == StatusBolsa.DISPONIVEL)
+                            .toList();
+                });
 
         servico = new RequisicaoService(
                 RepositorioFalso.respondendo(BancoDeSangueRepository.class, "findById",
@@ -112,6 +121,30 @@ public class RequisicaoServiceTest
         Assertions.assertEquals(StatusBolsa.DISPONIVEL, sobra.getStatus());
         Assertions.assertEquals("R2 · P1 · N1", sobra.getLocalizacao());
         Assertions.assertEquals(List.of(vencePrimeiro, venceDepois), gravadas);
+    }
+
+    @Test
+    public void travaAsBolsasDisponiveisDoComponenteAntesDeEscolher()
+    {
+        bolsa("CH-1", TipoSanguineo.A_POSITIVO, 3, "R1 · P3 · N2");
+
+        servico.registrar(medico.getId(), pedido(TipoSanguineo.A_POSITIVO, 1, null));
+
+        Assertions.assertEquals(List.of("BS-01/HEMACIAS"), travas);
+    }
+
+    @Test
+    public void segundaRequisicaoSoVeOQueSobrouDaPrimeira()
+    {
+        bolsa("CH-1", TipoSanguineo.A_POSITIVO, 3, "R1 · P3 · N2");
+        bolsa("CH-2", TipoSanguineo.A_POSITIVO, 20, "R1 · P3 · N3");
+
+        servico.registrar(medico.getId(), pedido(TipoSanguineo.A_POSITIVO, 2, "04"));
+        RegraDeNegocioException erro = Assertions.assertThrows(RegraDeNegocioException.class,
+                () -> servico.registrar(medico.getId(), pedido(TipoSanguineo.A_POSITIVO, 1, "07")));
+
+        Assertions.assertTrue(erro.getMessage().contains("não há nenhuma bolsa"), erro.getMessage());
+        Assertions.assertEquals(2, gravadas.size(), "Só a primeira requisição reservou.");
     }
 
     @Test

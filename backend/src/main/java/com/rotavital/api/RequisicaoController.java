@@ -1,8 +1,8 @@
 package com.rotavital.api;
 
-import java.net.URI;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +34,7 @@ public class RequisicaoController
     {
         RequisicaoRegistradaDTO requisicao = RequisicaoRegistradaDTO.de(servico.registrar(usuarioId, dados));
 
-        return ResponseEntity.created(URI.create("/api/v1/requisicoes/" + requisicao.protocolo())).body(requisicao);
+        // Sem Location: o pedido não é gravado (ver RequisicaoService), então não há GET /requisicoes/{id}.
+        return ResponseEntity.status(HttpStatus.CREATED).body(requisicao);
     }
 }
