@@ -104,6 +104,21 @@ export interface NovaBolsaHemocomponenteDTO
   bancoOrigemId: string;
 }
 
+/**
+ * Corpo da correção de uma bolsa disponível (PATCH /hemocomponentes/{id}). Só vão os campos que
+ * mudaram; o que não vier fica como está. localizacao "" apaga a localização. tipoSanguineo só o admin.
+ */
+export interface CorrecaoBolsaHemocomponenteDTO
+{
+  tipoSanguineo?: TipoSanguineoBackend;
+  dataColeta?: string;
+  dataValidade?: string;
+  loteSintetico?: string;
+  volumeMl?: number;
+  temperaturaCelsius?: number;
+  localizacao?: string;
+}
+
 export interface EstoqueDTO
 {
   bancoDeSangueId: string;

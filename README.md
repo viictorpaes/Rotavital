@@ -1012,6 +1012,7 @@ manda sozinho). Sem o header → `401`; perfil errado → `403`.
 | `GET` | `/hemocomponentes/{id}` | livre | Uma bolsa |
 | `POST` | `/hemocomponentes` | livre | Cadastra uma bolsa; `400`/`422` dizem o campo ou a regra |
 | `PATCH` | `/hemocomponentes/{id}` | livre | Muda o status (`{"status":"RESERVADA"}`), só pelas transições permitidas (HU‑08) |
+| `PATCH` | `/hemocomponentes/{id}` | médico ou admin | Corrige dados de uma bolsa `DISPONIVEL` (`{"volumeMl":230}`); tipo sanguíneo só o admin, componente e banco não mudam |
 </details>
 
 <details>

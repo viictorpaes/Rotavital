@@ -478,17 +478,39 @@ paths:
 
     patch:
       tags: [Hemocomponentes]
-      summary: Atualiza o status de uma bolsa (reservar, descartar, etc.)
-      description: Aplica uma transição de status equivalente aos métodos reservar()/descartar() de BolsaHemocomponente no domínio.
-      operationId: atualizarStatusHemocomponente
+      summary: Muda o status de uma bolsa ou corrige os dados cadastrados
+      description: >
+        Faz uma de duas coisas, nunca as duas na mesma chamada (mandar status junto com
+        campos de correção responde 400).
+
+
+        **Mudar o status:** envie `status` (e `motivoDescarte` ao descartar). Aplica as
+        transições de reservar()/descartar() de BolsaHemocomponente; não exige header.
+
+
+        **Corrigir os dados:** envie só os campos que mudaram entre `tipoSanguineo`,
+        `dataColeta`, `dataValidade`, `loteSintetico`, `volumeMl`, `temperaturaCelsius` e
+        `localizacao`. Exige médico ou admin no header X-Usuario-Id, e só o admin corrige
+        o tipo sanguíneo. Só bolsas DISPONIVEL podem ser corrigidas (as demais respondem
+        422). Componente e banco de origem não mudam. Os campos passam pelas mesmas
+        regras do cadastro (prazo do componente, volume, temperatura, lote único).
+        `localizacao` em branco limpa o campo.
+      operationId: atualizarHemocomponente
       parameters:
         - $ref: '#/components/parameters/BolsaIdPath'
+        - $ref: '#/components/parameters/UsuarioIdHeader'
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/AtualizarStatusBolsaRequest' }
-            example: { status: RESERVADA }
+            schema: { $ref: '#/components/schemas/AtualizarBolsaRequest' }
+            examples:
+              reservar:
+                summary: Mudar o status
+                value: { status: RESERVADA }
+              corrigir:
+                summary: Corrigir dados digitados errado
+                value: { dataValidade: "2026-12-19", volumeMl: 230 }
       responses:
         '200':
           description: Bolsa atualizada.
@@ -497,6 +519,10 @@ paths:
               schema: { $ref: '#/components/schemas/BolsaHemocomponente' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '422':
@@ -1716,15 +1742,26 @@ components:
         bancoOrigemId: { type: string }
       required: [tipoComponente, tipoSanguineo, dataColeta, dataValidade, loteSintetico, volumeMl, temperaturaCelsius, bancoOrigemId]
 
-    AtualizarStatusBolsaRequest:
+    AtualizarBolsaRequest:
       type: object
+      description: >
+        Ou `status` (com `motivoDescarte` ao descartar), ou um ou mais campos de
+        correção. Campos de correção ausentes mantêm o valor atual.
       properties:
         status: { $ref: '#/components/schemas/StatusBolsa' }
         motivoDescarte:
           type: string
           maxLength: 500
           description: Obrigatório quando status for DESCARTADA.
-      required: [status]
+        tipoSanguineo:
+          allOf: [{ $ref: '#/components/schemas/TipoSanguineo' }]
+          description: Correção. Só o admin pode mudar.
+        dataColeta: { type: string, format: date, description: Correção. }
+        dataValidade: { type: string, format: date, description: Correção. }
+        loteSintetico: { type: string, description: Correção. Não pode ficar em branco. }
+        volumeMl: { type: number, description: Correção. }
+        temperaturaCelsius: { type: number, description: Correção. }
+        localizacao: { type: string, description: Correção. Em branco limpa o campo. }
 
     Estoque:
       type: object

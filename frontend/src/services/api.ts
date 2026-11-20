@@ -25,6 +25,7 @@ import type {
   EstoqueDTO,
   ResumoPerdasDTO,
   BolsaHemocomponenteDTO,
+  CorrecaoBolsaHemocomponenteDTO,
   FiltrosHemocomponentesDTO,
   NovaBolsaHemocomponenteDTO,
   PontoRedeDTO,
@@ -86,6 +87,16 @@ export async function buscarResumoPerdas(bancoId: string): Promise<ResumoPerdasD
   return clienteHttp.get<ResumoPerdasDTO>(`/bancos/${encodeURIComponent(bancoId)}/estoque/perdas`, {
     silencioso: true,
   });
+}
+
+/**
+ * Corrige dados de uma bolsa ainda disponível (só os campos enviados mudam). Exige médico ou admin
+ * (header X-Usuario-Id, mandado pelo clienteHttp); o tipo sanguíneo, só o admin. Silenciosa: o modal
+ * mostra o erro da API dentro dele.
+ */
+export async function corrigirHemocomponente(id: string, dados: CorrecaoBolsaHemocomponenteDTO): Promise<BolsaHemocomponenteDTO>
+{
+  return clienteHttp.patch<BolsaHemocomponenteDTO>(`/hemocomponentes/${encodeURIComponent(id)}`, dados, { silencioso: true });
 }
 
 /** Descarta uma bolsa com justificativa obrigatória e devolve seus dados atualizados. */

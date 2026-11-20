@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, Thermometer, Trash2, X } from "lucide-react";
+import { MapPin, Pencil, Thermometer, Trash2, X } from "lucide-react";
 import type { LoteHemocomponente } from "@/types";
 import { cn } from "@/lib/utilitarios";
 import {
@@ -30,9 +30,11 @@ function Campo({ rotulo, children }: Readonly<{ rotulo: string; children: React.
   );
 }
 
-export function CartaoLote({ lote, onDescarte }: Readonly<{
+export function CartaoLote({ lote, onDescarte, onEditar }: Readonly<{
   lote: LoteHemocomponente;
   onDescarte: (id: string, motivo: string) => Promise<void>;
+  /** Abre a correção dos dados (só para bolsa disponível). */
+  onEditar?: (id: string) => void;
 }>)
 {
   const status = statusLote(lote);
@@ -134,18 +136,30 @@ export function CartaoLote({ lote, onDescarte }: Readonly<{
       </div>
 
       {lote.statusBolsa === "DISPONIVEL" && (
-        <button
-          type="button"
-          onClick={() =>
-          {
-            setErroDescarte(null);
-            setModalAberto(true);
-          }}
-          className="mt-4 inline-flex items-center justify-center gap-2 self-end rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-50"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          Descartar bolsa
-        </button>
+        <div className="mt-4 flex flex-wrap justify-end gap-2">
+          {onEditar && (
+            <button
+              type="button"
+              onClick={() => onEditar(lote.id)}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-rota-border px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Editar dados
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() =>
+            {
+              setErroDescarte(null);
+              setModalAberto(true);
+            }}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-50"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Descartar bolsa
+          </button>
+        </div>
       )}
 
       {modalAberto && (
