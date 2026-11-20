@@ -175,50 +175,9 @@ public class EstoqueService
         }
 
         // Daqui em diante todos os campos estão preenchidos; faltam as regras do estoque.
-        if (dados.dataColeta().isAfter(hoje))
-        {
-            problemas.add("A data de coleta (" + DATA.format(dados.dataColeta())
-                    + ") não pode ser depois de hoje (" + DATA.format(hoje) + ").");
-        }
-        if (dados.dataValidade().isBefore(dados.dataColeta()))
-        {
-            problemas.add("A data de validade (" + DATA.format(dados.dataValidade())
-                    + ") não pode ser anterior à data de coleta (" + DATA.format(dados.dataColeta()) + ").");
-        }
-        else
-        {
-            long diasDeValidade = ChronoUnit.DAYS.between(dados.dataColeta(), dados.dataValidade());
-            TipoComponente componente = dados.tipoComponente();
+        conferirRegras(problemas, dados.tipoComponente(), dados.dataColeta(), dados.dataValidade(), dados.volumeMl(),
+                dados.temperaturaCelsius(), dados.loteSintetico().strip(), null, true, hoje);
 
-            if (diasDeValidade == 0)
-            {
-                problemas.add("A data de validade (" + DATA.format(dados.dataValidade())
-                        + ") precisa ser depois da data de coleta.");
-            }
-            else if (diasDeValidade > componente.getPrazoMaximoDias())
-            {
-                problemas.add("A validade de " + componente + " é de no máximo " + componente.getPrazoMaximoDias()
-                        + " dias depois da coleta, e foram informados " + diasDeValidade + " dias.");
-            }
-            if (dados.dataValidade().isBefore(hoje))
-            {
-                problemas.add("A bolsa venceu em " + DATA.format(dados.dataValidade()) + " e não pode entrar no estoque.");
-            }
-        }
-        if (dados.volumeMl() > VOLUME_MAXIMO_ML)
-        {
-            problemas.add("O volume (" + dados.volumeMl() + " ml) passa do máximo de " + VOLUME_MAXIMO_ML + " ml por bolsa.");
-        }
-        if (dados.temperaturaCelsius() < TEMPERATURA_MINIMA_SENSOR || dados.temperaturaCelsius() > TEMPERATURA_MAXIMA_SENSOR)
-        {
-            problemas.add("A temperatura (" + dados.temperaturaCelsius() + " °C) está fora do que o sensor mede ("
-                    + TEMPERATURA_MINIMA_SENSOR + " °C a " + TEMPERATURA_MAXIMA_SENSOR + " °C).");
-        }
-        if (bolsas.existsByLoteSinteticoAndTipoComponente(dados.loteSintetico().strip(), dados.tipoComponente()))
-        {
-            problemas.add("Já existe uma bolsa de " + dados.tipoComponente() + " do lote " + dados.loteSintetico().strip()
-                    + ": cada doação gera no máximo uma bolsa de cada componente.");
-        }
         if (bancos.findById(dados.bancoOrigemId()).isEmpty())
         {
             problemas.add("Nenhum banco de sangue encontrado com id " + dados.bancoOrigemId() + ".");
@@ -227,6 +186,87 @@ public class EstoqueService
         if (!problemas.isEmpty())
         {
             throw new RegraDeNegocioException(String.join(" ", problemas));
+        }
+    }
+
+    /**
+     * Confere os dados de uma bolsa já cadastrada depois de uma correção, com as mesmas regras do cadastro:
+     * prazo de validade do componente, volume, faixa do sensor e lote único. O vencimento só é conferido
+     * quando a validade foi corrigida: corrigir a localização de uma bolsa já vencida não esbarra nele.
+     * Quebra de regra lança RegraDeNegocioException (422) com todos os problemas de uma vez.
+     */
+    public void validarCorrecao(BolsaHemocomponente bolsa, LocalDate dataColeta, LocalDate dataValidade,
+            String loteSintetico, double volumeMl, double temperaturaCelsius, LocalDate hoje)
+    {
+        List<String> problemas = new ArrayList<>();
+        boolean validadeCorrigida = !dataValidade.equals(bolsa.getDataValidade());
+
+        conferirRegras(problemas, bolsa.getTipoComponente(), dataColeta, dataValidade, volumeMl, temperaturaCelsius,
+                loteSintetico, bolsa.getId(), validadeCorrigida, hoje);
+
+        if (!problemas.isEmpty())
+        {
+            throw new RegraDeNegocioException(String.join(" ", problemas));
+        }
+    }
+
+    /**
+     * Regras do estoque comuns ao cadastro e à correção. Cada regra quebrada vira uma frase em problemas.
+     * idDaPropriaBolsa: na correção, a própria bolsa não conta como lote repetido (no cadastro, null).
+     */
+    private void conferirRegras(List<String> problemas, TipoComponente componente, LocalDate dataColeta,
+            LocalDate dataValidade, double volumeMl, double temperaturaCelsius, String loteSintetico,
+            String idDaPropriaBolsa, boolean conferirVencimento, LocalDate hoje)
+    {
+        if (dataColeta.isAfter(hoje))
+        {
+            problemas.add("A data de coleta (" + DATA.format(dataColeta)
+                    + ") não pode ser depois de hoje (" + DATA.format(hoje) + ").");
+        }
+        if (dataValidade.isBefore(dataColeta))
+        {
+            problemas.add("A data de validade (" + DATA.format(dataValidade)
+                    + ") não pode ser anterior à data de coleta (" + DATA.format(dataColeta) + ").");
+        }
+        else
+        {
+            long diasDeValidade = ChronoUnit.DAYS.between(dataColeta, dataValidade);
+
+            if (diasDeValidade == 0)
+            {
+                problemas.add("A data de validade (" + DATA.format(dataValidade)
+                        + ") precisa ser depois da data de coleta.");
+            }
+            else if (diasDeValidade > componente.getPrazoMaximoDias())
+            {
+                problemas.add("A validade de " + componente + " é de no máximo " + componente.getPrazoMaximoDias()
+                        + " dias depois da coleta, e foram informados " + diasDeValidade + " dias.");
+            }
+            if (conferirVencimento && dataValidade.isBefore(hoje))
+            {
+                problemas.add(idDaPropriaBolsa == null
+                        ? "A bolsa venceu em " + DATA.format(dataValidade) + " e não pode entrar no estoque."
+                        : "A nova validade (" + DATA.format(dataValidade) + ") já passou.");
+            }
+        }
+        if (volumeMl > VOLUME_MAXIMO_ML)
+        {
+            problemas.add("O volume (" + volumeMl + " ml) passa do máximo de " + VOLUME_MAXIMO_ML + " ml por bolsa.");
+        }
+        if (temperaturaCelsius < TEMPERATURA_MINIMA_SENSOR || temperaturaCelsius > TEMPERATURA_MAXIMA_SENSOR)
+        {
+            problemas.add("A temperatura (" + temperaturaCelsius + " °C) está fora do que o sensor mede ("
+                    + TEMPERATURA_MINIMA_SENSOR + " °C a " + TEMPERATURA_MAXIMA_SENSOR + " °C).");
+        }
+
+        boolean loteRepetido = idDaPropriaBolsa == null
+                ? bolsas.existsByLoteSinteticoAndTipoComponente(loteSintetico, componente)
+                : bolsas.existsByLoteSinteticoAndTipoComponenteAndIdNot(loteSintetico, componente, idDaPropriaBolsa);
+
+        if (loteRepetido)
+        {
+            problemas.add("Já existe uma bolsa de " + componente + " do lote " + loteSintetico
+                    + ": cada doação gera no máximo uma bolsa de cada componente.");
         }
     }
 

@@ -1,33 +1,57 @@
 package com.rotavital.api;
 
+import java.util.UUID;
+
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.rotavital.api.dto.estoque.AtualizarStatusBolsaRequest;
+import com.rotavital.api.dto.estoque.AtualizarBolsaRequest;
 import com.rotavital.api.dto.estoque.BolsaHemocomponenteDTO;
+import com.rotavital.dominio.BolsaHemocomponente;
+import com.rotavital.servico.CorrecaoDeBolsaService;
+import com.rotavital.servico.DadosInvalidosException;
 import com.rotavital.servico.MovimentacaoDeBolsaService;
 
 // HU-08 — baixa da bolsa ao concluir o procedimento (e as demais movimentações de status).
+// HU-03 — correção dos dados de uma bolsa disponível, no mesmo PATCH (uma coisa de cada vez).
 @RestController
 @RequestMapping("/api/v1")
 public class MovimentacaoDeBolsaController
 {
     private final MovimentacaoDeBolsaService movimentacaoDeBolsaService;
+    private final CorrecaoDeBolsaService correcaoDeBolsaService;
 
-    public MovimentacaoDeBolsaController(MovimentacaoDeBolsaService movimentacaoDeBolsaService)
+    public MovimentacaoDeBolsaController(MovimentacaoDeBolsaService movimentacaoDeBolsaService,
+            CorrecaoDeBolsaService correcaoDeBolsaService)
     {
         this.movimentacaoDeBolsaService = movimentacaoDeBolsaService;
+        this.correcaoDeBolsaService = correcaoDeBolsaService;
     }
 
-    // Contrato: PATCH /hemocomponentes/{id} com {"status": "UTILIZADA"} (docs/openapi.yaml).
+    // Contrato (docs/openapi.yaml): {"status": "UTILIZADA"} muda o status; {"volumeMl": 430, ...} corrige
+    // os dados. A correção exige o header X-Usuario-Id (médico ou admin; tipo sanguíneo só admin).
     @PatchMapping("/hemocomponentes/{id}")
-    public BolsaHemocomponenteDTO alterarStatus(@PathVariable("id") String id,
-    @RequestBody AtualizarStatusBolsaRequest dados)
+    public BolsaHemocomponenteDTO atualizar(@PathVariable("id") String id,
+            @RequestHeader(name = CampanhaController.HEADER_USUARIO, required = false) UUID usuarioId,
+            @RequestBody AtualizarBolsaRequest dados)
     {
-        return BolsaHemocomponenteDTO.de(
-                movimentacaoDeBolsaService.alterarStatus(id, dados.status(), dados.motivoDescarte()));
+        if (dados.temCorrecao() && dados.status() != null)
+        {
+            throw new DadosInvalidosException("Mude o status ou corrija os dados da bolsa, uma coisa de cada vez.");
+        }
+        if (!dados.temCorrecao() && dados.status() == null)
+        {
+            throw new DadosInvalidosException("Envie o novo status ou ao menos um campo para corrigir.");
+        }
+
+        BolsaHemocomponente bolsa = dados.temCorrecao()
+                ? correcaoDeBolsaService.corrigir(usuarioId, id, dados)
+                : movimentacaoDeBolsaService.alterarStatus(id, dados.status(), dados.motivoDescarte());
+
+        return BolsaHemocomponenteDTO.de(bolsa);
     }
 }

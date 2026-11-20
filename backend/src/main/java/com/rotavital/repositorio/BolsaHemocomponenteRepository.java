@@ -18,6 +18,9 @@ public interface BolsaHemocomponenteRepository extends JpaRepository<BolsaHemoco
     // Uma doação gera no máximo uma bolsa de cada componente (constraint uq_bolsa_lote_componente).
     boolean existsByLoteSinteticoAndTipoComponente(String loteSintetico, TipoComponente tipoComponente);
 
+    // Na correção de uma bolsa, o lote só é repetido se outra bolsa (id diferente) já o usar.
+    boolean existsByLoteSinteticoAndTipoComponenteAndIdNot(String loteSintetico, TipoComponente tipoComponente, String id);
+
     // Ids que começam com a sigla do componente (ex.: "CH" → CH-1042, CH-1043…), para gerar o próximo.
     @Query("select b.id from BolsaHemocomponente b where b.id like concat(:sigla, '-%')")
     List<String> buscarIdsComSigla(@Param("sigla") String sigla);

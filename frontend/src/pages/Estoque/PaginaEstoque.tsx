@@ -23,9 +23,11 @@ import { SeletorFiltro } from "@/components/estoque/SeletorFiltro";
 import { PaginacaoEstoque } from "@/components/estoque/PaginacaoEstoque";
 import { CartaoLote } from "@/components/estoque/CartaoLote";
 import { ModalNovaBolsa } from "@/components/estoque/ModalNovaBolsa";
+import { ModalEditarBolsa } from "@/components/estoque/ModalEditarBolsa";
 import { PainelPerdas } from "@/components/estoque/PainelPerdas";
 import { PontoStatus } from "@/components/ui/PontoStatus";
 import { useNotificacao } from "@/context/ContextoNotificacao";
+import { useAutenticacao } from "@/context/ContextoAutenticacao";
 
 const BANCO_ID = "BS-01";
 
@@ -45,10 +47,14 @@ interface GrupoEstoque
  * rodam no backend; a página mostra as bolsas que vieram, agrupadas por tipo sanguíneo e na ordem
  * FEFO da API. Se a consulta falhar, a tela mostra o erro: não troca por dados de exemplo.
  * "Nova bolsa" abre o cadastro (PI3-179), que grava por POST /api/v1/hemocomponentes.
+ * "Editar dados" corrige uma bolsa ainda disponível, por PATCH /api/v1/hemocomponentes/{id}.
  */
 export default function PaginaEstoque()
 {
   const [lotes, setLotes] = useState<LoteHemocomponente[]>([]);
+  // As bolsas como a API mandou: a edição precisa de campos que o cartão não guarda (coleta, lote...).
+  const [bolsas, setBolsas] = useState<BolsaHemocomponenteDTO[]>([]);
+  const [bolsaEmEdicao, setBolsaEmEdicao] = useState<BolsaHemocomponenteDTO | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [filtroTipo, setFiltroTipo] = useState<TipoSanguineo | "todos">("todos");
@@ -63,6 +69,7 @@ export default function PaginaEstoque()
   const ultimaConsulta = useRef(0);
   const [cadastroAberto, setCadastroAberto] = useState(false);
   const { notificarSucesso } = useNotificacao();
+  const { usuario } = useAutenticacao();
 
   useEffect(() =>
   {
@@ -80,12 +87,14 @@ export default function PaginaEstoque()
       .then((bolsas) =>
       {
         if (consulta !== ultimaConsulta.current) return;
+        setBolsas(bolsas);
         setLotes(bolsas.map(converterBolsaParaLote));
         setErro(null);
       })
       .catch((falha: unknown) =>
       {
         if (consulta !== ultimaConsulta.current) return;
+        setBolsas([]);
         setLotes([]);
         setErro(falha instanceof Error && falha.message ? falha.message : "Não foi possível conectar com o back-end");
       })
@@ -152,6 +161,18 @@ export default function PaginaEstoque()
   {
     await descartarHemocomponente(id, motivo);
     notificarSucesso("Bolsa descartada", `${id} · justificativa registrada`);
+    setRecarga((valor) => valor + 1);
+  }
+
+  function aoAbrirEdicao(id: string)
+  {
+    setBolsaEmEdicao(bolsas.find((bolsa) => bolsa.id === id) ?? null);
+  }
+
+  function aoCorrigirBolsa(bolsa: BolsaHemocomponenteDTO)
+  {
+    setBolsaEmEdicao(null);
+    notificarSucesso("Bolsa corrigida", `${bolsa.id} · dados atualizados`);
     setRecarga((valor) => valor + 1);
   }
 
@@ -276,7 +297,7 @@ export default function PaginaEstoque()
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {grupo.lotes.map((lote) => (
-                  <CartaoLote key={lote.id} lote={lote} onDescarte={aoDescartarBolsa} />
+                  <CartaoLote key={lote.id} lote={lote} onDescarte={aoDescartarBolsa} onEditar={aoAbrirEdicao} />
                 ))}
               </div>
             </section>
@@ -293,6 +314,15 @@ export default function PaginaEstoque()
           bancoId={BANCO_ID}
           onClose={() => setCadastroAberto(false)}
           onCadastrada={aoCadastrarBolsa}
+        />
+      )}
+
+      {bolsaEmEdicao && (
+        <ModalEditarBolsa
+          bolsa={bolsaEmEdicao}
+          podeCorrigirTipoSanguineo={usuario?.papel === "admin"}
+          onClose={() => setBolsaEmEdicao(null)}
+          onCorrigida={aoCorrigirBolsa}
         />
       )}
     </div>

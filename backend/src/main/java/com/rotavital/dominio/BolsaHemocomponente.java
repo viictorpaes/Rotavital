@@ -153,6 +153,38 @@ public class BolsaHemocomponente implements Persistable<String>
     }
 
     /**
+     * Confere se os dados de cadastro ainda podem ser corrigidos: só enquanto a bolsa está DISPONIVEL.
+     * Depois de reservada, enviada, usada ou descartada, alguém já decidiu com base nesses dados.
+     */
+    public void conferirSePodeSerCorrigida()
+    {
+        if (!estaDisponivel())
+        {
+            throw new EdicaoNaoPermitidaException("A bolsa " + id + " está " + status
+                    + " e não pode mais ter os dados corrigidos: só bolsas disponíveis podem ser editadas.");
+        }
+    }
+
+    /**
+     * Corrige dados digitados errado no cadastro. Componente, banco de origem e código não mudam:
+     * o código nasce do componente (PQ-3012 é plaqueta). As regras de validade, volume e lote são as
+     * mesmas do cadastro e ficam no EstoqueService; aqui fica a regra de quando a bolsa pode mudar.
+     */
+    public void corrigirCadastro(TipoSanguineo tipoSanguineo, LocalDate dataColeta, LocalDate dataValidade,
+            String loteSintetico, double volumeMl, double temperaturaCelsius, String localizacao)
+    {
+        conferirSePodeSerCorrigida();
+
+        this.tipoSanguineo = tipoSanguineo;
+        this.dataColeta = dataColeta;
+        this.dataValidade = dataValidade;
+        this.loteSintetico = loteSintetico;
+        this.volumeMl = volumeMl;
+        this.temperaturaCelsius = temperaturaCelsius;
+        this.localizacao = localizacao;
+    }
+
+    /**
      * Confere se a bolsa pode sair para outro hospital: precisa estar disponível, na validade e com
      * a cadeia fria intacta. Se não puder, lança MovimentacaoInvalidaException dizendo o motivo.
      */

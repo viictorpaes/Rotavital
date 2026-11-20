@@ -63,7 +63,7 @@ flowchart LR
 | Módulo | Subtask | Recursos | Espelha no domínio | Implementado? |
 |---|---|---|---|:---:|
 | 🔑 Acesso | HU-01 | `/acessos` | `Usuario` (senha conferida pelo Supabase Auth) | ✅ |
-| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (inclui `GET /bancos/{bancoId}/estoque/perdas` e descarte via `PATCH /hemocomponentes/{id}`) |
+| 📦 Estoque e Hemocomponentes | PI3-46 | `/bancos/{bancoId}/estoque`, `/hemocomponentes` | `Estoque`, `BolsaHemocomponente` | ⚠️ parcial (inclui `GET /bancos/{bancoId}/estoque/perdas` e descarte e correção de dados via `PATCH /hemocomponentes/{id}`) |
 | 🏥 Requisições e Alocação | PI3-47 | `/requisicoes` | `Hospital`, `RequisicaoHospitalar` | ❌ sem controller |
 | 🚚 Roteirização e Logística | PI3-48 | `/pontos`, `/conexoes`, `/rotas` | `PontoDeRede`, `RedeDistribuicao`, `Conexao`, `RotaCalculada` | ✅ |
 | 🌡️ Telemetria e Cadeia Fria | PI3-49 | `/entregas/{id}/leituras` | *(gap — sem classe de domínio)* | ❌ sem controller |
@@ -175,7 +175,7 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | `GET` | `/api/v1/hemocomponentes?bancoId=&tipoComponente=&tipoSanguineo=&status=&page=0&size=20` | ✅ Lista bolsas com filtros e paginação, da que vence primeiro para a última (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente[]` | `200` · `400` |
 | `POST` | `/api/v1/hemocomponentes` | ✅ Cadastra uma bolsa (status inicial `DISPONIVEL`; por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `201` · `400` · `422` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | ✅ Detalhe de uma bolsa (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` |
-| `PATCH` | `/api/v1/hemocomponentes/{id}` | ✅ Transição de status; `DESCARTADA` exige `motivoDescarte` | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `400` · `404` · `422` |
+| `PATCH` | `/api/v1/hemocomponentes/{id}` | ✅ Transição de status (`DESCARTADA` exige `motivoDescarte`) **ou** correção dos dados de uma bolsa `DISPONIVEL`, nunca os dois juntos | Status: nenhuma no MVP. Correção: médico ou admin (`X-Usuario-Id`); tipo sanguíneo só admin | `BolsaHemocomponente` | `200` · `400` · `401` · `403` · `404` · `422` |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | 🕓 Remove um cadastro feito por engano | Nenhuma no MVP (alvo: médico) | *(sem corpo)* | `204` · `404` |
 | **🏥 Requisições** | *`RequisicaoController` (planejado)* | | | | |
 | `POST` | `/api/v1/requisicoes` | 🕓 Registra o pedido de um hospital (status `PENDENTE`) | Nenhuma no MVP (alvo: médico) | `RequisicaoHospitalar` | `201` · `400` |
@@ -407,7 +407,7 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 | `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `BolsaHemocomponenteRepository.buscarComFiltros(...)` |
 | `POST` | `/api/v1/hemocomponentes` | Cadastra uma nova bolsa (status inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | Detalhe de uma bolsa | — |
-| `PATCH` | `/api/v1/hemocomponentes/{id}` | Transição de status; descarte exige justificativa (até 500 caracteres) | `MovimentacaoDeBolsaService.alterarStatus(...)` |
+| `PATCH` | `/api/v1/hemocomponentes/{id}` | Transição de status (descarte exige justificativa de até 500 caracteres) ou correção de tipo sanguíneo, coleta, validade, lote, volume, temperatura e localização de uma bolsa `DISPONIVEL`, com as mesmas regras do cadastro; componente e banco não mudam | `MovimentacaoDeBolsaService.alterarStatus(...)` · `CorrecaoDeBolsaService.corrigir(...)` → `BolsaHemocomponente.corrigirCadastro(...)` |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | Remove o cadastro (erro de lançamento) | — |
 
 **Schema `BolsaHemocomponente`**:
@@ -455,7 +455,7 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 **DTOs Java equivalentes** (`backend/src/main/java/com/rotavital/api/dto/estoque/`):
 [`BolsaHemocomponenteDTO`](../backend/src/main/java/com/rotavital/api/dto/estoque/BolsaHemocomponenteDTO.java) ·
 [`NovaBolsaHemocomponenteRequest`](../backend/src/main/java/com/rotavital/api/dto/estoque/NovaBolsaHemocomponenteRequest.java) ·
-[`AtualizarStatusBolsaRequest`](../backend/src/main/java/com/rotavital/api/dto/estoque/AtualizarStatusBolsaRequest.java) ·
+[`AtualizarBolsaRequest`](../backend/src/main/java/com/rotavital/api/dto/estoque/AtualizarBolsaRequest.java) ·
 [`EstoqueDTO`](../backend/src/main/java/com/rotavital/api/dto/estoque/EstoqueDTO.java).
 
 <h2 align="left" id="5-requisicoes">🏥 5. Módulo de Requisições Hospitalares e Alocação (PI3-47)</h2>
