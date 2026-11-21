@@ -77,6 +77,12 @@ public class TransferenciaIT
                 new HttpEntity<>(Map.of("status", status)), JsonNode.class, bolsaId);
     }
 
+    private ResponseEntity<JsonNode> descartar(String bolsaId, String motivo)
+    {
+        return api.exchange("/api/v1/hemocomponentes/{id}", HttpMethod.PATCH,
+                new HttpEntity<>(Map.of("status", "DESCARTADA", "motivoDescarte", motivo)), JsonNode.class, bolsaId);
+    }
+
     private String coluna(String nome, String bolsaId)
     {
         return jdbc.queryForObject("select " + nome + " from public.bolsa_hemocomponente where id = ?", String.class, bolsaId);
@@ -146,7 +152,7 @@ public class TransferenciaIT
     {
         String id = despachar("CH-1", "hc-pe").getBody().get("id").asText();
 
-        Assertions.assertEquals(200, patch("CH-1", "DESCARTADA").getStatusCode().value());
+        Assertions.assertEquals(200, descartar("CH-1", "Bolsa rompida no transporte").getStatusCode().value());
 
         Assertions.assertEquals("CANCELADA", statusDaTransferencia(id));
         Assertions.assertEquals(422, receber(id).getStatusCode().value());

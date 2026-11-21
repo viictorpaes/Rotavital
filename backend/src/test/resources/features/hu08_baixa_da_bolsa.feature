@@ -25,5 +25,5 @@ Funcionalidade: HU-08 — Baixa da bolsa usada no procedimento
   Cenário: Bolsa vencida só pode ser descartada
     Quando registro a bolsa "CH-1090" como "reservada"
     Então a movimentação é recusada com a mensagem "A bolsa CH-1090 venceu em 30/09/2026 e só pode ser descartada."
-    Quando registro a bolsa "CH-1090" como "descartada"
+    Quando descarto a bolsa "CH-1090" pelo motivo "Vencida no estoque"
     Então a bolsa "CH-1090" fica "descartada" no estoque
