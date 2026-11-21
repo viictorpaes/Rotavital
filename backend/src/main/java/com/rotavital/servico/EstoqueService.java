@@ -98,6 +98,17 @@ public class EstoqueService
     public List<BolsaHemocomponente> listarBolsas(String bancoId, TipoComponente tipoComponente,
             TipoSanguineo tipoSanguineo, StatusBolsa status, int pagina, int tamanho)
     {
+        return listarBolsas(bancoId, tipoComponente, tipoSanguineo, status, false, pagina, tamanho);
+    }
+
+    /**
+     * Com apenasAtivas (PI3-243) e sem status escolhido, deixa de fora as bolsas que já saíram do
+     * estoque (DESCARTADA e UTILIZADA). Com um status escolhido, vale o status.
+     */
+    @Transactional(readOnly = true)
+    public List<BolsaHemocomponente> listarBolsas(String bancoId, TipoComponente tipoComponente,
+            TipoSanguineo tipoSanguineo, StatusBolsa status, boolean apenasAtivas, int pagina, int tamanho)
+    {
         List<String> problemas = new ArrayList<>();
 
         if (pagina < 0)
@@ -122,6 +133,10 @@ public class EstoqueService
 
         String banco = bancoId == null || bancoId.isBlank() ? null : bancoId;
 
+        if (apenasAtivas && status == null)
+        {
+            return bolsas.buscarAtivasComFiltros(banco, tipoComponente, tipoSanguineo, PageRequest.of(pagina, tamanho));
+        }
         return bolsas.buscarComFiltros(banco, tipoComponente, tipoSanguineo, status, PageRequest.of(pagina, tamanho));
     }
 

@@ -59,9 +59,10 @@ public class EstoqueController
     }
 
     @GetMapping("/bancos/{bancoId}/estoque/perdas")
-    public ResponseEntity<?> resumirPerdas(@PathVariable("bancoId") String bancoId)
+    public ResponseEntity<?> resumirPerdas(@PathVariable("bancoId") String bancoId,
+    @RequestParam(name = "dias", required = false) Integer dias)
     {
-        Optional<ResumoPerdasDTO> resumo = resumoPerdasService.resumir(bancoId);
+        Optional<ResumoPerdasDTO> resumo = resumoPerdasService.resumir(bancoId, dias);
 
         if (resumo.isEmpty())
         {
@@ -103,12 +104,13 @@ public class EstoqueController
     @RequestParam(name = "tipoComponente", required = false) TipoComponente tipoComponente,
     @RequestParam(name = "tipoSanguineo", required = false) TipoSanguineo tipoSanguineo,
     @RequestParam(name = "status", required = false) StatusBolsa status,
+    @RequestParam(name = "apenasAtivas", defaultValue = "false") boolean apenasAtivas,
     @RequestParam(name = "page", defaultValue = "0") int page,
     @RequestParam(name = "size", defaultValue = "20") int size)
     {
         List<BolsaHemocomponenteDTO> bolsasDTO = new ArrayList<>();
 
-        for (BolsaHemocomponente bolsa : estoqueService.listarBolsas(bancoId, tipoComponente, tipoSanguineo, status, page, size))
+        for (BolsaHemocomponente bolsa : estoqueService.listarBolsas(bancoId, tipoComponente, tipoSanguineo, status, apenasAtivas, page, size))
         {
             bolsasDTO.add(BolsaHemocomponenteDTO.de(bolsa));
         }

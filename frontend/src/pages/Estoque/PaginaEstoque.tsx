@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle2, Database, Plus, RefreshCw } from "lucide-rea
 import type { LoteHemocomponente, TipoSanguineo } from "@/types";
 import type {
   BolsaHemocomponenteDTO,
+  CategoriaDescarteBackend,
   ResumoPerdasDTO,
   StatusBolsaBackend,
   TipoComponenteBackend,
@@ -15,6 +16,7 @@ import {
   converterTipoSanguineo,
   formatarData,
   paraTipoSanguineoBackend,
+  rotuloCategoriaDescarte,
   statusGrupo,
 } from "@/lib/estoque";
 import { buscarResumoPerdas, descartarHemocomponente, listarHemocomponentes } from "@/services/api";
@@ -24,6 +26,7 @@ import { PaginacaoEstoque } from "@/components/estoque/PaginacaoEstoque";
 import { CartaoLote } from "@/components/estoque/CartaoLote";
 import { ModalNovaBolsa } from "@/components/estoque/ModalNovaBolsa";
 import { ModalEditarBolsa } from "@/components/estoque/ModalEditarBolsa";
+import { ModalDetalhesBolsa } from "@/components/estoque/ModalDetalhesBolsa";
 import { PainelPerdas } from "@/components/estoque/PainelPerdas";
 import { PontoStatus } from "@/components/ui/PontoStatus";
 import { useNotificacao } from "@/context/ContextoNotificacao";
@@ -31,6 +34,15 @@ import { useAutenticacao } from "@/context/ContextoAutenticacao";
 
 const BANCO_ID = "BS-01";
 
+
+/** Filtro de status: "ativas" (padrão) esconde as bolsas que já saíram do estoque (PI3-243). */
+type FiltroStatus = StatusBolsaBackend | "ativas";
+
+const OPCOES_STATUS: Array<{ valor: FiltroStatus; rotulo: string }> =
+[
+  { valor: "ativas", rotulo: "Ativas (sem descartadas e utilizadas)" },
+  ...STATUS_FILTRO,
+];
 
 /** Bolsas por página: 100 enche dez linhas da grade de três colunas. */
 const TAMANHO_PAGINA = 100;
@@ -48,6 +60,8 @@ interface GrupoEstoque
  * FEFO da API. Se a consulta falhar, a tela mostra o erro: não troca por dados de exemplo.
  * "Nova bolsa" abre o cadastro (PI3-179), que grava por POST /api/v1/hemocomponentes.
  * "Editar dados" corrige uma bolsa ainda disponível, por PATCH /api/v1/hemocomponentes/{id}.
+ * PI3-243: a lista começa só com as bolsas ativas; "Ver detalhes" abre qualquer bolsa em modo
+ * consulta, e "Descartar bolsa" (motivo padronizado) só aparece para o admin.
  */
 export default function PaginaEstoque()
 {
@@ -55,16 +69,18 @@ export default function PaginaEstoque()
   // As bolsas como a API mandou: a edição precisa de campos que o cartão não guarda (coleta, lote...).
   const [bolsas, setBolsas] = useState<BolsaHemocomponenteDTO[]>([]);
   const [bolsaEmEdicao, setBolsaEmEdicao] = useState<BolsaHemocomponenteDTO | null>(null);
+  const [bolsaEmDetalhe, setBolsaEmDetalhe] = useState<BolsaHemocomponenteDTO | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [filtroTipo, setFiltroTipo] = useState<TipoSanguineo | "todos">("todos");
   const [filtroComponente, setFiltroComponente] = useState<TipoComponenteBackend | "todos">("todos");
-  const [filtroStatus, setFiltroStatus] = useState<StatusBolsaBackend | "todos">("todos");
+  const [filtroStatus, setFiltroStatus] = useState<FiltroStatus | "todos">("ativas");
   const [pagina, setPagina] = useState(0);
   const [recarga, setRecarga] = useState(0);
   const [resumoPerdas, setResumoPerdas] = useState<ResumoPerdasDTO | null>(null);
   const [carregandoPerdas, setCarregandoPerdas] = useState(true);
   const [erroPerdas, setErroPerdas] = useState<string | null>(null);
+  const [periodoPerdas, setPeriodoPerdas] = useState<number | null>(30);
   // Só a resposta da consulta mais recente atualiza a tela (filtros trocados rápido não embaralham a lista).
   const ultimaConsulta = useRef(0);
   const [cadastroAberto, setCadastroAberto] = useState(false);
@@ -80,7 +96,8 @@ export default function PaginaEstoque()
       bancoId: BANCO_ID,
       tipoSanguineo: filtroTipo === "todos" ? undefined : paraTipoSanguineoBackend(filtroTipo),
       tipoComponente: filtroComponente === "todos" ? undefined : filtroComponente,
-      status: filtroStatus === "todos" ? undefined : filtroStatus,
+      status: filtroStatus === "todos" || filtroStatus === "ativas" ? undefined : filtroStatus,
+      apenasAtivas: filtroStatus === "ativas" ? true : undefined,
       page: pagina,
       size: TAMANHO_PAGINA,
     })
@@ -109,7 +126,7 @@ export default function PaginaEstoque()
     let ativa = true;
     setCarregandoPerdas(true);
 
-    buscarResumoPerdas(BANCO_ID)
+    buscarResumoPerdas(BANCO_ID, periodoPerdas ?? undefined)
       .then((resumo) =>
       {
         if (!ativa) return;
@@ -131,7 +148,7 @@ export default function PaginaEstoque()
     {
       ativa = false;
     };
-  }, [recarga]);
+  }, [recarga, periodoPerdas]);
 
   // Trocar um filtro volta para a primeira página, para não abrir uma página que não existe mais.
   function aoMudarFiltro<T>(definir: (valor: T) => void)
@@ -152,16 +169,21 @@ export default function PaginaEstoque()
     notificarSucesso("Bolsa registrada", `${bolsa.id} · ${tipo} · validade ${formatarData(bolsa.dataValidade)}`);
     setFiltroTipo(tipo);
     setFiltroComponente(bolsa.tipoComponente as TipoComponenteBackend);
-    setFiltroStatus("todos");
+    setFiltroStatus("ativas");
     setPagina(0);
     setRecarga((valor) => valor + 1);
   }
 
-  async function aoDescartarBolsa(id: string, motivo: string)
+  async function aoDescartarBolsa(id: string, categoria: CategoriaDescarteBackend, observacao: string)
   {
-    await descartarHemocomponente(id, motivo);
-    notificarSucesso("Bolsa descartada", `${id} · justificativa registrada`);
+    await descartarHemocomponente(id, categoria, observacao);
+    notificarSucesso("Bolsa descartada", `${id} · ${rotuloCategoriaDescarte(categoria)}`);
     setRecarga((valor) => valor + 1);
+  }
+
+  function aoAbrirDetalhes(id: string)
+  {
+    setBolsaEmDetalhe(bolsas.find((bolsa) => bolsa.id === id) ?? null);
   }
 
   function aoAbrirEdicao(id: string)
@@ -193,6 +215,8 @@ export default function PaginaEstoque()
 
   const temProxima = lotes.length === TAMANHO_PAGINA;
   const primeiraCarga = carregando && lotes.length === 0 && !erro;
+  // PI3-243: só o admin confirma descartes; o médico vê os detalhes, mas não descarta.
+  const podeDescartar = usuario?.papel === "admin";
 
   return (
     <div className="space-y-6">
@@ -250,13 +274,19 @@ export default function PaginaEstoque()
             id="filtro-status"
             rotulo="Status"
             valor={filtroStatus}
-            opcoes={STATUS_FILTRO}
+            opcoes={OPCOES_STATUS}
             onChange={aoMudarFiltro(setFiltroStatus)}
           />
         </div>
       </div>
 
-      <PainelPerdas resumo={resumoPerdas} carregando={carregandoPerdas} erro={erroPerdas} />
+      <PainelPerdas
+        resumo={resumoPerdas}
+        carregando={carregandoPerdas}
+        erro={erroPerdas}
+        periodoDias={periodoPerdas}
+        onMudarPeriodo={setPeriodoPerdas}
+      />
 
       {erro ? (
         <div role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
@@ -297,7 +327,13 @@ export default function PaginaEstoque()
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {grupo.lotes.map((lote) => (
-                  <CartaoLote key={lote.id} lote={lote} onDescarte={aoDescartarBolsa} onEditar={aoAbrirEdicao} />
+                  <CartaoLote
+                    key={lote.id}
+                    lote={lote}
+                    onDescarte={podeDescartar ? aoDescartarBolsa : undefined}
+                    onEditar={aoAbrirEdicao}
+                    onDetalhes={aoAbrirDetalhes}
+                  />
                 ))}
               </div>
             </section>
@@ -316,6 +352,8 @@ export default function PaginaEstoque()
           onCadastrada={aoCadastrarBolsa}
         />
       )}
+
+      {bolsaEmDetalhe && <ModalDetalhesBolsa bolsa={bolsaEmDetalhe} onClose={() => setBolsaEmDetalhe(null)} />}
 
       {bolsaEmEdicao && (
         <ModalEditarBolsa

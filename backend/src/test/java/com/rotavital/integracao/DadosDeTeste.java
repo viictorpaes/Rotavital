@@ -58,6 +58,12 @@ public class DadosDeTeste
                 UUID.class);
     }
 
+    public UUID admin()
+    {
+        return jdbc.queryForObject("insert into public.usuario (nome, papel) values ('Admin Rota Vital', 'ADMIN') returning id",
+                UUID.class);
+    }
+
     public void bolsa(String id, String bancoId, TipoComponente componente, TipoSanguineo tipo,
             LocalDate validade, double temperatura, String localizacao, StatusBolsa status)
     {

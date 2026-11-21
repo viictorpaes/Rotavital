@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rotavital.api.dto.estoque.AtualizarBolsaRequest;
 import com.rotavital.api.dto.estoque.BolsaHemocomponenteDTO;
 import com.rotavital.dominio.BolsaHemocomponente;
+import com.rotavital.dominio.StatusBolsa;
 import com.rotavital.servico.CorrecaoDeBolsaService;
 import com.rotavital.servico.DadosInvalidosException;
 import com.rotavital.servico.MovimentacaoDeBolsaService;
@@ -33,7 +34,8 @@ public class MovimentacaoDeBolsaController
     }
 
     // Contrato (docs/openapi.yaml): {"status": "UTILIZADA"} muda o status; {"volumeMl": 430, ...} corrige
-    // os dados. A correção exige o header X-Usuario-Id (médico ou admin; tipo sanguíneo só admin).
+    // os dados. A correção exige o header X-Usuario-Id (médico ou admin; tipo sanguíneo só admin), e o
+    // descarte {"status": "DESCARTADA", "categoriaDescarte": "VALIDADE_EXPIRADA"} exige admin (PI3-243).
     @PatchMapping("/hemocomponentes/{id}")
     public BolsaHemocomponenteDTO atualizar(@PathVariable("id") String id,
             @RequestHeader(name = CampanhaController.HEADER_USUARIO, required = false) UUID usuarioId,
@@ -48,9 +50,19 @@ public class MovimentacaoDeBolsaController
             throw new DadosInvalidosException("Envie o novo status ou ao menos um campo para corrigir.");
         }
 
-        BolsaHemocomponente bolsa = dados.temCorrecao()
-                ? correcaoDeBolsaService.corrigir(usuarioId, id, dados)
-                : movimentacaoDeBolsaService.alterarStatus(id, dados.status(), dados.motivoDescarte());
+        BolsaHemocomponente bolsa;
+        if (dados.temCorrecao())
+        {
+            bolsa = correcaoDeBolsaService.corrigir(usuarioId, id, dados);
+        }
+        else if (dados.status() == StatusBolsa.DESCARTADA)
+        {
+            bolsa = movimentacaoDeBolsaService.descartar(usuarioId, id, dados.categoriaDescarte(), dados.motivoDescarte());
+        }
+        else
+        {
+            bolsa = movimentacaoDeBolsaService.alterarStatus(id, dados.status());
+        }
 
         return BolsaHemocomponenteDTO.de(bolsa);
     }

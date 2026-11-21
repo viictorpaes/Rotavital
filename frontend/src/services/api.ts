@@ -26,6 +26,7 @@ import type {
   EstoqueDTO,
   ResumoPerdasDTO,
   BolsaHemocomponenteDTO,
+  CategoriaDescarteBackend,
   CorrecaoBolsaHemocomponenteDTO,
   FiltrosHemocomponentesDTO,
   NovaBolsaHemocomponenteDTO,
@@ -83,9 +84,11 @@ export async function cadastrarHemocomponente(dados: NovaBolsaHemocomponenteDTO)
 }
 
 /** Totais e rankings de bolsas descartadas, calculados no banco sem limitar a paginação do estoque. */
-export async function buscarResumoPerdas(bancoId: string): Promise<ResumoPerdasDTO>
+/** Perdas do banco nos últimos "dias" dias (sem dias, todo o histórico). */
+export async function buscarResumoPerdas(bancoId: string, dias?: number): Promise<ResumoPerdasDTO>
 {
   return clienteHttp.get<ResumoPerdasDTO>(`/bancos/${encodeURIComponent(bancoId)}/estoque/perdas`, {
+    params: dias ? { dias } : {},
     silencioso: true,
   });
 }
@@ -108,12 +111,17 @@ export async function corrigirHemocomponente(id: string, dados: CorrecaoBolsaHem
   return clienteHttp.patch<BolsaHemocomponenteDTO>(`/hemocomponentes/${encodeURIComponent(id)}`, dados, { silencioso: true });
 }
 
-/** Descarta uma bolsa com justificativa obrigatória e devolve seus dados atualizados. */
-export async function descartarHemocomponente(id: string, motivoDescarte: string): Promise<BolsaHemocomponenteDTO>
+/** Descarta uma bolsa (só admin, PI3-243) com o motivo padronizado e observação opcional (obrigatória em OUTRO). */
+export async function descartarHemocomponente(
+  id: string,
+  categoriaDescarte: CategoriaDescarteBackend,
+  observacao?: string,
+): Promise<BolsaHemocomponenteDTO>
 {
   return clienteHttp.patch<BolsaHemocomponenteDTO>(`/hemocomponentes/${encodeURIComponent(id)}`, {
     status: "DESCARTADA",
-    motivoDescarte,
+    categoriaDescarte,
+    motivoDescarte: observacao?.trim() || undefined,
   }, { silencioso: true });
 }
 

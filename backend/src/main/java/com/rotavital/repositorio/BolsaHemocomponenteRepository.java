@@ -41,34 +41,18 @@ public interface BolsaHemocomponenteRepository extends JpaRepository<BolsaHemoco
             @Param("status") StatusBolsa status,
             Pageable pagina);
 
-    @Query(value = """
-            select tipo_sanguineo as "categoria",
-                   count(*) as "bolsas",
-                   coalesce(sum(volume_ml), 0) as "volumeMl"
-            from public.bolsa_hemocomponente
-            where banco_origem_id = :bancoId and status = 'DESCARTADA'
-            group by tipo_sanguineo
-            order by sum(volume_ml) desc, count(*) desc, tipo_sanguineo asc
-            """, nativeQuery = true)
-    List<TotalPerda> perdasPorTipoSanguineo(@Param("bancoId") String bancoId);
-
-    @Query(value = """
-            select tipo_componente as "categoria",
-                   count(*) as "bolsas",
-                   coalesce(sum(volume_ml), 0) as "volumeMl"
-            from public.bolsa_hemocomponente
-            where banco_origem_id = :bancoId and status = 'DESCARTADA'
-            group by tipo_componente
-            order by sum(volume_ml) desc, count(*) desc, tipo_componente asc
-            """, nativeQuery = true)
-    List<TotalPerda> perdasPorComponente(@Param("bancoId") String bancoId);
-
-    interface TotalPerda
-    {
-        String getCategoria();
-
-        Long getBolsas();
-
-        Double getVolumeMl();
-    }
+    // Mesma listagem, só com as bolsas ativas (PI3-243): sem as que já saíram do estoque de vez,
+    // DESCARTADA e UTILIZADA.
+    @Query("""
+            select b from BolsaHemocomponente b
+            where (:bancoId is null or b.bancoOrigem.id = :bancoId)
+              and (:tipoComponente is null or b.tipoComponente = :tipoComponente)
+              and (:tipoSanguineo is null or b.tipoSanguineo = :tipoSanguineo)
+              and b.status not in (com.rotavital.dominio.StatusBolsa.DESCARTADA, com.rotavital.dominio.StatusBolsa.UTILIZADA)
+            order by b.dataValidade asc, b.id asc
+            """)
+    List<BolsaHemocomponente> buscarAtivasComFiltros(@Param("bancoId") String bancoId,
+            @Param("tipoComponente") TipoComponente tipoComponente,
+            @Param("tipoSanguineo") TipoSanguineo tipoSanguineo,
+            Pageable pagina);
 }

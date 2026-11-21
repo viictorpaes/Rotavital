@@ -63,7 +63,7 @@ public class CorrecaoDeBolsaServiceTest
     private static AtualizarBolsaRequest correcao(TipoSanguineo tipo, LocalDate coleta, LocalDate validade, String lote,
             Double volume, Double temperatura, String localizacao)
     {
-        return new AtualizarBolsaRequest(null, null, tipo, coleta, validade, lote, volume, temperatura, localizacao);
+        return new AtualizarBolsaRequest(null, null, null, tipo, coleta, validade, lote, volume, temperatura, localizacao);
     }
 
     @Test

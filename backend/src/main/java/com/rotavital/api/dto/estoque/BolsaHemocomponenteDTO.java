@@ -1,8 +1,10 @@
 package com.rotavital.api.dto.estoque;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 import com.rotavital.dominio.BolsaHemocomponente;
+import com.rotavital.dominio.CategoriaDescarte;
 import com.rotavital.dominio.StatusBolsa;
 import com.rotavital.dominio.TipoComponente;
 import com.rotavital.dominio.TipoSanguineo;
@@ -21,7 +23,9 @@ public record BolsaHemocomponenteDTO(
         StatusBolsa status,
         String bancoOrigemId,
         String hospitalAtualId,
-        String motivoDescarte
+        String motivoDescarte,
+        CategoriaDescarte categoriaDescarte,
+        OffsetDateTime dataDescarte
 )
 
 {
@@ -42,7 +46,9 @@ public record BolsaHemocomponenteDTO(
                         bolsa.getStatus(),
                         bolsa.getBancoOrigem().getId(),
                         bolsa.getHospitalAtual() == null ? null : bolsa.getHospitalAtual().getId(),
-                        bolsa.getMotivoDescarte()
+                        bolsa.getMotivoDescarte(),
+                        bolsa.getCategoriaDescarte(),
+                        bolsa.getDataDescarte()
                 );
         }
 }

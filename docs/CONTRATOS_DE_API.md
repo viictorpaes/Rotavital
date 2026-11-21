@@ -170,13 +170,13 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | **🏦 Bancos → Estoque** | *`EstoqueController`* | | | | |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` | ✅ Estoque consolidado de um banco de sangue | Nenhuma no MVP (alvo: médico) | `Estoque` | `200` · `400` · `404` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | ✅ Totais de bolsas disponíveis e válidas por tipo sanguíneo e componente (tela inicial) | Nenhuma no MVP (alvo: médico) | `ResumoEstoque` | `200` · `404` |
-| `GET` | `/api/v1/bancos/{bancoId}/estoque/perdas` | ✅ Totais e rankings de bolsas descartadas por tipo sanguíneo e componente | Nenhuma no MVP (alvo: médico) | `ResumoPerdas` | `200` · `404` |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque/perdas?dias=` | ✅ Perdas por tipo, componente e motivo, tipo com mais descartes e taxa de perda, com período opcional (PI3-243) | Nenhuma no MVP (alvo: médico) | `ResumoPerdas` | `200` · `400` · `404` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/estatisticas` | ✅ Estatística descritiva: frequências por tipo, componente e validade, e medidas de posição e dispersão por componente | Nenhuma no MVP (alvo: médico) | `EstatisticasDoEstoque` | `200` · `404` |
 | **📦 Hemocomponentes** | *`HemocomponenteController` (planejado)* | | | | |
 | `GET` | `/api/v1/hemocomponentes?bancoId=&tipoComponente=&tipoSanguineo=&status=&page=0&size=20` | ✅ Lista bolsas com filtros e paginação, da que vence primeiro para a última (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente[]` | `200` · `400` |
 | `POST` | `/api/v1/hemocomponentes` | ✅ Cadastra uma bolsa (status inicial `DISPONIVEL`; por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `201` · `400` · `422` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | ✅ Detalhe de uma bolsa (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `200` · `404` |
-| `PATCH` | `/api/v1/hemocomponentes/{id}` | ✅ Transição de status (`DESCARTADA` exige `motivoDescarte`) **ou** correção dos dados de uma bolsa `DISPONIVEL`, nunca os dois juntos | Status: nenhuma no MVP. Correção: médico ou admin (`X-Usuario-Id`); tipo sanguíneo só admin | `BolsaHemocomponente` | `200` · `400` · `401` · `403` · `404` · `422` |
+| `PATCH` | `/api/v1/hemocomponentes/{id}` | ✅ Transição de status, descarte (`DESCARTADA` com `categoriaDescarte` e observação opcional) **ou** correção dos dados de uma bolsa `DISPONIVEL`, nunca os dois juntos | Status: nenhuma no MVP. Descarte: só admin (PI3-243). Correção: médico ou admin (`X-Usuario-Id`); tipo sanguíneo só admin | `BolsaHemocomponente` | `200` · `400` · `401` · `403` · `404` · `422` |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | 🕓 Remove um cadastro feito por engano | Nenhuma no MVP (alvo: médico) | *(sem corpo)* | `204` · `404` |
 | **🏥 Requisições** | *`RequisicaoController` (planejado)* | | | | |
 | `POST` | `/api/v1/requisicoes` | 🕓 Registra o pedido de um hospital (status `PENDENTE`) | Nenhuma no MVP (alvo: médico) | `RequisicaoHospitalar` | `201` · `400` |
@@ -404,12 +404,12 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 |---|---|---|---|
 | `GET` | `/api/v1/bancos/{bancoId}/estoque` | Estoque consolidado de um banco de sangue (filtro: `tipoSanguineo`) | `BancoDeSangue.getEstoque()` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | Totais por tipo sanguíneo e componente, só bolsas `DISPONIVEL` e dentro da validade | views `vw_estoque_por_tipo` e `vw_estoque_agrupado` |
-| `GET` | `/api/v1/bancos/{bancoId}/estoque/perdas` | Totais das bolsas `DESCARTADA`, agrupadas por tipo sanguíneo e componente | `ResumoPerdasService` |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque/perdas` | Bolsas `DESCARTADA` no período (`dias`), agrupadas por tipo sanguíneo, componente e motivo, com taxa de perda | `ResumoPerdasService` → `ResumoDePerdas` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/estatisticas` | Distribuições de frequência e medidas (média, mediana, desvio padrão, quartis) do estoque | `EstatisticaDescritivaService` → `EstatisticaDescritivaDoEstoque` |
-| `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `BolsaHemocomponenteRepository.buscarComFiltros(...)` |
+| `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `apenasAtivas`, `page`, `size`) | `BolsaHemocomponenteRepository.buscarComFiltros(...)` · `buscarAtivasComFiltros(...)` |
 | `POST` | `/api/v1/hemocomponentes` | Cadastra uma nova bolsa (status inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | Detalhe de uma bolsa | — |
-| `PATCH` | `/api/v1/hemocomponentes/{id}` | Transição de status (descarte exige justificativa de até 500 caracteres) ou correção de tipo sanguíneo, coleta, validade, lote, volume, temperatura e localização de uma bolsa `DISPONIVEL`, com as mesmas regras do cadastro; componente e banco não mudam | `MovimentacaoDeBolsaService.alterarStatus(...)` · `CorrecaoDeBolsaService.corrigir(...)` → `BolsaHemocomponente.corrigirCadastro(...)` |
+| `PATCH` | `/api/v1/hemocomponentes/{id}` | Transição de status (descarte exige justificativa de até 500 caracteres) ou correção de tipo sanguíneo, coleta, validade, lote, volume, temperatura e localização de uma bolsa `DISPONIVEL`, com as mesmas regras do cadastro; componente e banco não mudam | `MovimentacaoDeBolsaService.alterarStatus(...)` · `MovimentacaoDeBolsaService.descartar(...)` → `BolsaHemocomponente.descartar(...)` · `CorrecaoDeBolsaService.corrigir(...)` → `BolsaHemocomponente.corrigirCadastro(...)` |
 | `DELETE` | `/api/v1/hemocomponentes/{id}` | Remove o cadastro (erro de lançamento) | — |
 
 **Schema `BolsaHemocomponente`**:
