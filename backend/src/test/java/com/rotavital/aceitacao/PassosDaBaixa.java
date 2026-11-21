@@ -35,6 +35,14 @@ public class PassosDaBaixa
         resposta = api.exchange("/api/v1/hemocomponentes/{id}", HttpMethod.PATCH, corpo, JsonNode.class, bolsaId);
     }
 
+    // O descarte exige um motivo (até 500 caracteres); sem ele a API responde 400.
+    @Quando("descarto a bolsa {string} pelo motivo {string}")
+    public void descartoABolsaPeloMotivo(String bolsaId, String motivo)
+    {
+        HttpEntity<Map<String, String>> corpo = new HttpEntity<>(Map.of("status", "DESCARTADA", "motivoDescarte", motivo));
+        resposta = api.exchange("/api/v1/hemocomponentes/{id}", HttpMethod.PATCH, corpo, JsonNode.class, bolsaId);
+    }
+
     @Entao("a bolsa {string} fica {string} no estoque")
     public void aBolsaFicaNoEstoque(String bolsaId, String status)
     {
