@@ -4,16 +4,29 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.util.ClassUtils;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -33,10 +46,17 @@ import jakarta.servlet.http.HttpServletRequest;
  * Converte os erros dos controllers em ErroDTO (RFC 7807), com uma mensagem em detail que a tela
  * pode mostrar como está. Sem isto, valor fora do enum, data em outro formato ou JSON quebrado
  * caem na resposta padrão do Spring, que não diz qual campo está errado.
+ *
+ * PI3-308: nenhum erro sai fora do ErroDTO. Os erros do próprio Spring MVC (parâmetro faltando,
+ * rota inexistente, método ou formato não aceito) ganham status e mensagem próprios, banco fora do
+ * ar vira 503, e o que ninguém previu cai no handler genérico: 500 com um código para achar o erro
+ * no log, sem mandar stack trace nem mensagem interna para quem chamou.
  */
 @RestControllerAdvice
 public class TratadorDeErros
 {
+    private static final Logger LOG = LoggerFactory.getLogger(TratadorDeErros.class);
+
     @ExceptionHandler(DadosInvalidosException.class)
     public ResponseEntity<ErroDTO> dadosInvalidos(DadosInvalidosException e, HttpServletRequest request)
     {
@@ -117,6 +137,79 @@ public class TratadorDeErros
         }
 
         return erro(400, "Requisição inválida", detalhe, request);
+    }
+
+    // Parâmetro obrigatório da query string que não veio (ex.: GET /bancos/BS-01/sugestao-lote sem "quantidade").
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErroDTO> parametroFaltando(MissingServletRequestParameterException e, HttpServletRequest request)
+    {
+        return erro(400, "Requisição inválida", "O parâmetro '" + e.getParameterName() + "' é obrigatório.", request);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ErroDTO> headerFaltando(MissingRequestHeaderException e, HttpServletRequest request)
+    {
+        return erro(400, "Requisição inválida", "O header '" + e.getHeaderName() + "' é obrigatório.", request);
+    }
+
+    // Caminho que não corresponde a nenhum endpoint.
+    @ExceptionHandler({ NoResourceFoundException.class, NoHandlerFoundException.class })
+    public ResponseEntity<ErroDTO> rotaInexistente(Exception e, HttpServletRequest request)
+    {
+        return erro(404, "Recurso não encontrado",
+                "Nenhum endpoint responde a " + request.getMethod() + " " + request.getRequestURI() + ".", request);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErroDTO> metodoNaoAceito(HttpRequestMethodNotSupportedException e, HttpServletRequest request)
+    {
+        String aceitos = e.getSupportedHttpMethods() == null ? ""
+                : " Métodos aceitos: " + e.getSupportedHttpMethods().stream()
+                        .map(HttpMethod::name)
+                        .sorted()
+                        .collect(Collectors.joining(", ")) + ".";
+        ErroDTO erro = new ErroDTO(null, "Método não permitido", 405,
+                "O método " + e.getMethod() + " não é aceito em " + request.getRequestURI() + "." + aceitos,
+                request.getRequestURI());
+        HttpMethod[] permitidos = e.getSupportedHttpMethods() == null
+                ? new HttpMethod[0]
+                : e.getSupportedHttpMethods().toArray(HttpMethod[]::new);
+        return ResponseEntity.status(405).allow(permitidos).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErroDTO> formatoNaoAceito(HttpMediaTypeNotSupportedException e, HttpServletRequest request)
+    {
+        return erro(415, "Formato não suportado", "Envie o corpo da requisição como application/json.", request);
+    }
+
+    // Banco de dados fora do ar ou pool sem conexão: não é culpa de quem chamou, e tentar de novo pode resolver.
+    @ExceptionHandler({ CannotCreateTransactionException.class, DataAccessResourceFailureException.class })
+    public ResponseEntity<ErroDTO> bancoIndisponivel(Exception e, HttpServletRequest request)
+    {
+        LOG.error("Banco de dados indisponível em {} {}", request.getMethod(), request.getRequestURI(), e);
+        return erro(503, "Serviço indisponível",
+                "O banco de dados não está respondendo agora. Tente de novo em instantes.", request);
+    }
+
+    /**
+     * Qualquer outro erro: o log guarda a exceção completa com um código curto, e a resposta leva só
+     * o código, para quem vê a mensagem na tela poder pedir ajuda sem expor detalhes internos.
+     * Erros do Spring MVC sem handler próprio mantêm o status que o Spring daria (4xx).
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErroDTO> erroInesperado(Exception e, HttpServletRequest request)
+    {
+        if (e instanceof ErrorResponse respostaDoSpring && respostaDoSpring.getStatusCode().is4xxClientError())
+        {
+            int status = respostaDoSpring.getStatusCode().value();
+            return erro(status, "Requisição inválida", "A requisição não pôde ser atendida (HTTP " + status + ").", request);
+        }
+
+        String codigo = UUID.randomUUID().toString().substring(0, 8);
+        LOG.error("Erro inesperado {} em {} {}", codigo, request.getMethod(), request.getRequestURI(), e);
+        return erro(500, "Erro interno",
+                "Ocorreu um erro inesperado no servidor. Se continuar, informe o código " + codigo + " à equipe.", request);
     }
 
     // Diz o que mandar no lugar do valor recusado, para quem lê a mensagem não precisar abrir o contrato.
