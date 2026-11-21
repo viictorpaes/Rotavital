@@ -296,7 +296,9 @@ public class EstoqueService
         validarNovaBolsa(dados, LocalDate.now(relogio));
 
         // A validação já confirmou que o banco existe; na mesma transação, esta busca não vai de novo ao banco.
-        BancoDeSangue banco = bancos.findById(dados.bancoOrigemId()).orElseThrow();
+        BancoDeSangue banco = bancos.findById(dados.bancoOrigemId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Nenhum banco de sangue encontrado com id " + dados.bancoOrigemId() + "."));
         String localizacao = dados.localizacao() == null || dados.localizacao().isBlank()
                 ? null
                 : dados.localizacao().strip();
@@ -344,8 +346,9 @@ public class EstoqueService
 
         if (maiorUsado == fim)
         {
-            throw new IllegalStateException("Os ids de " + componente + " acabaram (" + prefixo + inicio + " a "
-                    + prefixo + fim + ").");
+            // Limite da faixa de códigos, não erro do servidor: 422 com a explicação (PI3-308).
+            throw new RegraDeNegocioException("Os códigos de " + componente + " acabaram (" + prefixo + inicio + " a "
+                    + prefixo + fim + "): não é possível cadastrar mais bolsas desse componente.");
         }
 
         return prefixo + (maiorUsado + 1);

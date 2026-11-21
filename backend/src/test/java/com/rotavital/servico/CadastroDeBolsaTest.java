@@ -40,7 +40,9 @@ public class CadastroDeBolsaTest
         // e CH-TESTE não tem número. Plasma (PF) ainda não tem nenhuma bolsa.
         Map<String, List<String>> idsPorSigla = Map.of(
                 "CH", List.of("CH-1042", "CH-9999", "CH-1090", "CH-TESTE"),
-                "PF", List.of());
+                "PF", List.of(),
+                // Plaquetas com a faixa inteira usada (PQ-3000 a PQ-3999).
+                "PQ", List.of("PQ-3999"));
 
         BancoDeSangueRepository bancosFalsos = RepositorioFalso.respondendo(BancoDeSangueRepository.class,
                 "findById", argumentos -> Optional.ofNullable("BS-01".equals(argumentos[0]) ? banco : null));
@@ -74,6 +76,21 @@ public class CadastroDeBolsaTest
 
         // CH-9999 e CH-TESTE ficam fora da conta: o maior da faixa é CH-1090.
         Assertions.assertEquals("CH-1091", bolsa.getId());
+    }
+
+    // PI3-308: faixa de códigos esgotada é limite de negócio (422), não erro do servidor (500).
+    @Test
+    public void faixaDeCodigosEsgotadaDa422()
+    {
+        NovaBolsaHemocomponenteRequest plaqueta = new NovaBolsaHemocomponenteRequest(TipoComponente.PLAQUETAS,
+                TipoSanguineo.O_POSITIVO, hoje.minusDays(1), hoje.plusDays(4), "LOTE-SIM-0200", 250.0, 22.0, null, "BS-01");
+
+        RegraDeNegocioException erro = Assertions.assertThrows(RegraDeNegocioException.class,
+                () -> servico.cadastrarBolsa(plaqueta));
+
+        Assertions.assertEquals("Os códigos de PLAQUETAS acabaram (PQ-3000 a PQ-3999): "
+                + "não é possível cadastrar mais bolsas desse componente.", erro.getMessage());
+        Assertions.assertTrue(gravadas.isEmpty());
     }
 
     @Test

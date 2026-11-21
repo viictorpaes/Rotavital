@@ -1,0 +1,5 @@
+# PI3-308: explicações curtas para as falhas mais comuns na inicialização do backend.
+org.springframework.boot.diagnostics.FailureAnalyzer=\
+com.rotavital.config.SchemaDesatualizadoFailureAnalyzer,\
+com.rotavital.config.ConexaoComBancoFailureAnalyzer,\
+com.rotavital.config.VariavelFaltandoFailureAnalyzer

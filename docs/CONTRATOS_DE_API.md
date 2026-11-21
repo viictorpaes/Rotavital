@@ -88,7 +88,7 @@ Convenções fixadas em `docs/openapi.yaml` e seguidas em todo o contrato.
 |---|---|---|
 | `type` | `string` (uri) | Tipo do problema; `about:blank` quando não há um tipo específico documentado |
 | `title` | `string` | Resumo curto e legível do problema |
-| `status` | `integer` | Código HTTP repetido no corpo (`400`, `404`, `422` ou `500`) |
+| `status` | `integer` | Código HTTP repetido no corpo (`400`, `401`, `403`, `404`, `405`, `409`, `415`, `422`, `500` ou `503`) |
 | `detail` | `string` | Explicação específica desta ocorrência |
 | `instance` | `string` (uri-reference) | Caminho do recurso que originou o erro |
 
@@ -116,6 +116,21 @@ converte em `ErroDTO` as exceções dos serviços (`DadosInvalidosException` →
 `RegraDeNegocioException` → 422) e os valores que o Spring não consegue converter: enum fora da lista, data fora do
 formato `AAAA-MM-DD`, texto no lugar de número e JSON quebrado. Nesses casos o `detail` diz o campo, o valor recusado
 e o que mandar no lugar, ex.: `"O parâmetro 'tipoSanguineo' não aceita o valor 'O-'. Valores aceitos: A_POSITIVO, …"`.
+
+**Nenhum erro fora do `ErroDTO`** (PI3-308). Além das exceções acima, o `TratadorDeErros` cobre:
+
+| Situação | Status | `detail` |
+|---|---|---|
+| Parâmetro ou header obrigatório que não veio | `400` | `"O parâmetro 'quantidade' é obrigatório."` |
+| Caminho que não existe | `404` | `"Nenhum endpoint responde a GET /api/v1/…"` |
+| Método HTTP não aceito no caminho | `405` | Métodos aceitos no `detail` e no header `Allow` |
+| Corpo que não é `application/json` | `415` | `"Envie o corpo da requisição como application/json."` |
+| Banco de dados fora do ar ou sem conexão livre | `503` | `"O banco de dados não está respondendo agora. Tente de novo em instantes."` |
+| Qualquer outra exceção | `500` | `"Ocorreu um erro inesperado no servidor. Se continuar, informe o código 3f9c1a2b à equipe."` |
+
+No `500`, a exceção completa vai para o log do servidor com o mesmo código; a resposta não leva stack trace nem a
+mensagem interna. Na inicialização, falta de migration, senha do banco recusada e variável de ambiente ausente
+aparecem como uma explicação curta com o que fazer (`FailureAnalyzer` em `config/`), no lugar da pilha do Spring.
 
 <h3 align="left" id="2-1-divergencias">🔧 2.1 Divergências REST resolvidas (Etapa 2)</h3>
 
