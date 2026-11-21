@@ -9,6 +9,7 @@ import type {
   CadastroDoadorDTO,
   CampanhaDTO,
   DoadorDTO,
+  EstatisticasDoEstoqueDTO,
   HemocentroDTO,
   HorarioDTO,
   OrigemPayloadDTO,
@@ -85,6 +86,14 @@ export async function cadastrarHemocomponente(dados: NovaBolsaHemocomponenteDTO)
 export async function buscarResumoPerdas(bancoId: string): Promise<ResumoPerdasDTO>
 {
   return clienteHttp.get<ResumoPerdasDTO>(`/bancos/${encodeURIComponent(bancoId)}/estoque/perdas`, {
+    silencioso: true,
+  });
+}
+
+/** Estatística descritiva do estoque: distribuições de frequência e medidas por componente. */
+export async function buscarEstatisticasDoEstoque(bancoId: string): Promise<EstatisticasDoEstoqueDTO>
+{
+  return clienteHttp.get<EstatisticasDoEstoqueDTO>(`/bancos/${encodeURIComponent(bancoId)}/estoque/estatisticas`, {
     silencioso: true,
   });
 }

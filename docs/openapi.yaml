@@ -288,6 +288,31 @@ paths:
         default:
           $ref: '#/components/responses/InternalServerError'
 
+  /bancos/{bancoId}/estoque/estatisticas:
+    get:
+      tags: [Estoque]
+      summary: Estatística descritiva do estoque
+      description: >
+        Distribuições de frequência (fi, fr e Fr acumulada) por tipo sanguíneo, por componente e por
+        classes de dias até vencer, e medidas de posição e dispersão (média, mediana, desvio padrão
+        amostral, CV, quartis pelo método QUARTIL.INC, mínimo e máximo) da validade, temperatura e
+        volume de cada componente. A amostra são as bolsas DISPONIVEL e ainda na validade; a taxa de
+        perda usa todas as bolsas cadastradas. Percentuais de 0 a 100; medidas de amostra vazia vêm nulas.
+      operationId: calcularEstatisticasDoEstoque
+      parameters:
+        - $ref: '#/components/parameters/BancoIdPath'
+      responses:
+        '200':
+          description: Estatísticas do estoque na data de hoje.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstatisticasDoEstoque'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
   /bancos/{bancoId}/sugestao-lote:
     get:
       tags: [Estoque]
@@ -1787,6 +1812,68 @@ components:
           description: Total de cada componente somando todos os tipos.
           items: { $ref: '#/components/schemas/TotalPorComponente' }
       required: [bancoDeSangueId, totalUnidades, tiposSanguineos, componentes]
+
+    ResumoNumerico:
+      type: object
+      description: Medidas de uma amostra. Com n = 0, as demais vêm nulas.
+      properties:
+        n: { type: integer }
+        media: { type: number, nullable: true }
+        mediana: { type: number, nullable: true }
+        desvioPadrao: { type: number, nullable: true, description: Desvio padrão amostral (n − 1). }
+        coeficienteDeVariacao: { type: number, nullable: true, description: Em %. Nulo quando a média é zero. }
+        minimo: { type: number, nullable: true }
+        primeiroQuartil: { type: number, nullable: true }
+        terceiroQuartil: { type: number, nullable: true }
+        maximo: { type: number, nullable: true }
+        amplitude: { type: number, nullable: true }
+
+    DistribuicaoDeFrequencia:
+      type: object
+      properties:
+        total: { type: integer }
+        moda:
+          type: array
+          items: { type: string }
+          description: Categorias com a maior frequência; vazia quando não há observações.
+        linhas:
+          type: array
+          items:
+            type: object
+            properties:
+              categoria: { type: string }
+              frequenciaAbsoluta: { type: integer }
+              frequenciaRelativa: { type: number, description: Em %. }
+              frequenciaRelativaAcumulada: { type: number, description: Em %. }
+
+    EstatisticasDoEstoque:
+      type: object
+      properties:
+        bancoId: { type: string }
+        dataDeReferencia: { type: string, format: date }
+        cadastradas: { type: integer }
+        emEstoque: { type: integer, description: Bolsas DISPONIVEL e ainda na validade. }
+        vencidasAindaNoEstoque: { type: integer }
+        descartadas: { type: integer }
+        taxaDePerda: { type: number, description: Descartadas ÷ cadastradas, em %. }
+        porTipoSanguineo: { $ref: '#/components/schemas/DistribuicaoDeFrequencia' }
+        porComponente: { $ref: '#/components/schemas/DistribuicaoDeFrequencia' }
+        porDiasAteVencer: { $ref: '#/components/schemas/DistribuicaoDeFrequencia' }
+        componentes:
+          type: array
+          items:
+            type: object
+            properties:
+              componente: { $ref: '#/components/schemas/TipoComponente' }
+              emEstoque: { type: integer }
+              diasAteVencer: { $ref: '#/components/schemas/ResumoNumerico' }
+              temperaturaCelsius: { $ref: '#/components/schemas/ResumoNumerico' }
+              foraDaFaixa: { type: integer }
+              percentualForaDaFaixa: { type: number }
+              volumeMl: { $ref: '#/components/schemas/ResumoNumerico' }
+              cadastradas: { type: integer }
+              descartadas: { type: integer }
+              taxaDePerda: { type: number }
 
     ResumoPerdas:
       type: object

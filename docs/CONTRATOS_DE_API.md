@@ -171,6 +171,7 @@ até o controller existir). Toda operação também pode devolver `500` (RFC 780
 | `GET` | `/api/v1/bancos/{bancoId}/estoque?tipoSanguineo=` | ✅ Estoque consolidado de um banco de sangue | Nenhuma no MVP (alvo: médico) | `Estoque` | `200` · `400` · `404` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | ✅ Totais de bolsas disponíveis e válidas por tipo sanguíneo e componente (tela inicial) | Nenhuma no MVP (alvo: médico) | `ResumoEstoque` | `200` · `404` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/perdas` | ✅ Totais e rankings de bolsas descartadas por tipo sanguíneo e componente | Nenhuma no MVP (alvo: médico) | `ResumoPerdas` | `200` · `404` |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque/estatisticas` | ✅ Estatística descritiva: frequências por tipo, componente e validade, e medidas de posição e dispersão por componente | Nenhuma no MVP (alvo: médico) | `EstatisticasDoEstoque` | `200` · `404` |
 | **📦 Hemocomponentes** | *`HemocomponenteController` (planejado)* | | | | |
 | `GET` | `/api/v1/hemocomponentes?bancoId=&tipoComponente=&tipoSanguineo=&status=&page=0&size=20` | ✅ Lista bolsas com filtros e paginação, da que vence primeiro para a última (por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente[]` | `200` · `400` |
 | `POST` | `/api/v1/hemocomponentes` | ✅ Cadastra uma bolsa (status inicial `DISPONIVEL`; por enquanto no `EstoqueController`) | Nenhuma no MVP (alvo: médico) | `BolsaHemocomponente` | `201` · `400` · `422` |
@@ -404,6 +405,7 @@ Endpoints CRUD/consulta para o estoque dos hemocentros, mapeando `Estoque` e `Bo
 | `GET` | `/api/v1/bancos/{bancoId}/estoque` | Estoque consolidado de um banco de sangue (filtro: `tipoSanguineo`) | `BancoDeSangue.getEstoque()` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/resumo` | Totais por tipo sanguíneo e componente, só bolsas `DISPONIVEL` e dentro da validade | views `vw_estoque_por_tipo` e `vw_estoque_agrupado` |
 | `GET` | `/api/v1/bancos/{bancoId}/estoque/perdas` | Totais das bolsas `DESCARTADA`, agrupadas por tipo sanguíneo e componente | `ResumoPerdasService` |
+| `GET` | `/api/v1/bancos/{bancoId}/estoque/estatisticas` | Distribuições de frequência e medidas (média, mediana, desvio padrão, quartis) do estoque | `EstatisticaDescritivaService` → `EstatisticaDescritivaDoEstoque` |
 | `GET` | `/api/v1/hemocomponentes` | Lista bolsas (filtros: `bancoId`, `tipoComponente`, `tipoSanguineo`, `status`, `page`, `size`) | `BolsaHemocomponenteRepository.buscarComFiltros(...)` |
 | `POST` | `/api/v1/hemocomponentes` | Cadastra uma nova bolsa (status inicial `DISPONIVEL`) | construtor de `BolsaHemocomponente` |
 | `GET` | `/api/v1/hemocomponentes/{id}` | Detalhe de uma bolsa | — |
