@@ -3,6 +3,7 @@ import { LayoutPrincipal } from "@/components/layout/LayoutPrincipal";
 import PaginaLogin from "@/pages/Login/PaginaLogin";
 import PaginaPainel from "@/pages/PainelOperacional/PaginaPainel";
 import PaginaEstoque from "@/pages/Estoque/PaginaEstoque";
+import PaginaEstatisticas from "@/pages/Estatisticas/PaginaEstatisticas";
 import PaginaRequisicao from "@/pages/Requisicao/PaginaRequisicao";
 import PaginaRede from "@/pages/RedeHospitalar/PaginaRede";
 import PaginaPacientes from "@/pages/Pacientes/PaginaPacientes";
@@ -42,6 +43,7 @@ export function AppRoutes()
       <Route element={<LayoutPrincipal />}>
         <Route path="/painel" element={<PaginaPainel />} />
         <Route path="/estoque" element={<PaginaEstoque />} />
+        <Route path="/estatisticas" element={<PaginaEstatisticas />} />
         <Route path="/requisicao" element={<PaginaRequisicao />} />
         <Route path="/rede" element={<PaginaRede />} />
         <Route path="/pacientes" element={<PaginaPacientes />} />

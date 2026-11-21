@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
+  BarChart3,
   Droplet,
   HeartHandshake,
   LayoutDashboard,
@@ -16,6 +17,7 @@ const ITENS_NAVEGACAO =
 [
   { to: "/painel", label: "Início", icon: LayoutDashboard },
   { to: "/estoque", label: "Estoque", icon: Package },
+  { to: "/estatisticas", label: "Estatísticas", icon: BarChart3 },
   { to: "/requisicao", label: "Requisição", icon: ClipboardList },
   { to: "/rede", label: "Rede", icon: Network },
   { to: "/pacientes", label: "Pacientes", icon: Stethoscope },

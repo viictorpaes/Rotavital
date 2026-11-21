@@ -78,6 +78,53 @@ values
 on conflict do nothing;
 
 -- -------------------------------------------------------------------
+-- Amostra maior do BS-01 para a tela de Estatísticas: tipos sanguíneos
+-- em proporções diferentes, validades espalhadas, duas temperaturas fora
+-- da faixa ideal e seis descartes com motivo, para a taxa de perda.
+-- -------------------------------------------------------------------
+insert into public.bolsa_hemocomponente
+    (id, banco_origem_id, tipo_componente, tipo_sanguineo, data_coleta, data_validade,
+     lote_sintetico, volume_ml, temperatura_celsius, localizacao, status, motivo_descarte)
+values
+    ('CH-1201', 'BS-01', 'HEMACIAS', 'O_POSITIVO', current_date - 5, current_date - 5 + 42, 'SEED-LOCAL-CH-1201', 315.0, 4.1, 'R2 · P2 · N1', 'DISPONIVEL', null),
+    ('CH-1202', 'BS-01', 'HEMACIAS', 'O_POSITIVO', current_date - 12, current_date - 12 + 42, 'SEED-LOCAL-CH-1202', 298.0, 3.6, 'R2 · P2 · N2', 'DISPONIVEL', null),
+    ('CH-1203', 'BS-01', 'HEMACIAS', 'O_POSITIVO', current_date - 19, current_date - 19 + 42, 'SEED-LOCAL-CH-1203', 330.0, 4.4, 'R2 · P2 · N3', 'DISPONIVEL', null),
+    ('CH-1204', 'BS-01', 'HEMACIAS', 'O_POSITIVO', current_date - 27, current_date - 27 + 42, 'SEED-LOCAL-CH-1204', 287.0, 5.1, 'R2 · P2 · N4', 'DISPONIVEL', null),
+    ('CH-1205', 'BS-01', 'HEMACIAS', 'O_POSITIVO', current_date - 33, current_date - 33 + 42, 'SEED-LOCAL-CH-1205', 305.0, 3.9, 'R2 · P3 · N1', 'DISPONIVEL', null),
+    ('CH-1206', 'BS-01', 'HEMACIAS', 'A_POSITIVO', current_date - 3, current_date - 3 + 42, 'SEED-LOCAL-CH-1206', 322.0, 4.0, 'R2 · P3 · N2', 'DISPONIVEL', null),
+    ('CH-1207', 'BS-01', 'HEMACIAS', 'A_POSITIVO', current_date - 9, current_date - 9 + 42, 'SEED-LOCAL-CH-1207', 276.0, 4.8, 'R2 · P3 · N3', 'DISPONIVEL', null),
+    ('CH-1208', 'BS-01', 'HEMACIAS', 'O_POSITIVO', current_date - 16, current_date - 16 + 42, 'SEED-LOCAL-CH-1208', 341.0, 3.4, 'R2 · P3 · N4', 'DISPONIVEL', null),
+    ('CH-1209', 'BS-01', 'HEMACIAS', 'A_POSITIVO', current_date - 30, current_date - 30 + 42, 'SEED-LOCAL-CH-1209', 309.0, 4.2, 'R2 · P4 · N1', 'DISPONIVEL', null),
+    ('CH-1210', 'BS-01', 'HEMACIAS', 'O_NEGATIVO', current_date - 8, current_date - 8 + 42, 'SEED-LOCAL-CH-1210', 296.0, 4.5, 'R2 · P4 · N2', 'DISPONIVEL', null),
+    ('CH-1211', 'BS-01', 'HEMACIAS', 'O_NEGATIVO', current_date - 22, current_date - 22 + 42, 'SEED-LOCAL-CH-1211', 318.0, 3.7, 'R2 · P4 · N3', 'DISPONIVEL', null),
+    ('CH-1212', 'BS-01', 'HEMACIAS', 'B_POSITIVO', current_date - 14, current_date - 14 + 42, 'SEED-LOCAL-CH-1212', 284.0, 4.3, 'R2 · P4 · N4', 'DISPONIVEL', null),
+    ('CH-1213', 'BS-01', 'HEMACIAS', 'B_POSITIVO', current_date - 36, current_date - 36 + 42, 'SEED-LOCAL-CH-1213', 327.0, 6.4, 'R2 · P5 · N1', 'DISPONIVEL', null),
+    ('CH-1214', 'BS-01', 'HEMACIAS', 'A_NEGATIVO', current_date - 6, current_date - 6 + 42, 'SEED-LOCAL-CH-1214', 301.0, 4.0, 'R2 · P5 · N2', 'DISPONIVEL', null),
+    ('CH-1215', 'BS-01', 'HEMACIAS', 'B_NEGATIVO', current_date - 25, current_date - 25 + 42, 'SEED-LOCAL-CH-1215', 292.0, 3.8, 'R2 · P5 · N3', 'DISPONIVEL', null),
+    ('CH-1216', 'BS-01', 'HEMACIAS', 'AB_POSITIVO', current_date - 18, current_date - 18 + 42, 'SEED-LOCAL-CH-1216', 312.0, 4.6, 'R2 · P5 · N4', 'DISPONIVEL', null),
+    ('PL-2301', 'BS-01', 'PLAQUETAS', 'O_POSITIVO', current_date - 1, current_date - 1 + 5, 'SEED-LOCAL-PL-2301', 62.0, 22.4, 'Agitador 2 · B1', 'DISPONIVEL', null),
+    ('PL-2302', 'BS-01', 'PLAQUETAS', 'A_POSITIVO', current_date - 2, current_date - 2 + 5, 'SEED-LOCAL-PL-2302', 55.0, 21.8, 'Agitador 2 · B2', 'DISPONIVEL', null),
+    ('PL-2303', 'BS-01', 'PLAQUETAS', 'O_POSITIVO', current_date - 3, current_date - 3 + 5, 'SEED-LOCAL-PL-2303', 58.0, 23.1, 'Agitador 2 · B3', 'DISPONIVEL', null),
+    ('PL-2304', 'BS-01', 'PLAQUETAS', 'B_POSITIVO', current_date - 4, current_date - 4 + 5, 'SEED-LOCAL-PL-2304', 51.0, 22.0, 'Agitador 2 · B4', 'DISPONIVEL', null),
+    ('PL-2305', 'BS-01', 'PLAQUETAS', 'O_NEGATIVO', current_date - 2, current_date - 2 + 5, 'SEED-LOCAL-PL-2305', 60.0, 19.2, 'Agitador 2 · B5', 'DISPONIVEL', null),
+    ('PF-3201', 'BS-01', 'PLASMA', 'O_POSITIVO', current_date - 40, current_date - 40 + 365, 'SEED-LOCAL-PF-3201', 215.0, -25.0, 'F1 · P2 · N1', 'DISPONIVEL', null),
+    ('PF-3202', 'BS-01', 'PLASMA', 'A_POSITIVO', current_date - 95, current_date - 95 + 365, 'SEED-LOCAL-PF-3202', 198.0, -26.0, 'F1 · P2 · N2', 'DISPONIVEL', null),
+    ('PF-3203', 'BS-01', 'PLASMA', 'O_POSITIVO', current_date - 150, current_date - 150 + 365, 'SEED-LOCAL-PF-3203', 231.0, -24.0, 'F1 · P2 · N3', 'DISPONIVEL', null),
+    ('PF-3204', 'BS-01', 'PLASMA', 'B_POSITIVO', current_date - 210, current_date - 210 + 365, 'SEED-LOCAL-PF-3204', 207.0, -25.0, 'F1 · P2 · N4', 'DISPONIVEL', null),
+    ('PF-3205', 'BS-01', 'PLASMA', 'AB_POSITIVO', current_date - 280, current_date - 280 + 365, 'SEED-LOCAL-PF-3205', 224.0, -26.0, 'F1 · P2 · N5', 'DISPONIVEL', null),
+    ('PF-3206', 'BS-01', 'PLASMA', 'O_NEGATIVO', current_date - 320, current_date - 320 + 365, 'SEED-LOCAL-PF-3206', 190.0, -24.0, 'F1 · P2 · N6', 'DISPONIVEL', null),
+    ('CR-4201', 'BS-01', 'CRIOPRECIPITADO', 'O_POSITIVO', current_date - 60, current_date - 60 + 365, 'SEED-LOCAL-CR-4201', 28.0, -26.0, 'F2 · P2 · N1', 'DISPONIVEL', null),
+    ('CR-4202', 'BS-01', 'CRIOPRECIPITADO', 'A_POSITIVO', current_date - 130, current_date - 130 + 365, 'SEED-LOCAL-CR-4202', 31.0, -26.0, 'F2 · P2 · N2', 'DISPONIVEL', null),
+    ('CR-4203', 'BS-01', 'CRIOPRECIPITADO', 'B_POSITIVO', current_date - 200, current_date - 200 + 365, 'SEED-LOCAL-CR-4203', 24.0, -26.0, 'F2 · P2 · N3', 'DISPONIVEL', null),
+    ('CH-1290', 'BS-01', 'HEMACIAS', 'O_POSITIVO', current_date - 44, current_date - 44 + 42, 'SEED-LOCAL-CH-1290', 300.0, 4.0, 'Descarte', 'DESCARTADA', 'Vencida no estoque'),
+    ('CH-1291', 'BS-01', 'HEMACIAS', 'A_POSITIVO', current_date - 50, current_date - 50 + 42, 'SEED-LOCAL-CH-1291', 310.0, 4.2, 'Descarte', 'DESCARTADA', 'Vencida no estoque'),
+    ('CH-1292', 'BS-01', 'HEMACIAS', 'B_POSITIVO', current_date - 20, current_date - 20 + 42, 'SEED-LOCAL-CH-1292', 295.0, 9.8, 'Descarte', 'DESCARTADA', 'Cadeia fria rompida: geladeira a 9,8 °C'),
+    ('PL-2390', 'BS-01', 'PLAQUETAS', 'O_POSITIVO', current_date - 8, current_date - 8 + 5, 'SEED-LOCAL-PL-2390', 58.0, 22.0, 'Descarte', 'DESCARTADA', 'Vencida no estoque'),
+    ('PL-2391', 'BS-01', 'PLAQUETAS', 'A_POSITIVO', current_date - 9, current_date - 9 + 5, 'SEED-LOCAL-PL-2391', 54.0, 22.3, 'Descarte', 'DESCARTADA', 'Vencida no estoque'),
+    ('PF-3290', 'BS-01', 'PLASMA', 'A_POSITIVO', current_date - 100, current_date - 100 + 365, 'SEED-LOCAL-PF-3290', 205.0, -25.0, 'Descarte', 'DESCARTADA', 'Bolsa rompida no descongelamento')
+on conflict do nothing;
+
+-- -------------------------------------------------------------------
 -- Pacientes fictícios aguardando atendimento em hospitais da rede.
 -- Os UUIDs estáveis e ON CONFLICT tornam a carga repetível.
 -- -------------------------------------------------------------------

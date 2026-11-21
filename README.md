@@ -1006,6 +1006,7 @@ manda sozinho). Sem o header → `401`; perfil errado → `403`.
 | :--- | :--- | :--- | :--- |
 | `GET` | `/bancos/{bancoId}/estoque?tipoSanguineo=` | livre | Estoque do banco, com as bolsas (HU‑03) |
 | `GET` | `/bancos/{bancoId}/estoque/resumo` | livre | Totais por tipo sanguíneo e por componente |
+| `GET` | `/bancos/{bancoId}/estoque/estatisticas` | livre | Estatística descritiva do estoque: frequências, média, mediana, desvio padrão e quartis por componente |
 | `GET` | `/bancos/{bancoId}/alertas` | livre | Bolsas vencidas, perto de vencer ou fora da temperatura (HU‑02) |
 | `GET` | `/bancos/{bancoId}/sugestao-lote?tipoComponente=&tipoSanguineo=&quantidade=` | livre | Lotes ABO/Rh compatíveis que vencem primeiro (HU‑04) |
 | `GET` | `/hemocomponentes?bancoId=&tipoSanguineo=&tipoComponente=&status=&page=&size=` | livre | Lista paginada com filtros (20 por página) |

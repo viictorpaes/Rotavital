@@ -142,6 +142,71 @@ export interface ResumoPerdasDTO
 }
 
 // ======================================================================
+// DTOs - ESTATÍSTICA DESCRITIVA DO ESTOQUE
+// ======================================================================
+
+/** Medidas de posição e dispersão (ResumoNumerico). Amostra vazia: n = 0 e o resto nulo. */
+export interface ResumoNumericoDTO
+{
+  n: number;
+  media: number | null;
+  mediana: number | null;
+  desvioPadrao: number | null;
+  coeficienteDeVariacao: number | null;
+  minimo: number | null;
+  primeiroQuartil: number | null;
+  terceiroQuartil: number | null;
+  maximo: number | null;
+  amplitude: number | null;
+}
+
+/** Uma linha da tabela de frequências: fi, fr (%) e Fr acumulada (%). */
+export interface LinhaFrequenciaDTO
+{
+  categoria: string;
+  frequenciaAbsoluta: number;
+  frequenciaRelativa: number;
+  frequenciaRelativaAcumulada: number;
+}
+
+export interface DistribuicaoDTO
+{
+  total: number;
+  moda: string[];
+  linhas: LinhaFrequenciaDTO[];
+}
+
+export interface MedidasComponenteDTO
+{
+  componente: TipoComponenteBackend;
+  emEstoque: number;
+  diasAteVencer: ResumoNumericoDTO;
+  temperaturaCelsius: ResumoNumericoDTO;
+  foraDaFaixa: number;
+  percentualForaDaFaixa: number;
+  volumeMl: ResumoNumericoDTO;
+  cadastradas: number;
+  descartadas: number;
+  taxaDePerda: number;
+}
+
+/** GET /api/v1/bancos/{bancoId}/estoque/estatisticas. Percentuais de 0 a 100. */
+export interface EstatisticasDoEstoqueDTO
+{
+  bancoId: string;
+  dataDeReferencia: string;
+  cadastradas: number;
+  emEstoque: number;
+  vencidasAindaNoEstoque: number;
+  descartadas: number;
+  taxaDePerda: number;
+  porTipoSanguineo: DistribuicaoDTO;
+  porComponente: DistribuicaoDTO;
+  porDiasAteVencer: DistribuicaoDTO;
+  componentes: MedidasComponenteDTO[];
+}
+
+// ======================================================================
 // DTOs - REQUISIÇÕES & ALOCAÇÃO
 // ======================================================================
 
