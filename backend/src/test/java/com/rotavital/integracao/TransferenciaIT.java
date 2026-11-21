@@ -77,10 +77,14 @@ public class TransferenciaIT
                 new HttpEntity<>(Map.of("status", status)), JsonNode.class, bolsaId);
     }
 
+    // PI3-243: só o admin descarta, com o motivo padronizado.
     private ResponseEntity<JsonNode> descartar(String bolsaId, String motivo)
     {
+        HttpHeaders cabecalhos = new HttpHeaders();
+        cabecalhos.set("X-Usuario-Id", dados.admin().toString());
         return api.exchange("/api/v1/hemocomponentes/{id}", HttpMethod.PATCH,
-                new HttpEntity<>(Map.of("status", "DESCARTADA", "motivoDescarte", motivo)), JsonNode.class, bolsaId);
+                new HttpEntity<>(Map.of("status", "DESCARTADA", "categoriaDescarte", "TEMPERATURA_FORA_DO_PADRAO",
+                        "motivoDescarte", motivo), cabecalhos), JsonNode.class, bolsaId);
     }
 
     private String coluna(String nome, String bolsaId)

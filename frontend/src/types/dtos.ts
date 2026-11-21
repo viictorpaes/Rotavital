@@ -26,6 +26,13 @@ export type TipoComponenteBackend =
   | "PLAQUETAS"
   | "CRIOPRECIPITADO";
 
+/** Motivo padronizado do descarte (PI3-243). */
+export type CategoriaDescarteBackend =
+  | "VALIDADE_EXPIRADA"
+  | "TEMPERATURA_FORA_DO_PADRAO"
+  | "BOLSA_DANIFICADA"
+  | "OUTRO";
+
 export type StatusBolsaBackend =
   | "DISPONIVEL"
   | "RESERVADA"
@@ -72,7 +79,11 @@ export interface BolsaHemocomponenteDTO
   bancoOrigemId?: string;
   /** Hospital onde a bolsa está; nulo no hemocentro de origem e em trânsito (PI3-236). */
   hospitalAtualId?: string | null;
+  /** Observação do descarte, em texto livre. */
   motivoDescarte?: string | null;
+  /** Motivo padronizado e momento do descarte (PI3-243); nulos se a bolsa não foi descartada. */
+  categoriaDescarte?: CategoriaDescarteBackend | null;
+  dataDescarte?: string | null;
 }
 
 /** Filtros opcionais e combináveis de GET /hemocomponentes; page começa em 0 e size vai de 1 a 100. */
@@ -82,6 +93,8 @@ export interface FiltrosHemocomponentesDTO
   tipoComponente?: TipoComponenteBackend;
   tipoSanguineo?: TipoSanguineoBackend;
   status?: StatusBolsaBackend;
+  /** Sem status escolhido, deixa de fora as bolsas descartadas e utilizadas (PI3-243). */
+  apenasAtivas?: boolean;
   page?: number;
   size?: number;
 }
@@ -133,12 +146,23 @@ export interface TotalPerdaDTO
   volumeMl: number;
 }
 
+/**
+ * GET /bancos/{bancoId}/estoque/perdas?dias=N (PI3-243). Rankings do maior para o menor número de
+ * bolsas. A taxa de perda olha as bolsas coletadas no período (0 a 100).
+ */
 export interface ResumoPerdasDTO
 {
   totalBolsas: number;
   totalVolumeMl: number;
   porTipoSanguineo: TotalPerdaDTO[];
   porComponente: TotalPerdaDTO[];
+  periodoDias: number | null;
+  desde: string | null;
+  porMotivo: TotalPerdaDTO[];
+  tiposComMaisDescartes: string[];
+  coletadasNoPeriodo: number;
+  descartadasDasColetadas: number;
+  taxaDePerda: number;
 }
 
 // ======================================================================

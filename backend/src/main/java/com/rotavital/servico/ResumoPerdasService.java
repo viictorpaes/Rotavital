@@ -1,49 +1,53 @@
 package com.rotavital.servico;
 
-import java.util.List;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rotavital.api.dto.estoque.ResumoPerdasDTO;
-import com.rotavital.api.dto.estoque.TotalPerdaDTO;
+import com.rotavital.dominio.ResumoDePerdas;
 import com.rotavital.repositorio.BancoDeSangueRepository;
-import com.rotavital.repositorio.BolsaHemocomponenteRepository;
-import com.rotavital.repositorio.BolsaHemocomponenteRepository.TotalPerda;
 
+// Painel de perdas da tela de Estoque (PI3-243). O cálculo fica em ResumoDePerdas.
 @Service
 public class ResumoPerdasService
 {
-    private final BancoDeSangueRepository bancos;
-    private final BolsaHemocomponenteRepository bolsas;
+    static final int PERIODO_MAXIMO_DIAS = 3650;
 
-    public ResumoPerdasService(BancoDeSangueRepository bancos, BolsaHemocomponenteRepository bolsas)
+    private final BancoDeSangueRepository bancos;
+    private final Clock relogio;
+
+    public ResumoPerdasService(BancoDeSangueRepository bancos, Clock relogio)
     {
         this.bancos = bancos;
-        this.bolsas = bolsas;
+        this.relogio = relogio;
     }
 
     @Transactional(readOnly = true)
     public Optional<ResumoPerdasDTO> resumir(String bancoId)
     {
-        if (!bancos.existsById(bancoId))
-        {
-            return Optional.empty();
-        }
-
-        List<TotalPerdaDTO> porTipoSanguineo = converter(bolsas.perdasPorTipoSanguineo(bancoId));
-        List<TotalPerdaDTO> porComponente = converter(bolsas.perdasPorComponente(bancoId));
-        long totalBolsas = porTipoSanguineo.stream().mapToLong(TotalPerdaDTO::bolsas).sum();
-        double totalVolumeMl = porTipoSanguineo.stream().mapToDouble(TotalPerdaDTO::volumeMl).sum();
-
-        return Optional.of(new ResumoPerdasDTO(totalBolsas, totalVolumeMl, porTipoSanguineo, porComponente));
+        return resumir(bancoId, null);
     }
 
-    private static List<TotalPerdaDTO> converter(List<TotalPerda> totais)
+    /**
+     * Perdas dos últimos "dias" dias, contando hoje (7 = hoje e os 6 dias anteriores); sem
+     * período, todo o histórico. Banco inexistente: vazio (404 no controller). Período fora de
+     * 1 a 3650 dias: DadosInvalidosException (400).
+     */
+    @Transactional(readOnly = true)
+    public Optional<ResumoPerdasDTO> resumir(String bancoId, Integer dias)
     {
-        return totais.stream()
-                .map(total -> new TotalPerdaDTO(total.getCategoria(), total.getBolsas(), total.getVolumeMl()))
-                .toList();
+        if (dias != null && (dias < 1 || dias > PERIODO_MAXIMO_DIAS))
+        {
+            throw new DadosInvalidosException("O parâmetro 'dias' deve estar entre 1 e " + PERIODO_MAXIMO_DIAS + ".");
+        }
+
+        LocalDate desde = dias == null ? null : LocalDate.now(relogio).minusDays(dias - 1L);
+
+        return bancos.findById(bancoId)
+                .map(banco -> ResumoPerdasDTO.de(ResumoDePerdas.calcular(banco.getEstoque().getBolsas(), desde), dias));
     }
 }

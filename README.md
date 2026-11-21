@@ -1009,11 +1009,13 @@ manda sozinho). Sem o header → `401`; perfil errado → `403`.
 | `GET` | `/bancos/{bancoId}/estoque/estatisticas` | livre | Estatística descritiva do estoque: frequências, média, mediana, desvio padrão e quartis por componente |
 | `GET` | `/bancos/{bancoId}/alertas` | livre | Bolsas vencidas, perto de vencer ou fora da temperatura (HU‑02) |
 | `GET` | `/bancos/{bancoId}/sugestao-lote?tipoComponente=&tipoSanguineo=&quantidade=` | livre | Lotes ABO/Rh compatíveis que vencem primeiro (HU‑04) |
-| `GET` | `/hemocomponentes?bancoId=&tipoSanguineo=&tipoComponente=&status=&page=&size=` | livre | Lista paginada com filtros (20 por página) |
+| `GET` | `/hemocomponentes?bancoId=&tipoSanguineo=&tipoComponente=&status=&apenasAtivas=&page=&size=` | livre | Lista paginada com filtros (20 por página); `apenasAtivas=true` esconde descartadas e utilizadas |
 | `GET` | `/hemocomponentes/{id}` | livre | Uma bolsa |
 | `POST` | `/hemocomponentes` | livre | Cadastra uma bolsa; `400`/`422` dizem o campo ou a regra |
 | `PATCH` | `/hemocomponentes/{id}` | livre | Muda o status (`{"status":"RESERVADA"}`), só pelas transições permitidas (HU‑08) |
 | `PATCH` | `/hemocomponentes/{id}` | médico ou admin | Corrige dados de uma bolsa `DISPONIVEL` (`{"volumeMl":230}`); tipo sanguíneo só o admin, componente e banco não mudam |
+| `PATCH` | `/hemocomponentes/{id}` | admin | Descarta (`{"status":"DESCARTADA","categoriaDescarte":"VALIDADE_EXPIRADA"}`), com observação opcional em `motivoDescarte` (PI3-243) |
+| `GET` | `/bancos/{bancoId}/estoque/perdas?dias=30` | livre | Perdas por tipo, componente e motivo, tipo com mais descartes e taxa de perda |
 </details>
 
 <details>

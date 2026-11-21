@@ -1,5 +1,6 @@
 package com.rotavital.dominio;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.hibernate.annotations.JdbcTypeCode;
@@ -61,6 +62,14 @@ public class BolsaHemocomponente implements Persistable<String>
 
     @Column(name = "motivo_descarte", length = 500)
     private String motivoDescarte;
+
+    // PI3-243: motivo padronizado e momento do descarte. Nulos enquanto a bolsa não foi descartada.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "categoria_descarte", length = 40)
+    private CategoriaDescarte categoriaDescarte;
+
+    @Column(name = "data_descarte")
+    private OffsetDateTime dataDescarte;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "banco_origem_id", nullable = false)
@@ -130,6 +139,32 @@ public class BolsaHemocomponente implements Persistable<String>
     public void descartar()
     {
         this.status = StatusBolsa.DESCARTADA;
+    }
+
+    /**
+     * Descarta a bolsa (PI3-243) registrando o motivo padronizado, a observação e o momento do
+     * descarte. A bolsa continua no banco para auditoria e nunca mais sai do status DESCARTADA.
+     * Só vale a partir de um status que pode ser descartado, e "Validade expirada" só para bolsa
+     * que de fato venceu. Regra quebrada lança MovimentacaoInvalidaException e nada muda.
+     */
+    public void descartar(CategoriaDescarte categoria, String observacao, OffsetDateTime quando)
+    {
+        if (!status.podePassarPara(StatusBolsa.DESCARTADA))
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " está " + status
+                    + " e não pode passar para " + StatusBolsa.DESCARTADA + ".");
+        }
+        if (categoria == CategoriaDescarte.VALIDADE_EXPIRADA && !estaVencida(quando.toLocalDate()))
+        {
+            throw new MovimentacaoInvalidaException("A bolsa " + id + " vence em "
+                    + DateTimeFormatter.ofPattern("dd/MM/yyyy").format(dataValidade)
+                    + ": o motivo \"Validade expirada\" só vale para bolsa vencida.");
+        }
+
+        this.status = StatusBolsa.DESCARTADA;
+        this.categoriaDescarte = categoria;
+        this.motivoDescarte = observacao;
+        this.dataDescarte = quando;
     }
 
     /**
@@ -292,9 +327,14 @@ public class BolsaHemocomponente implements Persistable<String>
         return motivoDescarte;
     }
 
-    public void registrarMotivoDescarte(String motivo)
+    public CategoriaDescarte getCategoriaDescarte()
     {
-        this.motivoDescarte = motivo;
+        return categoriaDescarte;
+    }
+
+    public OffsetDateTime getDataDescarte()
+    {
+        return dataDescarte;
     }
 
     public BancoDeSangue getBancoOrigem()

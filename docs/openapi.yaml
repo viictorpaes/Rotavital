@@ -271,11 +271,20 @@ paths:
   /bancos/{bancoId}/estoque/perdas:
     get:
       tags: [Estoque]
-      summary: Totais de bolsas descartadas por tipo sanguíneo e componente
-      description: Calcula os totais e rankings diretamente no banco, sem limitar os resultados à paginação do estoque.
+      summary: Perdas por tipo sanguíneo, componente e motivo (PI3-243)
+      description: >
+        Bolsas descartadas do banco, com período opcional pela data do descarte. Rankings do
+        maior para o menor número de bolsas, tipo(s) com mais descartes e taxa de perda (das
+        bolsas coletadas no período, quantas foram descartadas). Sem `dias`, todo o histórico;
+        descartes de antes do PI3-243 (sem data) só entram aí, e sem motivo contam como OUTRO.
       operationId: resumirPerdas
       parameters:
         - $ref: '#/components/parameters/BancoIdPath'
+        - name: dias
+          in: query
+          required: false
+          description: Últimos N dias, contando hoje (7 = hoje e os 6 anteriores). De 1 a 3650; fora disso, 400.
+          schema: { type: integer, minimum: 1, maximum: 3650 }
       responses:
         '200':
           description: Totais de bolsas e volume descartados no banco informado.
@@ -426,6 +435,11 @@ paths:
         - name: status
           in: query
           schema: { $ref: '#/components/schemas/StatusBolsa' }
+        - name: apenasAtivas
+          in: query
+          required: false
+          description: Sem `status`, deixa de fora as bolsas DESCARTADA e UTILIZADA (PI3-243). Padrão false.
+          schema: { type: boolean, default: false }
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
@@ -509,8 +523,15 @@ paths:
         campos de correção responde 400).
 
 
-        **Mudar o status:** envie `status` (e `motivoDescarte` ao descartar). Aplica as
-        transições de reservar()/descartar() de BolsaHemocomponente; não exige header.
+        **Mudar o status:** envie `status`. Aplica as transições permitidas de
+        BolsaHemocomponente; não exige header.
+
+
+        **Descartar (PI3-243):** `status` DESCARTADA com `categoriaDescarte` (motivo
+        padronizado) e, se quiser, `motivoDescarte` como observação (obrigatória em OUTRO,
+        até 500 caracteres). Só o admin descarta (401 sem header, 403 para outro papel).
+        VALIDADE_EXPIRADA só vale para bolsa vencida (422). A bolsa fica no banco com status,
+        motivo e data do descarte e não volta mais ao uso.
 
 
         **Corrigir os dados:** envie só os campos que mudaram entre `tipoSanguineo`,
@@ -1736,7 +1757,16 @@ components:
         motivoDescarte:
           type: string
           nullable: true
-          description: Justificativa registrada ao descartar a bolsa.
+          description: Observação registrada ao descartar a bolsa.
+        categoriaDescarte:
+          allOf: [{ $ref: '#/components/schemas/CategoriaDescarte' }]
+          nullable: true
+          description: Motivo padronizado do descarte (PI3-243).
+        dataDescarte:
+          type: string
+          format: date-time
+          nullable: true
+          description: Momento em que o descarte foi registrado (PI3-243).
       required: [id, tipoComponente, tipoSanguineo, dataColeta, dataValidade, loteSintetico, volumeMl, status, bancoOrigemId]
 
     NovaBolsaHemocomponenteRequest:
@@ -1767,17 +1797,24 @@ components:
         bancoOrigemId: { type: string }
       required: [tipoComponente, tipoSanguineo, dataColeta, dataValidade, loteSintetico, volumeMl, temperaturaCelsius, bancoOrigemId]
 
+    CategoriaDescarte:
+      type: string
+      enum: [VALIDADE_EXPIRADA, TEMPERATURA_FORA_DO_PADRAO, BOLSA_DANIFICADA, OUTRO]
+
     AtualizarBolsaRequest:
       type: object
       description: >
-        Ou `status` (com `motivoDescarte` ao descartar), ou um ou mais campos de
+        Ou `status` (com `categoriaDescarte` ao descartar), ou um ou mais campos de
         correção. Campos de correção ausentes mantêm o valor atual.
       properties:
         status: { $ref: '#/components/schemas/StatusBolsa' }
+        categoriaDescarte:
+          allOf: [{ $ref: '#/components/schemas/CategoriaDescarte' }]
+          description: Obrigatório quando status for DESCARTADA.
         motivoDescarte:
           type: string
           maxLength: 500
-          description: Obrigatório quando status for DESCARTADA.
+          description: Observação do descarte; obrigatória quando categoriaDescarte for OUTRO.
         tipoSanguineo:
           allOf: [{ $ref: '#/components/schemas/TipoSanguineo' }]
           description: Correção. Só o admin pode mudar.
@@ -1886,7 +1923,19 @@ components:
         porComponente:
           type: array
           items: { $ref: '#/components/schemas/TotalPerda' }
-      required: [totalBolsas, totalVolumeMl, porTipoSanguineo, porComponente]
+        periodoDias: { type: integer, nullable: true, description: O `dias` pedido; nulo no histórico completo. }
+        desde: { type: string, format: date, nullable: true, description: Primeiro dia do período. }
+        porMotivo:
+          type: array
+          items: { $ref: '#/components/schemas/TotalPerda' }
+        tiposComMaisDescartes:
+          type: array
+          items: { type: string }
+          description: Tipo(s) sanguíneo(s) com mais bolsas descartadas; mais de um em caso de empate.
+        coletadasNoPeriodo: { type: integer, format: int64 }
+        descartadasDasColetadas: { type: integer, format: int64 }
+        taxaDePerda: { type: number, description: descartadasDasColetadas ÷ coletadasNoPeriodo, de 0 a 100. }
+      required: [totalBolsas, totalVolumeMl, porTipoSanguineo, porComponente, porMotivo, tiposComMaisDescartes, coletadasNoPeriodo, descartadasDasColetadas, taxaDePerda]
 
     TotalPerda:
       type: object

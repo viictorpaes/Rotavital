@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -39,7 +40,11 @@ public class PassosDaBaixa
     @Quando("descarto a bolsa {string} pelo motivo {string}")
     public void descartoABolsaPeloMotivo(String bolsaId, String motivo)
     {
-        HttpEntity<Map<String, String>> corpo = new HttpEntity<>(Map.of("status", "DESCARTADA", "motivoDescarte", motivo));
+        // PI3-243: quem descarta é o admin, e o motivo do cenário vai como observação de "Outro".
+        HttpHeaders cabecalhos = new HttpHeaders();
+        cabecalhos.set("X-Usuario-Id", new DadosDeTeste(jdbc).admin().toString());
+        HttpEntity<Map<String, String>> corpo = new HttpEntity<>(
+                Map.of("status", "DESCARTADA", "categoriaDescarte", "OUTRO", "motivoDescarte", motivo), cabecalhos);
         resposta = api.exchange("/api/v1/hemocomponentes/{id}", HttpMethod.PATCH, corpo, JsonNode.class, bolsaId);
     }
 

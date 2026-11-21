@@ -71,9 +71,10 @@ public class EdicaoDeBolsaApiTest
         BancoDeSangueRepository bancos = RepositorioFalso.respondendo(BancoDeSangueRepository.class, Map.of());
         Clock relogio = Clock.fixed(Instant.parse("2026-10-01T15:00:00Z"), ZoneId.of("America/Recife"));
 
+        IdentificacaoService identificacao = new IdentificacaoService(usuarios);
         CorrecaoDeBolsaService correcao = new CorrecaoDeBolsaService(bolsas, new EstoqueService(bancos, bolsas, relogio),
-                new IdentificacaoService(usuarios), relogio);
-        MovimentacaoDeBolsaService movimentacao = new MovimentacaoDeBolsaService(bolsas, transferencias, relogio);
+                identificacao, relogio);
+        MovimentacaoDeBolsaService movimentacao = new MovimentacaoDeBolsaService(bolsas, transferencias, identificacao, relogio);
 
         api = MockMvcBuilders.standaloneSetup(new MovimentacaoDeBolsaController(movimentacao, correcao))
                 .setControllerAdvice(new TratadorDeErros())
@@ -157,14 +158,14 @@ public class EdicaoDeBolsaApiTest
         Assertions.assertEquals("O volume (900.0 ml) passa do máximo de 700.0 ml por bolsa.", erro.detail());
     }
 
+    // O descarte em si é testado em DescarteDeBolsaApiTest; aqui só que ele não passa sem usuário (PI3-243).
     @Test
-    public void descarteContinuaFuncionandoSemUsuario() throws Exception
+    public void descarteSemUsuarioDa401() throws Exception
     {
-        MockHttpServletResponse resposta = api.perform(patch(null,
-                "{\"status\":\"DESCARTADA\",\"motivoDescarte\":\"Bolsa rompida\"}")).andReturn().getResponse();
+        ErroDTO erro = erro(patch(null, "{\"status\":\"DESCARTADA\",\"categoriaDescarte\":\"BOLSA_DANIFICADA\"}"));
 
-        Assertions.assertEquals(200, resposta.getStatus());
-        Assertions.assertEquals(StatusBolsa.DESCARTADA, bolsa.getStatus());
-        Assertions.assertEquals("Bolsa rompida", bolsa.getMotivoDescarte());
+        Assertions.assertEquals(401, erro.status());
+        Assertions.assertEquals("Entre no sistema para descartar uma bolsa.", erro.detail());
+        Assertions.assertEquals(StatusBolsa.DISPONIVEL, bolsa.getStatus());
     }
 }

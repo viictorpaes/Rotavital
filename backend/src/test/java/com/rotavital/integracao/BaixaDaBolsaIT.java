@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -50,6 +51,15 @@ public class BaixaDaBolsaIT
     private ResponseEntity<JsonNode> patch(String bolsaId, Map<String, String> corpo)
     {
         return api.exchange("/api/v1/hemocomponentes/{id}", HttpMethod.PATCH, new HttpEntity<>(corpo), JsonNode.class, bolsaId);
+    }
+
+    // PI3-243: o descarte só passa com o admin no header.
+    private ResponseEntity<JsonNode> descartarComoAdmin(String bolsaId, Map<String, String> corpo)
+    {
+        HttpHeaders cabecalhos = new HttpHeaders();
+        cabecalhos.set("X-Usuario-Id", dados.admin().toString());
+        return api.exchange("/api/v1/hemocomponentes/{id}", HttpMethod.PATCH, new HttpEntity<>(corpo, cabecalhos),
+                JsonNode.class, bolsaId);
     }
 
     private Timestamp atualizadoEm(String bolsaId)
@@ -95,33 +105,63 @@ public class BaixaDaBolsaIT
     }
 
     @Test
+    public void descarteSemAdminNaoGravaNada()
+    {
+        ResponseEntity<JsonNode> resposta = patch("CH-1", Map.of("status", "DESCARTADA", "categoriaDescarte", "BOLSA_DANIFICADA"));
+
+        Assertions.assertEquals(401, resposta.getStatusCode().value());
+        Assertions.assertEquals("RESERVADA", dados.statusDaBolsa("CH-1"));
+    }
+
+    @Test
     public void descarteExigeMotivo()
     {
-        ResponseEntity<JsonNode> resposta = patch("CH-1", Map.of("status", "DESCARTADA"));
+        ResponseEntity<JsonNode> resposta = descartarComoAdmin("CH-1", Map.of("status", "DESCARTADA"));
 
         Assertions.assertEquals(400, resposta.getStatusCode().value());
         Assertions.assertEquals("RESERVADA", dados.statusDaBolsa("CH-1"));
     }
 
     @Test
-    public void descarteGravaMotivoEResumoDePerdas()
+    public void descarteGravaMotivoDataEResumoDePerdas()
     {
-        ResponseEntity<JsonNode> descarte = patch("CH-1",
-                Map.of("status", "DESCARTADA", "motivoDescarte", "Quebra da cadeia fria"));
+        ResponseEntity<JsonNode> descarte = descartarComoAdmin("CH-1", Map.of("status", "DESCARTADA",
+                "categoriaDescarte", "TEMPERATURA_FORA_DO_PADRAO", "motivoDescarte", "Quebra da cadeia fria"));
 
         Assertions.assertEquals(200, descarte.getStatusCode().value());
         Assertions.assertEquals("Quebra da cadeia fria", descarte.getBody().get("motivoDescarte").asText());
-        Assertions.assertEquals("Quebra da cadeia fria", jdbc.queryForObject(
-                "select motivo_descarte from public.bolsa_hemocomponente where id = ?", String.class, "CH-1"));
+        Assertions.assertEquals("TEMPERATURA_FORA_DO_PADRAO", descarte.getBody().get("categoriaDescarte").asText());
+        Assertions.assertEquals("Quebra da cadeia fria", coluna("motivo_descarte", "CH-1"));
+        Assertions.assertEquals("TEMPERATURA_FORA_DO_PADRAO", coluna("categoria_descarte", "CH-1"));
+        Assertions.assertNotNull(coluna("data_descarte", "CH-1"));
 
-        ResponseEntity<JsonNode> resumo = api.getForEntity("/api/v1/bancos/BS-01/estoque/perdas", JsonNode.class);
+        ResponseEntity<JsonNode> resumo = api.getForEntity("/api/v1/bancos/BS-01/estoque/perdas?dias=30", JsonNode.class);
 
         Assertions.assertEquals(200, resumo.getStatusCode().value());
         Assertions.assertEquals(1, resumo.getBody().get("totalBolsas").asInt());
         Assertions.assertEquals(450.0, resumo.getBody().get("totalVolumeMl").asDouble());
-        Assertions.assertEquals("O_NEGATIVO",
-                resumo.getBody().get("porTipoSanguineo").get(0).get("categoria").asText());
-        Assertions.assertEquals("HEMACIAS",
-                resumo.getBody().get("porComponente").get(0).get("categoria").asText());
+        Assertions.assertEquals("O_NEGATIVO", resumo.getBody().get("tiposComMaisDescartes").get(0).asText());
+        Assertions.assertEquals("HEMACIAS", resumo.getBody().get("porComponente").get(0).get("categoria").asText());
+        Assertions.assertEquals("TEMPERATURA_FORA_DO_PADRAO", resumo.getBody().get("porMotivo").get(0).get("categoria").asText());
+    }
+
+    @Test
+    public void bolsaDescartadaSaiDaListagemDeAtivas()
+    {
+        descartarComoAdmin("CH-1", Map.of("status", "DESCARTADA", "categoriaDescarte", "BOLSA_DANIFICADA"));
+        dados.bolsa("CH-2", "BS-01", TipoComponente.HEMACIAS, TipoSanguineo.O_NEGATIVO, LocalDate.of(2026, 10, 20),
+                4.0, "R1", StatusBolsa.DISPONIVEL);
+
+        ResponseEntity<JsonNode> ativas = api.getForEntity("/api/v1/hemocomponentes?bancoId=BS-01&apenasAtivas=true", JsonNode.class);
+        ResponseEntity<JsonNode> todas = api.getForEntity("/api/v1/hemocomponentes?bancoId=BS-01", JsonNode.class);
+
+        Assertions.assertEquals(1, ativas.getBody().size());
+        Assertions.assertEquals("CH-2", ativas.getBody().get(0).get("id").asText());
+        Assertions.assertEquals(2, todas.getBody().size());
+    }
+
+    private String coluna(String nome, String bolsaId)
+    {
+        return jdbc.queryForObject("select " + nome + "::text from public.bolsa_hemocomponente where id = ?", String.class, bolsaId);
     }
 }

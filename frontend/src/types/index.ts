@@ -99,8 +99,10 @@ export interface LoteHemocomponente
   localizacao: string;
   /** Status da bolsa no backend (DISPONIVEL, RESERVADA…); ausente nos dados de exemplo. */
   statusBolsa?: string;
-  /** Motivo informado no descarte, quando aplicável. */
+  /** Observação informada no descarte, quando aplicável. */
   motivoDescarte?: string;
+  /** Motivo padronizado do descarte (PI3-243): VALIDADE_EXPIRADA, TEMPERATURA_FORA_DO_PADRAO... */
+  categoriaDescarte?: string;
 }
 
 /** Origem de um aviso do painel operacional (HU-02). */
