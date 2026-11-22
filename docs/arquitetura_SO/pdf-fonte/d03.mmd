@@ -1,0 +1,12 @@
+flowchart TB
+    AP["🖥️ Apresentação<br/>EstoqueController · telas React"]
+    APL["⚙️ Negócio · aplicação<br/>RegistrarBolsa · MovimentarBolsa"]
+    DOM["🧠 Negócio · domínio<br/>Bolsa · Estoque · BolsaRepository «interface»"]
+    DADOS["🗄️ Dados<br/>BolsaRepositoryJpa · SupabaseAuth · GoogleRoutes"]
+    DB[("PostgreSQL")]
+
+    AP -->|usa| APL
+    APL -->|usa| DOM
+    APL -->|"usa, pela interface"| DADOS
+    DADOS -.->|implementa as interfaces| DOM
+    DADOS --> DB

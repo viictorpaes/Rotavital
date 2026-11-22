@@ -1,0 +1,35 @@
+cenario,item,quantidade,preco_unitario_usd,custo_mensal_usd,regiao,fonte,data_consulta
+baixo,Render · workspace Hobby,1,0,0,—,https://render.com/pricing,22/11/2026
+baixo,Render · web service 1 CPU / 2 GB (1c-2g),1,25,25,Ohio (us-east),https://render.com/pricing,22/11/2026
+baixo,Render · banda de saída (3.6 GB; 5 GB inclusos),0,0.15,0,Ohio (us-east),https://render.com/pricing,22/11/2026
+baixo,Supabase · plano Pro,1,25,25,us-east-2 (Ohio),https://supabase.com/pricing,22/11/2026
+baixo,"Supabase · compute Micro (1 GB, 60 conexões diretas / 200 no pooler)",1,10,10,us-east-2 (Ohio),https://supabase.com/docs/guides/platform/compute-and-disk,22/11/2026
+baixo,Supabase · crédito de compute do plano Pro,1,-10,-10,us-east-2 (Ohio),https://supabase.com/pricing,22/11/2026
+baixo,"Vercel · plano Pro (1 assento, US$ 20 de crédito, CDN 1M req / 1 TB)",1,20,20,CDN global,https://vercel.com/docs/plans/pro-plan,22/11/2026
+baixo,Google Routes · Compute Routes Essentials (1.500 chamadas/mês com cache; 10.000 grátis),0,0.005,0.0,global,https://developers.google.com/maps/billing/pricing,22/11/2026
+baixo,TOTAL MENSAL,,,70.0,,,
+baixo,CUSTO POR PEDIDO (4.500 pedidos/mês),,,0.01556,,,
+moderado,"Render · workspace Pro (25 GB de banda, autoscaling)",1,25,25,—,https://render.com/pricing,22/11/2026
+moderado,Render · web service 1 CPU / 2 GB (1c-2g),3,25,75,Ohio (us-east),https://render.com/pricing,22/11/2026
+moderado,Render · banda além dos 25 GB (30 GB no mês),5.0,0.15,0.75,Ohio (us-east),https://render.com/pricing,22/11/2026
+moderado,Supabase · plano Pro,1,25,25,us-east-2 (Ohio),https://supabase.com/pricing,22/11/2026
+moderado,"Supabase · compute Small (2 GB, 90 / 400)",1,15,15,us-east-2 (Ohio),https://supabase.com/docs/guides/platform/compute-and-disk,22/11/2026
+moderado,Supabase · crédito de compute do plano Pro,1,-10,-10,us-east-2 (Ohio),https://supabase.com/pricing,22/11/2026
+moderado,"Vercel · plano Pro (1 assento, US$ 20 de crédito, CDN 1M req / 1 TB)",1,20,20,CDN global,https://vercel.com/docs/plans/pro-plan,22/11/2026
+moderado,Vercel · Flat Rate CDN 10M (3 milhões de requisições/mês),1,20,20,CDN global,https://vercel.com/blog/introducing-flat-rate-cdn,22/11/2026
+moderado,Google Routes · Compute Routes Essentials (9.000 chamadas/mês com cache; 10.000 grátis),0,0.005,0.0,global,https://developers.google.com/maps/billing/pricing,22/11/2026
+moderado,TOTAL MENSAL,,,170.75,,,
+moderado,CUSTO POR PEDIDO (36.000 pedidos/mês),,,0.00474,,,
+alto,"Render · workspace Pro (25 GB de banda, autoscaling)",1,25,25,—,https://render.com/pricing,22/11/2026
+alto,Render · web service 1 CPU / 2 GB (1c-2g),13,25,325,Ohio (us-east),https://render.com/pricing,22/11/2026
+alto,"Render · background worker 1c-2g (outbox, alertas, guias)",1,25,25,Ohio (us-east),https://render.com/pricing,22/11/2026
+alto,Render · banda além dos 25 GB (240 GB no mês),215.0,0.15,32.25,Ohio (us-east),https://render.com/pricing,22/11/2026
+alto,Supabase · plano Pro,1,25,25,us-east-2 (Ohio),https://supabase.com/pricing,22/11/2026
+alto,"Supabase · compute Large (2 vCPU dedicadas, 8 GB, 160 / 800)",1,110,110,us-east-2 (Ohio),https://supabase.com/docs/guides/platform/compute-and-disk,22/11/2026
+alto,Supabase · crédito de compute do plano Pro,1,-10,-10,us-east-2 (Ohio),https://supabase.com/pricing,22/11/2026
+alto,Supabase · disco além dos 8 GB (20 GB),12,0.125,1.5,us-east-2 (Ohio),https://supabase.com/docs/guides/platform/compute-and-disk,22/11/2026
+alto,"Vercel · plano Pro (1 assento, US$ 20 de crédito, CDN 1M req / 1 TB)",1,20,20,CDN global,https://vercel.com/docs/plans/pro-plan,22/11/2026
+alto,Vercel · Flat Rate CDN 50M (24 milhões de requisições/mês),1,100,100,CDN global,https://vercel.com/blog/introducing-flat-rate-cdn,22/11/2026
+alto,Google Routes · Compute Routes Essentials (60.000 chamadas/mês com cache; 10.000 grátis),50000,0.005,250.0,global,https://developers.google.com/maps/billing/pricing,22/11/2026
+alto,TOTAL MENSAL,,,903.75,,,
+alto,CUSTO POR PEDIDO (270.000 pedidos/mês),,,0.00335,,,

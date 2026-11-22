@@ -1,0 +1,6 @@
+flowchart LR
+    U(["1.000 usuários/dia"]) --> V["Vercel Pro<br/>+ Flat Rate CDN 10M"]
+    U -->|"HTTPS"| LB{{"Balanceador do Render"}}
+    LB --> R1["1c-2g"] & R2["1c-2g"] & R3["1c-2g"]
+    R1 & R2 & R3 -->|"pool 5 cada"| DB[("Supabase Pro · Small")]
+    R1 & R2 & R3 --> C[("cache de rotas")] --> G[["Google Routes"]]

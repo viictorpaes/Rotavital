@@ -8,12 +8,13 @@
 
 ![Seção](https://img.shields.io/badge/seção-C-purple)
 ![Peso](https://img.shields.io/badge/peso-0,5-orange)
-![Status](https://img.shields.io/badge/status-parcial_·_pré--entrega_17%2F11-yellow)
+![Status](https://img.shields.io/badge/status-entrega_final_24%2F11-green)
 </h1>
 
 > [!NOTE]
-> Trabalho U2 · Parte 2 · Seção C (0,5). **Versão parcial para a pré-entrega de 17/11/2026.**
-> Os contextos usados aqui vêm da [Seção A](A-remodelagem-ddd.md#a2-bounded-contexts). Índice em [`README.md`](README.md).
+> Trabalho U2 · Parte 2 · Seção C (0,5). Versão final, revista depois da devolutiva de 17/11 (ponto 2: **camadas com
+> Clean Architecture**). Os contextos usados aqui vêm da [Seção A](A-remodelagem-ddd.md#a2-bounded-contexts). Índice em
+> [`README.md`](README.md).
 
 **📑 Sumário**
 
@@ -21,6 +22,7 @@
 | :---: | :--- | :--- |
 | C.1 | [🧱 As três camadas](#c1-camadas) | O que fica em cada camada, hoje e na proposta |
 | C.2 | [⬇️ Regra de dependência](#c2-regra-de-dependencia) | Quem pode usar quem, as 6 regras e como corrigir as 2 quebradas |
+| C.2.1 | [🎯 Clean Architecture](#c21-clean-architecture) | Como as três camadas viram portas e adaptadores, com o caso de uso da HU-11 |
 | C.3 | [📁 Estrutura de pacotes](#c3-estrutura-de-pacotes) | Pacotes por contexto e, dentro dele, por camada |
 | C.4 | [🖥️ Camada lógica × tier físico](#c4-camada-x-tier) | Onde cada camada roda, no Docker local e em produção |
 
@@ -69,7 +71,7 @@ compila sem saber que existe banco, Spring ou HTTP.
 | 2 | Transação e conferência de papel ficam só na aplicação | ✅ `@Transactional` e `IdentificacaoService` só aparecem em `servico` |
 | 3 | Cliente externo fica em dados, atrás de uma interface do negócio | ✅ `CalculadoraDeTrajeto` → `GoogleRoutes`; `VerificadorDeCredenciais` e `CriadorDeContas` → `SupabaseAuth` |
 | 4 | O domínio não importa apresentação, aplicação nem dados | ✅ Nenhuma classe de `dominio` importa `api`, `servico` ou `repositorio` |
-| 5 | O domínio não depende de banco nem de framework | ❌ 11 das 36 classes de `dominio` usam anotações JPA (`@Entity`, `@Table`), 4 usam anotações do Hibernate e `BolsaHemocomponente` implementa `Persistable`, do Spring Data |
+| 5 | O domínio não depende de banco nem de framework | ❌ 11 das 42 classes de `dominio` usam anotações JPA (`@Entity`, `@Table`), 4 usam anotações do Hibernate e `BolsaHemocomponente` implementa `Persistable`, do Spring Data |
 | 6 | Um contexto não mexe no domínio de outro; usa a aplicação dele ou um evento | ❌ `TransferenciaDeBolsa` (Distribuição) muda o status da bolsa (Estoque) direto, e `MovimentacaoDeBolsaService` (Estoque) cancela a transferência (Distribuição) |
 
 <h4 align="left">🛠️ Como corrigimos as regras 5 e 6 na Parte 3</h4>
@@ -83,6 +85,41 @@ compila sem saber que existe banco, Spring ou HTTP.
 > **Para a regra não voltar a ser quebrada:** um teste de arquitetura com ArchUnit no `mvn verify`, que falha se
 > alguma classe de `..negocio.dominio..` importar `jakarta.persistence`, `org.hibernate` ou `org.springframework`.
 > Como a esteira da Parte 1 já roda `mvn verify`, quem quebrar a regra não consegue fazer o merge.
+
+<h3 align="center" id="c21-clean-architecture">🎯 C.2.1 Três camadas com Clean Architecture</h3>
+
+<p align="center">
+As três camadas continuam as mesmas; a Clean Architecture diz <b>para onde apontam as dependências</b>: sempre para o
+centro. O domínio não conhece ninguém, a aplicação só conhece o domínio e as <b>portas</b> (interfaces) que ela mesma
+declara, e quem está fora (Spring, JPA, HTTP, Supabase, Google) entra como <b>adaptador</b> que implementa uma porta.
+</p>
+
+| Anel da Clean Architecture | Camada do enunciado | Pacote | Exemplo no Estoque |
+| :--- | :--- | :--- | :--- |
+| 🧠 Entidades | Negócio · domínio | `estoque.negocio.dominio` | `Bolsa`, `Validade`, `Temperatura`, `StatusBolsa` (Java puro, sem anotação) |
+| ⚙️ Casos de uso | Negócio · aplicação | `estoque.negocio.aplicacao` | `ReservarBolsa`, `RegistrarBolsa`, `DescartarBolsa`; portas de saída `BolsaRepository`, `Relogio`, `PublicadorDeEventos` |
+| 🔌 Adaptadores de interface | Apresentação e dados | `estoque.apresentacao`, `estoque.dados` | `MovimentacaoDeBolsaController` (entrada); `BolsaRepositoryJpa` + `BolsaEntity` + `BolsaMapper` (saída) |
+| 🧰 Frameworks e drivers | Fora do código de negócio | `config`, Spring Boot, Hibernate, PostgreSQL, React | Injeção de dependência liga a porta ao adaptador em `EstoqueConfig` |
+
+```mermaid
+flowchart LR
+    C["🖥️ MovimentacaoDeBolsaController<br/>(adaptador de entrada)"] -->|"ReservarBolsaComando"| UC["⚙️ ReservarBolsa<br/>(caso de uso)"]
+    UC -->|"buscar / salvar"| P[/"BolsaRepository<br/>«porta de saída»"/]
+    UC -->|"bolsa.reservarPara(req, hoje)"| D["🧠 Bolsa<br/>(raiz do agregado)"]
+    J["🗄️ BolsaRepositoryJpa<br/>(adaptador de saída)"] -.->|implementa| P
+    J --> PG[("PostgreSQL")]
+```
+
+O caso de uso da HU-11 fica assim, e é exatamente o que os testes da Parte 3 exercitam:
+
+1. O controller converte o JSON em `ReservarBolsaComando(codigo, requisicaoId)` e chama `ReservarBolsa`.
+2. `ReservarBolsa` confere o papel `ADMIN`, carrega a bolsa pela porta `BolsaRepository` e chama
+   `bolsa.reservarPara(requisicao, hoje)`. **A regra (I1, I2, I3) está na `Bolsa`, não no caso de uso.**
+3. Se a bolsa recusar, ela lança `MovimentacaoInvalidaException` e o `TratadorDeErros` devolve 422; se aceitar, o caso
+   de uso salva pela porta e publica `BolsaReservada`.
+
+Como o domínio é Java puro, o teste da `Bolsa` não sobe Spring nem banco, e o teste do caso de uso usa um
+`BolsaRepository` em memória (o `RepositorioFalso` que já existe nos testes de serviço).
 
 <h2 align="center" id="c3-estrutura-de-pacotes">📁 C.3 Estrutura de pacotes <br>
 <img src="https://img.shields.io/badge/-com.rotavital-111827?style=flat&logo=openjdk&logoColor=orange" height="22"/>
@@ -98,14 +135,16 @@ estão listadas logo depois da árvore; as demais já existem e só mudam de pac
 com.rotavital
 ├── estoque <img src="https://img.shields.io/badge/Core-DC2626?style=flat-square" height="18"/>
 │   ├── apresentacao   (EstoqueController, MovimentacaoDeBolsaController, SugestaoDeLoteController,
-│   │                   AlertasDoEstoqueController)
+│   │                   AlertasDoEstoqueController, EstatisticasDoEstoqueController)
 │   ├── negocio
-│   │   ├── aplicacao  (EstoqueService → RegistrarBolsa + ConsultarEstoque, MovimentacaoDeBolsaService,
-│   │   │               SugestaoDeLoteService, AlertasDoEstoqueService, ResumoEstoqueService,
-│   │   │               ResumoPerdasService)
-│   │   └── dominio    (BolsaHemocomponente, Estoque, BancoDeSangue, StatusBolsa, CompatibilidadeSanguinea,
-│   │                   AlertaDeEstoque, MovimentacaoInvalidaException, BolsaRepository «interface»)
-│   └── dados          (BolsaRepositoryJpa, BolsaEntity, BancoDeSangueRepository, ResumoEstoqueRepository)
+│   │   ├── aplicacao  (RegistrarBolsa, ReservarBolsa, DescartarBolsa, CorrigirBolsa, ConsultarEstoque,
+│   │   │               SugerirLote, ResumirPerdas; portas BolsaRepository, BancoDeSangueRepository,
+│   │   │               PublicadorDeEventos)
+│   │   └── dominio    (Bolsa, Movimentacao, CodigoDaBolsa, Validade, Volume, Temperatura, MotivoDeDescarte,
+│   │                   StatusBolsa, CategoriaDescarte, Estoque, BancoDeSangue, CompatibilidadeSanguinea, AlertaDeEstoque,
+│   │                   ResumoDePerdas, EstatisticaDescritivaDoEstoque, BolsaReservada, BolsaDescartada)
+│   └── dados          (BolsaRepositoryJpa, BolsaEntity, MovimentacaoEntity, BolsaMapper,
+│                       BancoDeSangueRepositoryJpa, ResumoEstoqueRepository)
 ├── requisicao <img src="https://img.shields.io/badge/Core-DC2626?style=flat-square" height="18"/>
 │   ├── apresentacao   (RequisicaoController)                         ← hoje só no openapi.yaml
 │   ├── negocio
@@ -148,10 +187,16 @@ com.rotavital
 
 <h4 align="left">🆕 Classes novas</h4>
 
-`BolsaRepository`, `BolsaRepositoryJpa`, `BolsaEntity`, `RegistrarBolsa`, `ConsultarEstoque`, `RequisicaoController`,
-`AbrirRequisicao`, `AcompanharRequisicao`, `CancelarRequisicao`, `RequisicaoRepositoryJpa`, `Hemocentro` e
-`Beneficiario`. `Hospital` e `BancoDeSangue` deixam de ser a mesma hierarquia: cada contexto guarda o próprio modelo
-do ponto da rede e eles se referem uns aos outros pelo `id`.
+**No Estoque (Parte 3, entrega de 01/12):** `Bolsa` (a `BolsaHemocomponente` renomeada e sem JPA), `Movimentacao`,
+`CodigoDaBolsa`, `Validade`, `Volume`, `Temperatura`, `MotivoDeDescarte`, os casos de uso `RegistrarBolsa`,
+`ReservarBolsa`, `DescartarBolsa`, `CorrigirBolsa` (que substituem `EstoqueService`, `MovimentacaoDeBolsaService` e
+`CorrecaoDeBolsaService`), a porta `BolsaRepository` e, em dados, `BolsaEntity`, `MovimentacaoEntity`, `BolsaMapper` e
+`BolsaRepositoryJpa`.
+
+**Nos outros contextos (depois de 01/12):** `RequisicaoController`, `AbrirRequisicao`, `AcompanharRequisicao`,
+`CancelarRequisicao`, `RequisicaoRepositoryJpa`, `Hemocentro` e `Beneficiario`. `Hospital` e `BancoDeSangue` deixam de
+ser a mesma hierarquia: cada contexto guarda o próprio modelo do ponto da rede e eles se referem uns aos outros pelo
+`id`. O plano completo, com datas, está em [`F-plano-de-refatoracao.md`](F-plano-de-refatoracao.md).
 
 <h4 align="left">🖥️ E no frontend</h4>
 

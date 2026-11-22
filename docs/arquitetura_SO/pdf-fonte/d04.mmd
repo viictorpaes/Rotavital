@@ -1,0 +1,6 @@
+flowchart LR
+    C["🖥️ MovimentacaoDeBolsaController<br/>(adaptador de entrada)"] -->|"ReservarBolsaComando"| UC["⚙️ ReservarBolsa<br/>(caso de uso)"]
+    UC -->|"buscar / salvar"| P[/"BolsaRepository<br/>«porta de saída»"/]
+    UC -->|"bolsa.reservarPara(req, hoje)"| D["🧠 Bolsa<br/>(raiz do agregado)"]
+    J["🗄️ BolsaRepositoryJpa<br/>(adaptador de saída)"] -.->|implementa| P
+    J --> PG[("PostgreSQL")]

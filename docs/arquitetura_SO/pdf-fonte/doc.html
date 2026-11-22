@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<title>Rota Vital · Planejamento da remodelagem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+@page { size: A4; margin: 13mm 13mm 14mm 13mm; }
+:root { --vinho:#7f1d1d; --verm:#b91c1c; --tinta:#1c1917; --cinza:#57534e; --linha:#e7e5e4; --fundo:#faf7f5; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 8.6pt; line-height: 1.38; color: var(--tinta); margin: 0; }
+h1 { font-size: 19pt; margin: 0 0 2mm; color: var(--vinho); letter-spacing: -0.01em; }
+h2 { font-size: 12.5pt; color: var(--vinho); margin: 4.2mm 0 1.6mm; padding-bottom: 1mm; border-bottom: 1.4px solid var(--vinho); break-after: avoid; }
+h2 .peso { float: right; font-size: 8.5pt; color: var(--cinza); font-weight: 600; margin-top: 1.2mm; }
+h3 { font-size: 9.8pt; margin: 2.6mm 0 1.1mm; color: var(--tinta); break-after: avoid; }
+p { margin: 0 0 1.5mm; }
+.secao { }
+table { width: 100%; border-collapse: collapse; margin: 0.6mm 0 2mm; break-inside: auto; }
+tr { break-inside: avoid; } thead { display: table-header-group; } table { break-before: auto; } h3 + table, h3 + div, h3 + figure { break-before: avoid; }
+th { background: var(--vinho); color: #fff; text-align: left; font-weight: 600; padding: 1mm 1.4mm; font-size: 7.9pt; }
+td { border-bottom: 0.6px solid var(--linha); padding: 0.75mm 1.4mm; vertical-align: top; font-size: 7.9pt; }
+tr:nth-child(even) td { background: var(--fundo); }
+td.n, th.n { text-align: right; white-space: nowrap; }
+tr.total td { font-weight: 700; background: #fde8e8 !important; border-top: 1px solid var(--vinho); }
+code { font-family: "JetBrains Mono", Consolas, monospace; font-size: 7.4pt; background: #f5f0ee; padding: 0 0.6mm; border-radius: 1px; }
+pre { font-family: "JetBrains Mono", Consolas, monospace; font-size: 6.9pt; line-height: 1.32; background: #f8f5f3; border-left: 2px solid var(--vinho); padding: 1.6mm 2.4mm; margin: 0.6mm 0 2mm; white-space: pre; overflow: hidden; break-inside: avoid; }
+.capa { border-top: 4px solid var(--vinho); padding-top: 3mm; margin-bottom: 2mm; }
+.sub { font-size: 10pt; color: var(--cinza); margin-bottom: 2mm; }
+.meta { display: grid; grid-template-columns: 1.15fr 1fr; gap: 3mm; font-size: 8.2pt; }
+.meta div { background: var(--fundo); padding: 2mm 2.6mm; border-radius: 2px; }
+.meta b { color: var(--vinho); }
+.nota { background: #fff7ed; border-left: 2.4px solid #c2410c; padding: 1.4mm 2.4mm; margin: 1mm 0 2mm; font-size: 8pt; break-inside: avoid; }
+.ok { color: #15803d; font-weight: 700; } .no { color: #b91c1c; font-weight: 700; } .warn { color: #b45309; font-weight: 700; }
+figure { margin: 1mm 0 2mm; text-align: center; break-inside: avoid; }
+figure img { max-width: 100%; }
+figcaption { font-size: 7.4pt; color: var(--cinza); margin-top: 0.6mm; }
+.duas { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; align-items: start; }
+.tres { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2.5mm; align-items: end; }
+.tres figure img { max-height: 46mm; }
+ul { margin: 0 0 1.6mm; padding-left: 4.2mm; } li { margin-bottom: 0.5mm; }
+.b2 table { width: auto; } .b2::after { content:""; display:block; clear:both; }
+.adr { border: 0.8px solid var(--linha); border-left: 2.6px solid var(--vinho); padding: 1.4mm 2.4mm; margin-bottom: 1.8mm; break-inside: avoid; }
+.adr b.t { color: var(--vinho); }
+.rodape { font-size: 7.2pt; color: var(--cinza); }
+</style></head>
+<body>
+
+<section class="capa">
+<h1>Rota Vital · Planejamento da remodelagem</h1>
+<div class="sub">Trabalho U2 · Parte 2 — DDD, três camadas com Clean Architecture, projeção com microsserviços e três cenários com orçamento · Infraestrutura de Software · ADS · CESAR School · 2026.2</div>
+<div class="meta">
+<div><b>Squad do Projeto Integrador — Rota Vital</b><br>Victor José Paes e Silva (líder) · Eduardo de Souza Cavalcanti Junior · Felipe Franca Alves de Lima · Helamã Leone de Lima Procídio · João Pedro Arruda Guimarães · Júlia Oliveira Veríssimo · Lucas Paguetti Pereira · Tiago Luiz Moreira de Vasconcelos</div>
+<div><b>Repositório:</b> github.com/viictorpaes/Rotavital<br><b>Esta entrega:</b> <code>docs/arquitetura_SO/</code> (seções em Markdown, diagramas Mermaid, ADRs em <code>adr/</code>, planilha em <code>orcamento/</code>) e <code>docs/specs/</code><br><b>Data:</b> 24/11/2026 · Parte 3 (código): 01/12/2026</div>
+</div>
+</section>
+
+<h2>Resposta à devolutiva da pré-entrega (17/11)</h2>
+<table>
+<thead><tr><th style="width:30%">Ponto levantado</th><th>O que fizemos</th><th style="width:12%">Onde</th></tr></thead>
+<tr><td>1. DDD a sério e domínio rico, sem entidades anêmicas</td><td>Medimos no código quais classes são anêmicas e quais regras da bolsa estão no serviço; desenhamos o agregado <code>Bolsa</code> com 6 objetos de valor e 8 invariantes</td><td>B.1–B.3</td></tr>
+<tr><td>2. Camadas e Clean Architecture</td><td>Três camadas com portas e adaptadores, domínio em Java puro, ArchUnit na esteira (ADR 0002)</td><td>C.2–C.3</td></tr>
+<tr><td>3. O que muda efetivamente (parte sai em 01/12)</td><td>Tabela antes → depois, com o escopo fechado da entrega de 01/12</td><td>F.1</td></tr>
+<tr><td>4. TDD: cobertura atual e planejada</td><td>Cobertura medida com JaCoCo (77,5 % das linhas, 430 testes) e metas que quebram o build</td><td>F.2</td></tr>
+<tr><td>5. SDD para ajudar nos itens anteriores</td><td>Especificação da HU-11 antes do código (spec, plano, tarefas) em <code>docs/specs/</code> (ADR 0003)</td><td>F.3</td></tr>
+</table>
+
+<h2>A. Remodelagem do domínio com DDD <span class="peso">0,6</span></h2>
+<p>Hoje o backend é um monolito organizado por camada técnica (<code>api</code>, <code>servico</code>, <code>dominio</code>, <code>repositorio</code>); o pacote <code>dominio</code> tem 42 classes de assuntos diferentes que se enxergam livremente. A remodelagem separa o código por assunto do negócio, cada um com a sua linguagem.</p>
+<h3>A.1 Subdomínios</h3>
+<table>
+<thead><tr><th style="width:24%">Subdomínio</th><th style="width:9%">Tipo</th><th>Justificativa</th></tr></thead>
+<tr><td>Gestão do estoque de hemocomponentes</td><td><b>Core</b></td><td>É onde o Rota Vital evita perda e erro: FEFO, compatibilidade ABO/Rh por componente e cadeia fria decidem qual bolsa pode ir para qual paciente.</td></tr>
+<tr><td>Requisição hospitalar</td><td><b>Core</b></td><td>O pedido do hospital dispara o fluxo inteiro: é priorizado pela urgência e acompanhado até a entrega, ligando estoque e rede.</td></tr>
+<tr><td>Distribuição na rede</td><td><b>Core</b></td><td>Rota mínima (Dijkstra) e transferência rastreada entre hemocentro e hospital, com previsão de chegada: é o "Rota" do nome.</td></tr>
+<tr><td>Captação de doadores</td><td>Suporte</td><td>Necessária para repor o estoque (campanhas e agenda do hemocentro), mas segue regras comuns de agenda.</td></tr>
+<tr><td>Atendimento ao paciente</td><td>Suporte</td><td>Cadastro e fila de pacientes por gravidade alimentam campanhas e requisições, sem regra complexa.</td></tr>
+<tr><td>Monitoramento da cadeia fria</td><td>Suporte</td><td>Leituras de temperatura durante a entrega; hoje só no contrato e no schema (<code>entrega</code>, <code>leitura_telemetria</code>).</td></tr>
+<tr><td>Identidade e acesso</td><td>Genérico</td><td>Login e papéis resolvidos pelo Supabase Auth; todo sistema precisa e não há o que inventar.</td></tr>
+<tr><td>Geolocalização e trajetos</td><td>Genérico</td><td>Distância e tempo pelas ruas vêm da Google Routes API: serviço comprado, não construído.</td></tr>
+</table>
+<h3>A.2 Bounded contexts</h3>
+<table>
+<thead><tr><th style="width:16%">Contexto</th><th>Responsabilidade (uma frase)</th><th style="width:38%">Classes de hoje que vão para ele</th></tr></thead>
+<tr><td><b>Estoque</b> (core)</td><td>Manter as bolsas de cada banco de sangue e decidir quais estão aptas, em que ordem (FEFO) e para qual tipo sanguíneo.</td><td><code>BolsaHemocomponente</code>, <code>Estoque</code>, <code>BancoDeSangue</code>, <code>CompatibilidadeSanguinea</code>, <code>StatusBolsa</code></td></tr>
+<tr><td><b>Requisição</b> (core)</td><td>Receber o pedido do hospital, priorizá-lo pela urgência e acompanhá-lo até a entrega ou o cancelamento.</td><td><code>RequisicaoHospitalar</code>, <code>FilaRequisicoesHospitalares</code>, <code>StatusRequisicao</code></td></tr>
+<tr><td><b>Distribuição</b> (core)</td><td>Calcular a rota entre os pontos da rede e registrar a saída e a chegada de cada bolsa transferida.</td><td><code>RedeDistribuicao</code>, <code>Conexao</code>, <code>Hospital</code>, <code>RotaCalculada</code>, <code>TransferenciaDeBolsa</code></td></tr>
+<tr><td><b>Captação</b> (suporte)</td><td>Publicar campanhas de doação e agendar doadores nos horários do hemocentro.</td><td><code>CampanhaDoacao</code>, <code>AgendamentoDoacao</code>, <code>AgendaDoHemocentro</code></td></tr>
+<tr><td><b>Atendimento</b> (suporte)</td><td>Cadastrar os pacientes de cada hospital, ordená-los pela gravidade e registrar o procedimento.</td><td><code>Paciente</code>, <code>Gravidade</code>, <code>StatusPaciente</code></td></tr>
+<tr><td><b>Identidade e Acesso</b></td><td>Autenticar a pessoa e dizer qual papel ela tem (médico, doador ou admin).</td><td><code>Usuario</code>, <code>PapelUsuario</code>, <code>SupabaseAuth</code></td></tr>
+</table>
+<h3>A.3 Glossário da linguagem ubíqua</h3>
+<table>
+<thead><tr><th style="width:15%">Termo</th><th style="width:14%">Contexto</th><th>Significado</th></tr></thead>
+<tr><td><b>Bolsa</b> ⚠️</td><td>Estoque</td><td>Unidade física de hemocomponente com validade, volume, temperatura e status; é o que se reserva, descarta ou usa.</td></tr>
+<tr><td><b>Bolsa</b> ⚠️</td><td>Distribuição</td><td>Item de carga de uma transferência: interessam origem, destino, trajeto e chegada; a validade só é conferida na saída.</td></tr>
+<tr><td><b>Paciente</b> ⚠️</td><td>Atendimento</td><td>Pessoa internada, com tipo sanguíneo, gravidade e status na fila.</td></tr>
+<tr><td><b>Paciente</b> ⚠️</td><td>Captação</td><td>Beneficiário de uma campanha: o doador só precisa do nome, do tipo sanguíneo e do hospital.</td></tr>
+<tr><td>Banco de sangue / Hemocentro</td><td>Estoque / Captação</td><td>O mesmo ponto da rede com dois nomes: dono de um estoque, ou lugar onde o doador agenda.</td></tr>
+<tr><td>Bolsa apta</td><td>Estoque</td><td>Disponível, dentro da validade (vencer hoje ainda vale) e dentro da faixa de temperatura do componente.</td></tr>
+<tr><td>FEFO</td><td>Estoque</td><td><i>First Expired, First Out</i>: entre as bolsas aptas, sai primeiro a que vence primeiro.</td></tr>
+<tr><td>Compatibilidade</td><td>Estoque</td><td>Se uma bolsa pode ir para um receptor, por componente: nas hemácias O− serve a todos; no plasma o ABO se inverte.</td></tr>
+<tr><td>Lote sugerido</td><td>Estoque</td><td>Bolsas aptas e compatíveis, com o mesmo tipo primeiro (para poupar O−) e depois por FEFO.</td></tr>
+<tr><td>Requisição</td><td>Requisição</td><td>Pedido de N bolsas de um componente e tipo, com urgência: <code>PENDENTE → ALOCADA → EM_TRANSITO → ENTREGUE</code> ou <code>CANCELADA</code>.</td></tr>
+<tr><td>Transferência</td><td>Distribuição</td><td>Saída de uma bolsa do hemocentro para um hospital, com trajeto, chegada prevista e confirmação.</td></tr>
+<tr><td>Rota mínima</td><td>Distribuição</td><td>Menor caminho entre dois pontos da rede (Dijkstra), com aviso se cabe na janela de entrega.</td></tr>
+<tr><td>Campanha / Agendamento</td><td>Captação</td><td>Chamada pública por doadores para um paciente / horário de um doador num hemocentro.</td></tr>
+<tr><td>Papel</td><td>Identidade</td><td><code>MEDICO</code>, <code>DOADOR</code> ou <code>ADMIN</code>; define telas e ações permitidas.</td></tr>
+</table>
+<h3>A.4 Mapa de contextos</h3>
+<figure><img src="d01.svg" style="max-height:62mm;max-width:92%"><figcaption>Setas do fornecedor (upstream) para o cliente (downstream); as relações 7 e 10 ligam todos os contextos e ficam só na tabela</figcaption></figure>
+<table>
+<thead><tr><th>#</th><th>Fornecedor → Cliente</th><th>Padrão</th></tr></thead>
+<tr><td>1</td><td>Estoque → Requisição</td><td>Cliente-fornecedor (serviço aberto: sugestão de lote, reserva)</td></tr>
+<tr><td>2</td><td>Estoque → Distribuição</td><td>Cliente-fornecedor (liberar saída, registrar chegada)</td></tr>
+<tr><td>3</td><td>Distribuição → Requisição</td><td>Cliente-fornecedor por eventos (<code>BolsaDespachada</code>, <code>TransferenciaRecebida</code>)</td></tr>
+<tr><td>4</td><td>Estoque → Atendimento</td><td>Cliente-fornecedor (baixa por FEFO no procedimento)</td></tr>
+<tr><td>5</td><td>Atendimento → Captação</td><td>Conformista (campanha usa o paciente como o Atendimento define)</td></tr>
+<tr><td>6</td><td>Captação → Estoque</td><td>Cliente-fornecedor por evento (<code>DoacaoRealizada</code>, planejado)</td></tr>
+<tr><td>7</td><td>Identidade → todos</td><td>Conformista (papel lido em cada ação)</td></tr>
+<tr><td>8</td><td>Supabase Auth → Identidade</td><td><b>Camada anticorrupção</b> (já existe: <code>VerificadorDeCredenciais</code>)</td></tr>
+<tr><td>9</td><td>Google Routes → Distribuição, Captação</td><td><b>Camada anticorrupção</b> (já existe: <code>CalculadoraDeTrajeto</code>)</td></tr>
+<tr><td>10</td><td>Estoque, Requisição, Atendimento, Captação</td><td>Núcleo compartilhado (<code>TipoSanguineo</code>, <code>TipoComponente</code>)</td></tr>
+</table>
+
+<h3>A.5 Eventos de domínio (opcional) e A.6 decisões depois da pré-entrega</h3>
+<div class="duas">
+<table>
+<thead><tr><th>Evento</th><th>Publica</th><th>Consomem</th></tr></thead>
+<tr><td><code>BolsaDespachada</code></td><td>Distribuição</td><td>Requisição (<code>EM_TRANSITO</code>)</td></tr>
+<tr><td><code>TransferenciaRecebida</code></td><td>Distribuição</td><td>Requisição (<code>ENTREGUE</code>)</td></tr>
+<tr><td><code>BolsaDescartada</code></td><td>Estoque</td><td>Distribuição (cancela), Requisição (novo lote)</td></tr>
+<tr><td><code>PacienteAtualizado</code></td><td>Atendimento</td><td>Captação</td></tr>
+<tr><td><code>DoacaoRealizada</code></td><td>Captação</td><td>Estoque (bolsa nova)</td></tr>
+</table>
+<table>
+<thead><tr><th>Dúvida da pré-entrega</th><th>Decisão</th></tr></thead>
+<tr><td>Requisição é core?</td><td><b>Sim</b>: prioridade por urgência, ciclo de vida próprio e é a orquestradora da saga (D.3).</td></tr>
+<tr><td>Atendimento separado?</td><td><b>Sim</b>: "Paciente" tem dois sentidos; juntar acoplaria a fila do hospital à reserva de bolsas.</td></tr>
+<tr><td>Contexto da Seção B?</td><td><b>Estoque</b>, agregado <code>Bolsa</code>: é onde há regras ainda fora do objeto.</td></tr>
+</table>
+</div>
+
+<section class="secao">
+<h2>B. Modelo tático do contexto Estoque <span class="peso">0,4</span></h2>
+<h3>B.1 De onde partimos: o que é rico e o que é anêmico (levantamento no código, 22/11/2026)</h3>
+<table>
+<thead><tr><th style="width:17%">Situação</th><th style="width:40%">Classes</th><th>Problema</th></tr></thead>
+<tr><td class="ok">Ricas</td><td><code>BolsaHemocomponente</code> (14 comportamentos), <code>Estoque</code>, <code>StatusBolsa</code>, <code>RedeDistribuicao</code>, <code>TransferenciaDeBolsa</code>, <code>AgendamentoDoacao</code></td><td>Regras e transições no próprio objeto, com teste de domínio</td></tr>
+<tr><td class="warn">Anêmicas</td><td><code>BancoDeSangue</code>, <code>Conexao</code>, <code>Endereco</code>, <code>PontoDeRedeBase</code>, <code>RotaCalculada</code>, <code>Paciente</code> (12 getters)</td><td>Só getters; a validação do paciente está no <code>ValidadorPaciente</code>, um serviço</td></tr>
+<tr><td class="warn">Regra fora do domínio</td><td><code>EstoqueService.conferirRegras</code></td><td>Prazo máximo de validade, volume ≤ 700 ml e faixa do sensor (−80 a 60 °C) são regras da bolsa, mas vivem no serviço</td></tr>
+<tr><td class="no">Porta dos fundos</td><td><code>reservar()</code> e <code>descartar()</code> sem parâmetro</td><td>Mudam o status sem conferir nada (só os testes usam, mas nada impede um serviço de reservar bolsa vencida)</td></tr>
+<tr><td class="no">Primitivos</td><td><code>double volumeMl</code>, <code>double temperaturaCelsius</code>, <code>String id</code></td><td>Nada impede volume negativo ou código <code>PQ-1042</code> para hemácias</td></tr>
+<tr><td class="no">Preso ao framework</td><td>11 classes com JPA; <code>Persistable</code> do Spring Data</td><td>Quebra a regra 5 da Seção C</td></tr>
+</table>
+<h3>B.2 O agregado Bolsa e B.3 as invariantes que a raiz protege</h3>
+<figure><img src="d02b.svg" style="width:100%;max-height:72mm"><figcaption>Raiz, entidade e objetos de valor; outros agregados entram só pelo id</figcaption></figure>
+<div class="duas" style="grid-template-columns:0.9fr 1.1fr">
+<table>
+<thead><tr><th>Papel</th><th>Elemento e responsabilidade</th></tr></thead>
+<tr><td><b>Raiz</b></td><td><code>Bolsa</code>: única porta de entrada; <code>registrar</code>, <code>reservarPara</code>, <code>liberarReserva</code>, <code>despacharPara</code>, <code>receberEm</code>, <code>registrarUso</code>, <code>descartar</code>, <code>corrigirCadastro</code></td></tr>
+<tr><td><b>Entidade</b></td><td><code>Movimentacao</code>: cada mudança de status (de, para, quando, requisição); só a raiz cria</td></tr>
+<tr><td><b>Objetos de valor</b></td><td><code>CodigoDaBolsa</code> (sigla coerente com o componente), <code>Validade</code> (<code>venceuEm</code>, prazo máximo), <code>Volume</code>, <code>Temperatura</code> (<code>dentroDaFaixaDe</code>), <code>MotivoDeDescarte</code>; <code>TipoSanguineo</code> e <code>TipoComponente</code> já existem</td></tr>
+<tr><td><b>Referências</b></td><td><code>BancoDeSangueId</code>, <code>RequisicaoId</code>, <code>HospitalId</code>: nunca o objeto inteiro</td></tr>
+</table>
+<table>
+<thead><tr><th>#</th><th>Invariante</th><th style="width:27%">Hoje → Parte 3</th></tr></thead>
+<tr><td>I1</td><td>Status só muda pelas transições permitidas; <code>UTILIZADA</code> e <code>DESCARTADA</code> são finais</td><td><span class="ok">✓</span> <code>StatusBolsa.podePassarPara</code></td></tr>
+<tr><td>I2</td><td>Bolsa vencida só pode ser descartada (vencer hoje ainda vale)</td><td><span class="ok">✓</span> → <code>Validade.venceuEm</code></td></tr>
+<tr><td>I3</td><td><b>Só bolsa apta pode ser reservada</b> ou enviada</td><td><span class="warn">só no envio</span> → <b>HU-11</b></td></tr>
+<tr><td>I4</td><td>Validade depois da coleta e dentro do prazo do componente (hemácias 42 d, plaquetas 7, plasma 730, crio 365)</td><td><span class="no">no serviço</span> → <code>Validade</code></td></tr>
+<tr><td>I5</td><td>Volume entre 0 e 700 ml; temperatura dentro do que o sensor mede</td><td><span class="no">no serviço</span> → <code>Volume</code>, <code>Temperatura</code></td></tr>
+<tr><td>I6</td><td>Código combina com o componente (<code>CH</code> só para hemácias)</td><td><span class="warn">só no gerador</span> → <code>CodigoDaBolsa</code></td></tr>
+<tr><td>I7</td><td>Descarte exige categoria; "Validade expirada" só com bolsa vencida</td><td><span class="ok">✓</span> (sai o <code>descartar()</code> vazio)</td></tr>
+<tr><td>I8</td><td>Cadastro só é corrigido enquanto <code>DISPONIVEL</code></td><td><span class="ok">✓</span> mantida</td></tr>
+</table>
+</div>
+<p class="rodape">Fora do agregado: "um lote gera no máximo uma bolsa de cada componente" envolve várias bolsas, então fica no caso de uso <code>RegistrarBolsa</code>, que consulta a porta <code>BolsaRepository</code>.</p>
+<h3>B.4 História âncora · HU-11 Reserva só de bolsa apta (invariante I3)</h3>
+<p><b>Persona:</b> Marina, responsável técnica do banco de sangue BS-01 (papel <code>ADMIN</code>). <b>Como</b> responsável técnica, <b>quero</b> reservar para uma requisição apenas bolsas aptas, <b>para que</b> nenhuma bolsa vencida ou com a cadeia fria rompida seja separada para um paciente.</p>
+<table>
+<thead><tr><th>#</th><th>Critério de aceite (testável)</th></tr></thead>
+<tr><td>CA1</td><td>Bolsa <code>DISPONIVEL</code>, na validade e na faixa: ao reservar para <code>R-001</code>, fica <code>RESERVADA</code> e a movimentação registra <code>R-001</code></td></tr>
+<tr><td>CA2</td><td>Bolsa que vence hoje ainda pode ser reservada</td></tr>
+<tr><td>CA3</td><td>Bolsa vencida é recusada com "A bolsa CH-1090 venceu em 30/09/2026 e só pode ser descartada." e continua <code>DISPONIVEL</code></td></tr>
+<tr><td>CA4</td><td>Bolsa fora da faixa é recusada com "A bolsa CH-1077 está a 9.5 °C, fora da faixa de 2.0 °C a 6.0 °C do componente HEMACIAS, e não pode ser reservada."</td></tr>
+<tr><td>CA5</td><td>Bolsa que não está <code>DISPONIVEL</code> é recusada pela transição ("A bolsa CH-1043 está UTILIZADA e não pode passar para RESERVADA.")</td></tr>
+<tr><td>CA6</td><td>Pela API, a recusa volta como 422 no formato <code>ErroDTO</code>; sem papel <code>ADMIN</code>, 403</td></tr>
+</table>
+<h3>B.5 Cenário Gherkin (executado na Parte 3 pelo <code>AceitacaoIT</code>; arquivo completo em <code>docs/arquitetura_SO/HU-11-reserva-de-bolsa-apta.feature</code>)</h3>
+<pre># language: pt
+@HU-11
+Funcionalidade: HU-11 — Reserva só de bolsa apta
+  Contexto:
+    Dado que hoje é 01/10/2026
+    E o banco de sangue "BS-01" com as bolsas:
+      | id      | componente | tipo | validade   | temperatura | status     |
+      | CH-1042 | hemácias   | O-   | 20/10/2026 | 4.0         | disponível |
+      | CH-1090 | hemácias   | B-   | 30/09/2026 | 4.0         | disponível |
+      | CH-1077 | hemácias   | A+   | 25/10/2026 | 9.5         | disponível |
+
+  Cenário: Reservar bolsa apta para a requisição
+    Quando reservo a bolsa "CH-1042" para a requisição "R-001"
+    Então a bolsa "CH-1042" fica "reservada" no estoque
+    E a última movimentação da bolsa "CH-1042" aponta a requisição "R-001"
+
+  Esquema do Cenário: Bolsa que não está apta não é reservada
+    Quando reservo a bolsa "&lt;bolsa&gt;" para a requisição "R-001"
+    Então a movimentação é recusada com a mensagem "&lt;mensagem&gt;"
+    E a bolsa "&lt;bolsa&gt;" continua "disponível" no estoque
+    Exemplos:
+      | bolsa   | mensagem                                                                     |
+      | CH-1090 | A bolsa CH-1090 venceu em 30/09/2026 e só pode ser descartada.               |
+      | CH-1077 | A bolsa CH-1077 está a 9.5 °C, fora da faixa de 2.0 °C a 6.0 °C do (…)        |</pre>
+</section>
+
+<section class="secao">
+<h2>C. Arquitetura em três camadas com Clean Architecture <span class="peso">0,5</span></h2>
+<h3>C.1 As três camadas e o que fica em cada uma</h3>
+<table>
+<thead><tr><th style="width:17%">Camada</th><th>O que fica nela</th><th style="width:22%">Hoje</th><th style="width:24%">Na proposta</th></tr></thead>
+<tr><td><b>Apresentação</b></td><td>Telas React; controllers REST que convertem JSON ↔ comando/DTO e devolvem o status HTTP e o erro em RFC 7807</td><td><code>frontend/src/pages</code>, <code>api/</code></td><td><code>frontend/</code> + <code>&lt;ctx&gt;.apresentacao</code></td></tr>
+<tr><td><b>Negócio · aplicação</b></td><td>Casos de uso: transação, papel de quem chama, carregar pela porta, chamar o domínio, gravar e publicar eventos; declaram as <b>portas</b></td><td><code>servico/</code></td><td><code>&lt;ctx&gt;.negocio.aplicacao</code></td></tr>
+<tr><td><b>Negócio · domínio</b></td><td>Entidades, objetos de valor, invariantes e eventos de domínio, em Java puro</td><td><code>dominio/</code> (com JPA)</td><td><code>&lt;ctx&gt;.negocio.dominio</code></td></tr>
+<tr><td><b>Dados</b></td><td>Adaptadores: repositórios JPA, classes <code>*Entity</code> e mapeadores, consultas às views, migrations, clientes Supabase Auth e Google Routes</td><td><code>repositorio/</code>, <code>supabase/</code>, <code>google/</code></td><td><code>&lt;ctx&gt;.dados</code></td></tr>
+</table>
+<h3>C.2 Regra de dependência e Clean Architecture</h3>
+<div class="duas" style="grid-template-columns: 1fr 1fr;">
+<div>
+<p>Cada camada só usa a de baixo, e as dependências apontam para o centro: o <b>domínio não conhece ninguém</b>; a aplicação conhece o domínio e as portas que ela declara; Spring, JPA, HTTP, Supabase e Google entram como <b>adaptadores</b> que implementam uma porta.</p>
+<table>
+<thead><tr><th>Anel</th><th>Camada</th><th>Exemplo no Estoque</th></tr></thead>
+<tr><td>Entidades</td><td>Domínio</td><td><code>Bolsa</code>, <code>Validade</code>, <code>Temperatura</code></td></tr>
+<tr><td>Casos de uso</td><td>Aplicação</td><td><code>ReservarBolsa</code>; porta <code>BolsaRepository</code></td></tr>
+<tr><td>Adaptadores</td><td>Apresentação e dados</td><td><code>MovimentacaoDeBolsaController</code>; <code>BolsaRepositoryJpa</code> + <code>BolsaMapper</code></td></tr>
+<tr><td>Frameworks</td><td>Fora do negócio</td><td>Spring Boot, Hibernate, PostgreSQL, React</td></tr>
+</table>
+</div>
+<figure><img src="d04.svg" style="max-height:44mm"><figcaption>Caso de uso da HU-11: a regra está na <code>Bolsa</code>; o caso de uso só carrega, chama e salva</figcaption></figure>
+</div>
+<table>
+<thead><tr><th>#</th><th>Regra</th><th style="width:44%">Hoje no código</th></tr></thead>
+<tr><td>1</td><td>Apresentação só chama a aplicação; nunca repositório ou cliente externo</td><td><span class="ok">✓</span> nenhum controller importa <code>repositorio</code>, <code>supabase</code> ou <code>google</code></td></tr>
+<tr><td>2</td><td>Transação e conferência de papel só na aplicação</td><td><span class="ok">✓</span> <code>@Transactional</code> e <code>IdentificacaoService</code> só em <code>servico</code></td></tr>
+<tr><td>3</td><td>Cliente externo em dados, atrás de interface do negócio</td><td><span class="ok">✓</span> <code>CalculadoraDeTrajeto</code> → <code>GoogleRoutes</code></td></tr>
+<tr><td>4</td><td>Domínio não importa apresentação, aplicação nem dados</td><td><span class="ok">✓</span></td></tr>
+<tr><td>5</td><td>Domínio não depende de banco nem de framework</td><td><span class="no">✗</span> 11 de 42 classes com JPA → <code>*Entity</code> + mapeador em dados (ADR 0002)</td></tr>
+<tr><td>6</td><td>Um contexto não mexe no domínio de outro</td><td><span class="no">✗</span> <code>TransferenciaDeBolsa</code> muda o status da bolsa → serviço aberto do Estoque + <code>BolsaDescartada</code></td></tr>
+</table>
+<p>Para a regra não voltar a quebrar: teste <b>ArchUnit</b> no <code>mvn verify</code> (que a esteira da Parte 1 já roda) falha se <code>..negocio.dominio..</code> importar <code>jakarta.persistence</code>, <code>org.hibernate</code> ou <code>org.springframework</code>.</p>
+<h3>C.3 Estrutura de pacotes (por bounded context e, dentro dele, por camada)</h3>
+<pre>com.rotavital
+├── estoque                       (core — refatorado na Parte 3, entrega de 01/12)
+│   ├── apresentacao              EstoqueController, MovimentacaoDeBolsaController, SugestaoDeLoteController,
+│   │                             AlertasDoEstoqueController, EstatisticasDoEstoqueController
+│   ├── negocio
+│   │   ├── aplicacao             RegistrarBolsa, ReservarBolsa, DescartarBolsa, CorrigirBolsa, ConsultarEstoque,
+│   │   │                         SugerirLote, ResumirPerdas · portas: BolsaRepository, PublicadorDeEventos
+│   │   └── dominio               Bolsa, Movimentacao, CodigoDaBolsa, Validade, Volume, Temperatura, MotivoDeDescarte,
+│   │                             StatusBolsa, Estoque, BancoDeSangue, CompatibilidadeSanguinea, BolsaReservada
+│   └── dados                     BolsaRepositoryJpa, BolsaEntity, MovimentacaoEntity, BolsaMapper, ResumoEstoqueRepository
+├── requisicao                    (core)    apresentacao: RequisicaoController · aplicacao: AbrirRequisicao,
+│                                           CancelarRequisicao · dominio: RequisicaoHospitalar, StatusRequisicao · dados
+├── distribuicao                  (core)    RotaController, TransferenciaController · RedeDistribuicaoService,
+│                                           TransferenciaService · RedeDistribuicao, TransferenciaDeBolsa · dados
+├── captacao                      (suporte) CampanhaController, AgendamentoController · CampanhaService · CampanhaDoacao,
+│                                           AgendamentoDoacao, Hemocentro, Beneficiario · dados
+├── atendimento                   (suporte) PacienteController · PacienteService · Paciente, Gravidade · dados
+├── acesso                        (genérico) AcessoController · AutenticacaoService · Usuario, PapelUsuario · SupabaseAuth
+└── compartilhado                 dominio: TipoSanguineo, TipoComponente, Coordenada · geo: CalculadoraDeTrajeto,
+                                  GoogleRoutes · web: TratadorDeErros, ErroDTO, CorsConfig</pre>
+<h3>C.4 Camada lógica × tier físico</h3>
+<div class="duas" style="grid-template-columns: 1.1fr 0.9fr;">
+<table>
+<thead><tr><th>Camada lógica</th><th>Docker local</th><th>Produção</th></tr></thead>
+<tr><td>Apresentação · telas</td><td>Navegador + container <code>frontend</code> (Nginx)</td><td>Vercel (CDN)</td></tr>
+<tr><td>Apresentação · controllers</td><td rowspan="3">Container <code>backend</code> (um processo Spring Boot)</td><td rowspan="3">Render (web service)</td></tr>
+<tr><td>Negócio · aplicação e domínio</td></tr>
+<tr><td>Dados · repositórios e clientes</td></tr>
+<tr><td>Dados · banco</td><td>Container <code>db</code> (PostgreSQL 17)</td><td>Supabase (us-east-2)</td></tr>
+<tr><td>Dados · serviços externos</td><td colspan="2">Supabase Auth e Google Routes (SaaS)</td></tr>
+</table>
+<p><b>Camada</b> é como o código está organizado; <b>tier</b> é onde ele roda. São três de cada, mas não coincidem um para um: o tier de aplicação carrega um pedaço de cada camada. Separar os pacotes por contexto organiza o código, mas continua sendo <b>um único deploy</b> (monolito modular, ADR 0001). Separar também os tiers por contexto é a projeção da Seção D.</p>
+</div>
+</section>
+
+<section class="secao">
+<h2>D. Projeção com microsserviços <span class="peso">0,3</span></h2>
+<h3>D.1 Quais contextos viram serviços, e por quê</h3>
+<table>
+<thead><tr><th style="width:15%">Serviço</th><th style="width:18%">Contextos</th><th>Por que separar</th></tr></thead>
+<tr><td><code>svc-estoque</code></td><td>Estoque</td><td>Core e dono da bolsa: o mais consultado (painel, sugestão de lote, alertas) e o único que muda status de bolsa.</td></tr>
+<tr><td><code>svc-requisicao</code></td><td>Requisição</td><td>Core e <b>orquestrador da saga</b>: guarda o estado do pedido do início ao fim.</td></tr>
+<tr><td><code>svc-distribuicao</code></td><td>Distribuição</td><td>Perfil diferente (CPU do Dijkstra e Google Routes): escala separado e isola a falha da API externa.</td></tr>
+<tr><td><code>svc-captacao</code></td><td>Captação + Atendimento</td><td>Ambos suporte; o Atendimento já é fornecedor conformista da Captação: juntos, a cópia do paciente não atravessa a rede. Portal público com picos de campanha.</td></tr>
+<tr><td>—</td><td>Identidade</td><td>Continua no Supabase Auth; um API gateway valida o JWT, repassa o papel e mantém o contrato <code>openapi.yaml</code>.</td></tr>
+</table>
+<h3>D.2 Comunicação e dados</h3>
+<ul>
+<li><b>REST síncrono</b> para consulta que precisa da resposta (Requisição → Estoque <code>GET /sugestao-lote</code>); <b>comandos por fila</b> nos passos da saga (<code>ReservarBolsas</code>, <code>AgendarTransferencia</code>, <code>LiberarReserva</code>); <b>eventos</b> para fatos (<code>BolsaDescartada</code>, <code>BolsaDespachada</code>, <code>TransferenciaRecebida</code>, <code>DoacaoRealizada</code>), por RabbitMQ (ou SNS + SQS), saindo pelo padrão <b>outbox</b>.</li>
+<li><b>Um banco por serviço</b> (<code>estoque_db</code>, <code>requisicao_db</code>, <code>distribuicao_db</code>, <code>captacao_db</code>), sem chave estrangeira entre eles: referência por id e cópias de leitura alimentadas por eventos. Primeiro passo: um schema e um usuário por serviço no mesmo Postgres. Consistência ACID dentro do serviço e <b>eventual</b> entre serviços.</li>
+</ul>
+<h3>D.3 Saga "Atender requisição" (orquestrada pela Requisição)</h3>
+<div class="duas" style="grid-template-columns: 1.15fr 0.85fr;">
+<figure><img src="d06.svg" style="max-height:66mm"></figure>
+<table>
+<thead><tr><th>Passo</th><th>Compensação se o seguinte falhar</th></tr></thead>
+<tr><td>1 Requisição abre (<code>PENDENTE</code>)</td><td>Cancela (<code>CANCELADA</code>)</td></tr>
+<tr><td>2 Estoque reserva bolsas aptas (HU-11)</td><td><b><code>LiberarReserva</code></b>: voltam a <code>DISPONIVEL</code></td></tr>
+<tr><td>3 Distribuição agenda e calcula a rota</td><td>Cancela a transferência</td></tr>
+<tr><td>4 Despacho (<code>EM_TRANSITO</code>)</td><td>Sem volta: só descarte (<code>BolsaDescartada</code>) e novo lote (passo 2)</td></tr>
+</table>
+</div>
+<p>Cada comando tem id e é <b>idempotente</b>, porque a fila pode entregar a mesma mensagem duas vezes.</p>
+<h3>D.4 Projeção serverless (opcional)</h3>
+<table>
+<thead><tr><th style="width:8%"></th><th style="width:30%">O quê</th><th>Gatilho e motivo</th></tr></thead>
+<tr><td class="ok">Vira</td><td>Emitir a guia de transporte</td><td>Evento <code>TransferenciaAgendada</code>; curta, sem estado, uso irregular</td></tr>
+<tr><td class="ok">Vira</td><td>Alerta diário de validade / telemetria da cadeia fria</td><td>Cron às 6h / mensagem de cada sensor; segundos por dia ou rajadas imprevisíveis</td></tr>
+<tr><td class="no">Não</td><td>API do Estoque · cálculo de rota · orquestrador da saga</td><td>Transação e pool de conexões com cold start do Spring · grafo em memória recriado a cada cold start · estado por horas, acima do limite de 15 min</td></tr>
+</table>
+<h3>D.5 Comparação para o Rota Vital</h3>
+<table>
+<thead><tr><th style="width:17%">Critério</th><th>Monolito modular (Parte 3)</th><th>Microsserviços</th><th>Serverless (só as funções da D.4)</th></tr></thead>
+<tr><td>Unidade de deploy</td><td>Um jar / uma imagem</td><td>Um por serviço (4 + gateway)</td><td>Uma por função</td></tr>
+<tr><td>Escala</td><td>O processo inteiro, na horizontal</td><td>Cada serviço no seu ritmo</td><td>Automática por evento, até zero</td></tr>
+<tr><td>Consistência</td><td>Transação ACID única</td><td>Eventual; saga + outbox</td><td>Eventual; função idempotente</td></tr>
+<tr><td>Custo (moderado)</td><td>~US$ 171/mês (Seção E)</td><td>+3 serviços ligados, broker e gateway: várias vezes mais</td><td>Centavos por milhão de execuções</td></tr>
+<tr><td>Operação</td><td>Baixa: um pipeline, um log, um banco</td><td>Alta: rastreio distribuído, contratos, filas, bancos</td><td>Média: muitas peças, cold start, limite de tempo</td></tr>
+</table>
+<h3>D.6 ADRs (<code>docs/arquitetura_SO/adr/</code>)</h3>
+<div class="adr"><b class="t">ADR 0001 · Decomposição do Rota Vital.</b> <b>Contexto:</b> 42 classes misturadas em <code>dominio</code>; o pico do cenário moderado (40 req/s) cabe em 3 instâncias; squad de 8 pessoas, um pipeline e entrega em 01/12. <b>Decisão:</b> um único deploy (monolito modular) com pacotes por bounded context e três camadas dentro de cada um; contextos conversam pelo serviço de aplicação do outro ou por eventos internos do Spring. <b>Consequências:</b> fronteiras explícitas e testáveis (ArchUnit) sem rede, broker e saga distribuída; tudo escala junto e uma falha derruba todos; se o cenário alto chegar, a primeira extração é a Distribuição. <b>Descartada:</b> microsserviços já na Parte 3.</div>
+<div class="adr"><b class="t">ADR 0002 · Domínio puro, com portas e adaptadores.</b> <b>Contexto:</b> 11 classes do domínio com JPA, <code>Persistable</code> do Spring Data e regras da bolsa no serviço; a devolutiva pediu Clean Architecture e domínio rico. <b>Decisão:</b> nenhuma classe de <code>..negocio.dominio..</code> importa JPA, Hibernate ou Spring; persistência em <code>*Entity</code> + mapeador; a aplicação declara as portas. <b>Consequências:</b> regra testada sem Spring nem banco e estados inválidos impedidos pelos objetos de valor; mais classes e um mapeamento a manter. <b>Descartada:</b> manter as anotações e só mover as regras.</div>
+<div class="adr"><b class="t">ADR 0003 · Especificação e teste antes do código (SDD + TDD).</b> <b>Decisão:</b> cada história começa por <code>spec.md</code>, <code>plan.md</code> e <code>tasks.md</code> em <code>docs/specs/</code>; cada tarefa em TDD; JaCoCo quebra o build abaixo das metas da F.2. <b>Consequências:</b> invariantes escritas antes da classe; mais tempo no início de cada história.</div>
+</section>
+
+<section class="secao">
+<h2>E. Três cenários com orçamento <span class="peso">0,7</span></h2>
+<p>Provedores que o Rota Vital já usa: <b>Render</b> (backend), <b>Vercel</b> (frontend), <b>Supabase</b> (PostgreSQL e Auth) e <b>Google Routes</b>. Preços on-demand em dólar, lidos nas páginas oficiais em <b>22/11/2026</b>; planilha com as fórmulas em <code>docs/arquitetura_SO/orcamento/orcamento-cenarios.xlsx</code>.</p>
+<h3>E.1 Premissas de carga</h3>
+<table>
+<thead><tr><th>Premissa</th><th class="n">Baixo</th><th class="n">Moderado</th><th class="n">Alto</th></tr></thead>
+<tr><td>Abrangência</td><td class="n">1 hemocentro, 15 hospitais</td><td class="n">8 hemocentros, 150 hospitais</td><td class="n">40 hemocentros, 900 hospitais</td></tr>
+<tr><td>Usuários cadastrados / ativos por dia</td><td class="n">300 / 120</td><td class="n">3.000 / 1.000</td><td class="n">30.000 / 8.000</td></tr>
+<tr><td><b>Pedidos por dia</b> (requisições hospitalares)</td><td class="n"><b>150</b></td><td class="n"><b>1.200</b></td><td class="n"><b>9.000</b></td></tr>
+<tr><td>Chamadas HTTP à API por dia</td><td class="n">30.000</td><td class="n">250.000</td><td class="n">2.000.000</td></tr>
+<tr><td><b>Pico de requisições por segundo (λ)</b></td><td class="n"><b>5</b></td><td class="n"><b>40</b></td><td class="n"><b>300</b></td></tr>
+<tr><td><b>Disponibilidade desejada</b></td><td class="n"><b>99,0 %</b> (≈ 7 h/mês fora)</td><td class="n"><b>99,5 %</b> (≈ 3,6 h)</td><td class="n"><b>99,9 %</b> (≈ 43 min)</td></tr>
+</table>
+<p class="rodape">Comuns (a confirmar com teste de carga k6 na Parte 3): W = 0,30 s de resposta no pico; W_db = 0,06 s com conexão aberta (só a transação segura a conexão, <code>open-in-view=false</code>); uma instância de 1 CPU e 2 GB atende 8 requisições simultâneas; redundância N+1 a partir de 99,5 %; pico ≈ 14× a média do dia; resposta média de 4 KB; 5 telas por usuário ativo por dia e 20 requisições de CDN por tela; rotas do Google com cache por par origem → destino por 24 h.</p>
+<h3>E.2 Lei de Little no pico: L = λ × W</h3>
+<table>
+<thead><tr><th>Conta</th><th class="n">Baixo</th><th class="n">Moderado</th><th class="n">Alto</th></tr></thead>
+<tr><td><b>L = λ × W</b> (requisições simultâneas)</td><td class="n">5 × 0,30 = <b>1,5</b></td><td class="n">40 × 0,30 = <b>12</b></td><td class="n">300 × 0,30 = <b>90</b></td></tr>
+<tr><td>Instâncias = ⌈L ÷ 8⌉ + redundância</td><td class="n">⌈0,19⌉ + 0 = <b>1</b></td><td class="n">⌈1,5⌉ + 1 = <b>3</b></td><td class="n">⌈11,25⌉ + 1 = <b>13</b></td></tr>
+<tr><td><b>L_db = λ × W_db</b> (conexões ocupadas)</td><td class="n">5 × 0,06 = <b>0,3</b></td><td class="n">40 × 0,06 = <b>2,4</b></td><td class="n">300 × 0,06 = <b>18</b></td></tr>
+<tr><td>Conexões abertas = instâncias × pool (folga 2×, mínimo 5)</td><td class="n">1 × 5 = <b>5</b></td><td class="n">3 × 5 = <b>15</b></td><td class="n">13 × 5 = <b>65</b></td></tr>
+<tr><td>Limite do compute Supabase (direto / pooler)</td><td class="n">Micro 60 / 200</td><td class="n">Small 90 / 400</td><td class="n">Large 160 / 800</td></tr>
+</table>
+<p>O banco não é o gargalo em nenhum cenário (65 conexões contra 800 no pooler); o que cresce é a CPU do backend. No alto, o acesso passa pelo <b>Supavisor em modo transação</b> e o compute vai para Large (CPU dedicada). Sem ajustar o pool, o padrão do Hikari (10 por instância) abriria 130 conexões sem necessidade.</p>
+<h3>E.3 Diagramas e o que muda de um cenário para o outro</h3>
+<figure><img src="d07.svg" style="max-height:30mm"><figcaption><b>Baixo:</b> 1 instância, Supabase Micro, tudo no plano mínimo</figcaption></figure>
+<figure><img src="d08.svg" style="max-height:44mm"><figcaption><b>Moderado:</b> 3 instâncias atrás do balanceador (N+1), Supabase Small, CDN 10M, cache de rotas</figcaption></figure>
+<figure><img src="d09.svg" style="max-height:44mm"><figcaption><b>Alto:</b> 13 instâncias com autoscaling, Supavisor em modo transação, Supabase Large, worker assíncrono</figcaption></figure>
+<table>
+<thead><tr><th style="width:16%">O que muda</th><th>Baixo → Moderado</th><th>Moderado → Alto</th></tr></thead>
+<tr><td>Backend</td><td>1 → 3 instâncias atrás do balanceador; workspace Hobby → Pro</td><td>3 → 13 com autoscaling; banda acima de 25 GB cobrada; worker separado (outbox, alertas, guias)</td></tr>
+<tr><td>Banco</td><td>Micro → Small</td><td>Small → Large com CPU dedicada, Supavisor em modo transação, disco de 20 GB</td></tr>
+<tr><td>Frontend / rotas</td><td>+ Flat Rate CDN 10M; rotas dentro das 10 mil grátis</td><td>CDN 10M → 50M; 60 mil rotas/mês, 50 mil pagas (sem cache seriam ~270 mil)</td></tr>
+</table>
+<h3>E.4 Orçamento mensal (on-demand, US$, consulta em 22/11/2026)</h3>
+<table>
+<thead><tr><th style="width:31%">Item</th><th class="n">Qtd B / M / A</th><th class="n">Preço unit.</th><th class="n">Baixo</th><th class="n">Moderado</th><th class="n">Alto</th><th>Região</th><th>Fonte</th></tr></thead>
+<tr><td>Render · workspace (Hobby / Pro)</td><td class="n">1 / 1 / 1</td><td class="n">0 / 25,00</td><td class="n">0,00</td><td class="n">25,00</td><td class="n">25,00</td><td>—</td><td>[1]</td></tr>
+<tr><td>Render · web service 1 CPU / 2 GB</td><td class="n">1 / 3 / 13</td><td class="n">25,00</td><td class="n">25,00</td><td class="n">75,00</td><td class="n">325,00</td><td>Ohio</td><td>[1]</td></tr>
+<tr><td>Render · background worker 1c-2g</td><td class="n">– / – / 1</td><td class="n">25,00</td><td class="n">—</td><td class="n">—</td><td class="n">25,00</td><td>Ohio</td><td>[1]</td></tr>
+<tr><td>Render · banda além da franquia (GB)</td><td class="n">0 / 5 / 215</td><td class="n">0,15</td><td class="n">0,00</td><td class="n">0,75</td><td class="n">32,25</td><td>Ohio</td><td>[1]</td></tr>
+<tr><td>Supabase · plano Pro</td><td class="n">1 / 1 / 1</td><td class="n">25,00</td><td class="n">25,00</td><td class="n">25,00</td><td class="n">25,00</td><td>us-east-2</td><td>[2]</td></tr>
+<tr><td>Supabase · compute (Micro / Small / Large)</td><td class="n">1 / 1 / 1</td><td class="n">10 / 15 / 110</td><td class="n">10,00</td><td class="n">15,00</td><td class="n">110,00</td><td>us-east-2</td><td>[3]</td></tr>
+<tr><td>Supabase · crédito de compute do Pro</td><td class="n">1 / 1 / 1</td><td class="n">−10,00</td><td class="n">−10,00</td><td class="n">−10,00</td><td class="n">−10,00</td><td>us-east-2</td><td>[2]</td></tr>
+<tr><td>Supabase · disco além de 8 GB (GB)</td><td class="n">0 / 0 / 12</td><td class="n">0,125</td><td class="n">0,00</td><td class="n">0,00</td><td class="n">1,50</td><td>us-east-2</td><td>[3]</td></tr>
+<tr><td>Vercel · plano Pro (1 assento, US$ 20 de crédito)</td><td class="n">1 / 1 / 1</td><td class="n">20,00</td><td class="n">20,00</td><td class="n">20,00</td><td class="n">20,00</td><td>CDN global</td><td>[4]</td></tr>
+<tr><td>Vercel · Flat Rate CDN (10M / 50M)</td><td class="n">– / 1 / 1</td><td class="n">20 / 100</td><td class="n">—</td><td class="n">20,00</td><td class="n">100,00</td><td>CDN global</td><td>[5]</td></tr>
+<tr><td>Google Routes · Compute Routes (pagas)</td><td class="n">0 / 0 / 50.000</td><td class="n">5,00 / mil</td><td class="n">0,00</td><td class="n">0,00</td><td class="n">250,00</td><td>global</td><td>[6]</td></tr>
+<tr class="total"><td>Total mensal</td><td></td><td></td><td class="n">70,00</td><td class="n">170,75</td><td class="n">903,75</td><td></td><td></td></tr>
+<tr><td>Pedidos por mês (pedidos/dia × 30)</td><td></td><td></td><td class="n">4.500</td><td class="n">36.000</td><td class="n">270.000</td><td></td><td></td></tr>
+<tr class="total"><td>Custo por pedido</td><td></td><td></td><td class="n">US$ 0,0156</td><td class="n">US$ 0,0047</td><td class="n">US$ 0,0033</td><td></td><td></td></tr>
+</table>
+<p class="rodape"><b>Fontes (consulta em 22/11/2026):</b> [1] render.com/pricing · [2] supabase.com/pricing · [3] supabase.com/docs/guides/platform/compute-and-disk · [4] vercel.com/docs/plans/pro-plan · [5] vercel.com/blog/introducing-flat-rate-cdn · [6] developers.google.com/maps/billing/pricing</p>
+<p>O custo por pedido <b>cai</b> com a escala porque os planos fixos se diluem. No alto, a Google Routes já é 28 % do total. <b>Riscos não orçados:</b> não encontramos SLA contratual de 99,9 % no Supabase Pro nem no Render com uma região só; para o alto valer de verdade faltam backup com recuperação pontual (PITR) e, se o contrato exigir, um plano com SLA. O Hobby da Vercel foi descartado por ser só para uso não comercial.</p>
+</section>
+
+<section class="secao">
+<h2>F. Plano de refatoração, TDD e SDD (resposta à devolutiva) <span class="peso">Parte 3 · 01/12</span></h2>
+<h3>F.1 O que muda efetivamente</h3>
+<table>
+<thead><tr><th>#</th><th style="width:39%">Hoje</th><th>Depois</th><th style="width:9%">Entrega</th></tr></thead>
+<tr><td>1</td><td>Pacotes por camada técnica</td><td>Estoque em <code>com.rotavital.estoque.{apresentacao, negocio.aplicacao, negocio.dominio, dados}</code></td><td><b>01/12</b></td></tr>
+<tr><td>2</td><td><code>BolsaHemocomponente</code> com <code>@Entity</code>, <code>Persistable</code></td><td><code>Bolsa</code> em Java puro + <code>BolsaEntity</code> e <code>BolsaMapper</code> em dados</td><td><b>01/12</b></td></tr>
+<tr><td>3</td><td>Validade, volume e faixa do sensor no <code>EstoqueService.conferirRegras</code></td><td>Objetos de valor <code>Validade</code>, <code>Volume</code>, <code>Temperatura</code>, <code>CodigoDaBolsa</code>, criados em TDD</td><td><b>01/12</b></td></tr>
+<tr><td>4</td><td><code>reservar()</code> e <code>descartar()</code> sem conferência</td><td>Removidos; <code>reservarPara(requisicao, hoje)</code> confere a aptidão (HU-11, I3)</td><td><b>01/12</b></td></tr>
+<tr><td>5</td><td>Mudança de status sem histórico</td><td>Entidade <code>Movimentacao</code> + migration <code>movimentacao_bolsa</code> (única migration da entrega)</td><td><b>01/12</b></td></tr>
+<tr><td>6</td><td><code>EstoqueService</code>, <code>MovimentacaoDeBolsaService</code>, <code>CorrecaoDeBolsaService</code></td><td>Casos de uso <code>RegistrarBolsa</code>, <code>ReservarBolsa</code>, <code>DescartarBolsa</code>, <code>CorrigirBolsa</code> + porta <code>BolsaRepository</code></td><td><b>01/12</b></td></tr>
+<tr><td>7</td><td>Nada impede o domínio de importar JPA; cobertura não medida na esteira</td><td>ArchUnit + JaCoCo no <code>mvn verify</code>, com metas que quebram o build</td><td><b>01/12</b></td></tr>
+<tr><td>8</td><td>HU-11 não existe</td><td>Cenário Gherkin da B.5 rodando no <code>AceitacaoIT</code></td><td><b>01/12</b></td></tr>
+<tr><td>9</td><td><code>TransferenciaDeBolsa</code> muda a bolsa direto; Requisição só no <code>openapi.yaml</code></td><td>Serviço aberto do Estoque + <code>BolsaDescartada</code>; Requisição persistida com a saga em eventos internos</td><td>Depois</td></tr>
+<tr><td>10</td><td><code>Paciente</code> anêmico + <code>ValidadorPaciente</code>; frontend sem testes</td><td>Objetos de valor no Atendimento; Vitest nas telas de Estoque</td><td>Depois</td></tr>
+</table>
+<p>Ordem para 01/12: objetos de valor (teste primeiro) → raiz <code>Bolsa</code> → casos de uso com repositório em memória → adaptador JPA. Os testes de integração atuais (<code>EstoqueIT</code>, <code>BaixaDaBolsaIT</code>, <code>TransferenciaIT</code> e as features das HU-02, 03, 04 e 08) <b>não podem mudar de resultado</b>: são a rede de segurança.</p>
+<div class="duas">
+<div>
+<h3>F.2 TDD: cobertura atual e planejada</h3>
+<table>
+<thead><tr><th>Pacote (JaCoCo 0.8.12, 22/11/2026, 430 testes unitários)</th><th class="n">Linhas</th><th class="n">Ramos</th></tr></thead>
+<tr><td><code>dominio</code> (794 linhas)</td><td class="n"><b>93,8 %</b></td><td class="n">93,7 %</td></tr>
+<tr><td><code>servico</code> (759 linhas)</td><td class="n"><b>94,3 %</b></td><td class="n">87,4 %</td></tr>
+<tr><td><code>api</code> (controllers)</td><td class="n">45,6 %</td><td class="n">48,1 %</td></tr>
+<tr><td><code>config</code> / <code>diagnostico</code> / <code>benchmark.controller</code></td><td class="n">43 / 0 / 0 %</td><td class="n">—</td></tr>
+<tr class="total"><td>Backend total (1.963 de 2.534 linhas)</td><td class="n">77,5 %</td><td class="n">75,3 %</td></tr>
+<tr><td>Frontend</td><td class="n">0 %</td><td class="n">—</td></tr>
+</table>
+<p class="rodape">Os 32 testes de integração e aceitação (<code>mvn verify</code>, Postgres no Testcontainers) ainda não entram na medição.</p>
+<table>
+<thead><tr><th>Meta (o build quebra abaixo)</th><th class="n">01/12</th><th class="n">Fim do semestre</th></tr></thead>
+<tr><td><code>estoque.negocio.dominio</code></td><td class="n">≥ 95 % linhas, ≥ 90 % ramos</td><td class="n">mantém</td></tr>
+<tr><td><code>estoque.negocio.aplicacao</code></td><td class="n">≥ 90 %</td><td class="n">mantém</td></tr>
+<tr><td>Backend total (unitário + integração)</td><td class="n">≥ 80 %</td><td class="n">≥ 85 %</td></tr>
+<tr><td>Frontend (telas de Estoque)</td><td class="n">—</td><td class="n">≥ 40 %</td></tr>
+</table>
+</div>
+<div>
+<h3>F.3 SDD: especificação antes do código</h3>
+<p>A especificação é o artefato principal: código e testes saem dela e são conferidos contra ela no PR. Cada história da Parte 3 ganha uma pasta em <code>docs/specs/</code> (exemplo pronto: <code>HU-11-reserva-de-bolsa-apta/</code>):</p>
+<table>
+<thead><tr><th>Arquivo</th><th>Conteúdo</th><th>Ajuda no ponto</th></tr></thead>
+<tr><td><code>spec.md</code></td><td>Problema, linguagem ubíqua, <b>invariantes</b>, critérios, contrato OpenAPI, Gherkin</td><td>1 (domínio rico)</td></tr>
+<tr><td><code>plan.md</code></td><td>Contexto e camada de cada peça; portas e adaptadores novos</td><td>2 (Clean Architecture)</td></tr>
+<tr><td><code>tasks.md</code></td><td>Tarefas na ordem do TDD, cada uma com o teste que a fecha</td><td>3 e 4 (refatoração e cobertura)</td></tr>
+</table>
+<p>Exemplo de TDD da tarefa 2: o primeiro teste de <code>Validade</code> é "plaqueta coletada em 01/10 com validade em 09/10 é recusada (8 dias; o máximo é 7)". É também o que entregamos a uma ferramenta de IA quando ela ajuda no código: a spec e as tarefas, não um pedido solto, e o PR só entra se os testes da spec passarem.</p>
+</div>
+</div>
+
+<h2>Uso de IA</h2>
+<table>
+<thead><tr><th style="width:15%">Item</th><th>Detalhe (PO-CESAR-021, categoria Condicionado; apenas dados sintéticos do Rota Vital)</th></tr></thead>
+<tr><td>Ferramenta</td><td>Claude (Anthropic), pelo Claude Code e pelo app Claude</td></tr>
+<tr><td>Finalidade</td><td>Rascunho das seções a partir do código do repositório (classes por contexto, classes anêmicas, regras no serviço, dependências entre pacotes); medição da cobertura com JaCoCo; contas da Lei de Little; planilha, diagramas Mermaid, ADRs e montagem deste PDF</td></tr>
+<tr><td>Como foi validado</td><td>Classes, contagens e relações conferidas no código (<code>backend/src/main/java/com/rotavital</code>); cobertura tirada do relatório do JaCoCo rodando os 430 testes; contas refeitas pelas fórmulas da planilha. <b>Preço sugerido por IA não foi usado:</b> cada preço foi lido na página oficial do provedor em 22/11/2026, com o link na planilha, e conferido pelo squad. Decisões (ADRs) e premissas de carga são do squad.</td></tr>
+</table>
+<p class="rodape"><b>Referências:</b> EVANS, E. <i>Domain-Driven Design</i>, 2003; VERNON, V. <i>Implementing Domain-Driven Design</i>, 2013; MARTIN, R. C. <i>Clean Architecture</i>, 2017; NEWMAN, S. <i>Building Microservices</i>, 2. ed., 2021; JONAS, E. et al. <i>A Berkeley View on Serverless Computing</i>, 2019; NYGARD, M. <i>Documenting Architecture Decisions</i>, 2011; slides das aulas 006 e 007; páginas de preço de Render, Supabase, Vercel e Google Maps Platform (consulta em 22/11/2026).</p>
+</section>
+</body></html>

@@ -1,0 +1,20 @@
+sequenceDiagram
+    autonumber
+    participant H as Hospital (frontend)
+    participant R as svc-requisicao<br/>(orquestrador)
+    participant E as svc-estoque
+    participant D as svc-distribuicao
+    H->>R: AbrirRequisicao (2 × hemácias O−, urgente)
+    R->>E: ReservarBolsas(R-001, HEMACIAS, O−, 2)
+    E-->>R: BolsasReservadas(CH-1042, CH-1050)
+    R->>D: AgendarTransferencia(R-001, bolsas, H-Recife)
+    alt rota cabe na janela de entrega
+        D-->>R: TransferenciaAgendada(rota, chegada 14h20)
+        D->>E: conferirEnvio + despachar (serviço aberto)
+        D-->>R: BolsaDespachada → requisição EM_TRANSITO
+        D-->>R: TransferenciaRecebida → requisição ENTREGUE
+    else sem rota ou fora da janela
+        D-->>R: RotaIndisponivel
+        R->>E: LiberarReserva(CH-1042, CH-1050) (compensação)
+        R-->>H: requisição volta a PENDENTE com o motivo
+    end
