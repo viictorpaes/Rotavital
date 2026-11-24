@@ -1,0 +1,20 @@
+flowchart LR
+    AUTH[["🔐 Supabase Auth<br/>(externo)"]]
+    GR[["🗺️ Google Routes API<br/>(externo)"]]
+
+    IDA["🔑 Identidade e Acesso<br/><i>genérico</i>"]
+    EST["📦 Estoque<br/><b>core</b>"]
+    REQ["📋 Requisição<br/><b>core</b>"]
+    DIS["🚚 Distribuição<br/><b>core</b>"]
+    CAP["❤️ Captação<br/><i>suporte</i>"]
+    ATE["🏥 Atendimento<br/><i>suporte</i>"]
+
+    EST -->|"1 · cliente-fornecedor (serviço aberto)"| REQ
+    EST -->|"2 · cliente-fornecedor (serviço aberto)"| DIS
+    DIS -->|"3 · cliente-fornecedor (eventos)"| REQ
+    EST -->|"4 · cliente-fornecedor (serviço aberto)"| ATE
+    ATE -->|"5 · conformista"| CAP
+    CAP -.->|"6 · cliente-fornecedor (evento, planejado)"| EST
+    AUTH -->|"8 · ACL"| IDA
+    GR -->|"9 · ACL"| DIS
+    GR -->|"9 · ACL"| CAP

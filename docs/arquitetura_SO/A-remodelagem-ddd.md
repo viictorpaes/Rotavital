@@ -6,17 +6,17 @@
 
 ![Seção](https://img.shields.io/badge/seção-A-purple)
 ![Peso](https://img.shields.io/badge/peso-0,6-orange)
-![Status](https://img.shields.io/badge/status-parcial_·_pré--entrega_17%2F11-yellow)
+![Status](https://img.shields.io/badge/status-entrega_final_24%2F11-green)
 </h1>
 
 > [!NOTE]
-> Trabalho U2 · Parte 2 · Seção A (0,6). **Versão parcial para a pré-entrega de 17/11/2026.**
+> Trabalho U2 · Parte 2 · Seção A (0,6). Versão final (a pré-entrega parcial foi em 17/11/2026).
 > Índice e status das outras seções em [`README.md`](README.md).
 
 <p align="center">
 <b>De onde partimos.</b> Hoje o backend é um monolito organizado por camada técnica (<code>api</code>, <code>servico</code>,
 <code>dominio</code>, <code>repositorio</code>). O pacote <a href="../../backend/src/main/java/com/rotavital/dominio"><code>dominio</code></a>
-tem 36 classes de assuntos diferentes — estoque, doação, rede, pacientes e acesso — que se enxergam livremente. A
+tem 42 classes de assuntos diferentes — estoque, doação, rede, pacientes e acesso — que se enxergam livremente. A
 remodelagem separa esse código por assunto do negócio, cada um com a sua linguagem.
 </p>
 
@@ -29,7 +29,7 @@ remodelagem separa esse código por assunto do negócio, cada um com a sua lingu
 | A.3 | [📖 Glossário da linguagem ubíqua](#a3-glossario) | Termos do negócio, com os que mudam de sentido entre contextos |
 | A.4 | [🗺️ Mapa de contextos](#a4-mapa-de-contextos) | Relações fornecedor → cliente e como estão hoje no código |
 | A.5 | [📣 Eventos de domínio](#a5-eventos) | Quem publica e quem consome (opcional) |
-| A.6 | [💬 Para a devolutiva](#a6-devolutiva) | Pontos em que o squad quer a opinião da avaliação |
+| A.6 | [✅ Decisões depois da devolutiva](#a6-devolutiva) | As três dúvidas da pré-entrega, já decididas |
 
 <h2 align="center" id="a1-subdominios">🗂️ A.1 Subdomínios <br>
 <img src="https://img.shields.io/badge/Core-3-DC2626?style=flat" height="22"/>
@@ -206,18 +206,18 @@ Cada evento corre no mesmo sentido de uma seta do <a href="#a4-mapa-de-contextos
 
 <p align="center">Esses eventos são a base da comunicação entre serviços e da saga da Seção D.</p>
 
-<h2 align="center" id="a6-devolutiva">💬 A.6 Para a devolutiva da pré-entrega <br>
-<img src="https://img.shields.io/badge/Devolutiva-111827?style=flat&logo=googleclassroom&logoColor=white" height="22"/>
+<h2 align="center" id="a6-devolutiva">✅ A.6 Decisões depois da devolutiva <br>
+<img src="https://img.shields.io/badge/Devolutiva_17%2F11-111827?style=flat&logo=googleclassroom&logoColor=white" height="22"/>
 </h2>
 
-<p align="center">Pontos em que o squad quer a opinião da avaliação antes da versão final:</p>
+<p align="center">Na pré-entrega o squad deixou três dúvidas abertas. A decisão de cada uma:</p>
 
-| # | Ponto | A dúvida |
-| :---: | :--- | :--- |
-| 1️⃣ | **Requisição como core** | Hoje a regra de escolher as bolsas (`sugerirLotes`) fica no Estoque; a Requisição cuida da prioridade e do acompanhamento. Isso basta para ela ser core, ou é suporte? |
-| 2️⃣ | **Atendimento separado da Requisição** | Os dois nascem no hospital; mantê-los separados deixa claro o termo "Paciente" com dois sentidos, mas acrescenta um contexto. |
-| 3️⃣ | **Contexto core da Seção B** | A proposta é o **Estoque**, com a `Bolsa` como raiz de agregado: as invariantes já estão no código e testadas (bolsa vencida só pode ser descartada; só sai se estiver disponível, na validade e na faixa de temperatura; transições de status permitidas). |
+| # | Ponto | Decisão | Por quê |
+| :---: | :--- | :--- | :--- |
+| 1️⃣ | **Requisição como core** | **Mantida como core** | A requisição tem regra própria que diferencia o Rota Vital: prioridade por urgência, ciclo `PENDENTE → ALOCADA → EM_TRANSITO → ENTREGUE` e a saga da [Seção D](D-microsservicos.md#d3-saga), que ela orquestra. Escolher as bolsas continua no Estoque. |
+| 2️⃣ | **Atendimento separado da Requisição** | **Mantido separado** | "Paciente" tem dois sentidos e o Atendimento muda por motivos diferentes (cadastro e gravidade). Juntar os dois esconderia o termo duplo e acoplaria a fila do hospital à reserva de bolsas. |
+| 3️⃣ | **Contexto core da Seção B** | **Estoque, agregado `Bolsa`** | É onde a devolutiva pediu domínio rico: as invariantes já existem e estão testadas, e três delas ainda estão fora do objeto (no `EstoqueService`). A [Seção B](B-modelo-tatico.md) trata disso. |
 
 <p align="center">
-<a href="README.md">⬅️ Índice</a> · <a href="C-tres-camadas.md">C. Arquitetura em três camadas ➡️</a>
+<a href="README.md">⬅️ Índice</a> · <a href="B-modelo-tatico.md">B. Modelo tático ➡️</a>
 </p>

@@ -1,0 +1,54 @@
+classDiagram
+    direction TB
+    class Bolsa {
+        <<raiz do agregado>>
+        -CodigoDaBolsa codigo
+        -StatusBolsa status
+        -BancoDeSangueId banco
+        +registrar(dados, hoje)$ Bolsa
+        +reservarPara(RequisicaoId, hoje)
+        +liberarReserva()
+        +despacharPara(HospitalId, hoje)
+        +receberEm(HospitalId, hoje)
+        +registrarUso(hoje)
+        +descartar(MotivoDeDescarte, quando)
+        +estaAptaEm(hoje) bool
+    }
+    class Movimentacao {
+        <<entidade>>
+        -int sequencia
+        -StatusBolsa de
+        -StatusBolsa para
+        -Instant quando
+    }
+    class CodigoDaBolsa {
+        <<objeto de valor>>
+        -String sigla
+        -int numero
+    }
+    class Validade {
+        <<objeto de valor>>
+        -LocalDate coleta
+        -LocalDate vencimento
+        +venceuEm(hoje) bool
+    }
+    class Volume {
+        <<objeto de valor>>
+        -double ml
+    }
+    class Temperatura {
+        <<objeto de valor>>
+        -double celsius
+        +dentroDaFaixaDe(componente) bool
+    }
+    class MotivoDeDescarte {
+        <<objeto de valor>>
+        -CategoriaDescarte categoria
+        -String observacao
+    }
+    Bolsa "1" *-- "0..*" Movimentacao : registra
+    Bolsa *-- CodigoDaBolsa
+    Bolsa *-- Validade
+    Bolsa *-- Volume
+    Bolsa *-- Temperatura
+    Bolsa *-- "0..1" MotivoDeDescarte
