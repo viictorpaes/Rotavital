@@ -13,6 +13,7 @@ import com.rotavital.api.dto.estoque.SugestaoDeLoteDTO;
 import com.rotavital.dominio.TipoComponente;
 import com.rotavital.dominio.TipoSanguineo;
 import com.rotavital.servico.SugestaoDeLoteService;
+import com.rotavital.observabilidade.MetricasDeNegocio;
 
 // HU-04 — painel "Lote Sugerido (FEFO)" da tela de Requisição.
 @RestController
@@ -38,6 +39,7 @@ public class SugestaoDeLoteController
                 .map(BolsaHemocomponenteDTO::de)
                 .toList();
 
+        MetricasDeNegocio.loteSugerido(tipoComponente, quantidade, lotes.size());
         return new SugestaoDeLoteDTO(bancoId, tipoComponente, tipoSanguineo, quantidade, lotes.size(),
                 quantidade - lotes.size(), lotes);
     }

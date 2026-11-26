@@ -10,7 +10,11 @@
     "docker:down": "docker compose down",
     "docker:down:v": "docker compose down -v",
     "docker:logs": "docker compose logs -f",
-    "docker:status": "docker compose ps"
+    "docker:status": "docker compose ps",
+    "obs:up": "docker compose -f compose.yaml -f compose.observabilidade.yaml up -d --build",
+    "obs:down": "docker compose -f compose.yaml -f compose.observabilidade.yaml down",
+    "obs:status": "docker compose -f compose.yaml -f compose.observabilidade.yaml ps",
+    "obs:logs": "docker compose -f compose.yaml -f compose.observabilidade.yaml logs -f",
+    "obs:url": "docker compose -f compose.yaml -f compose.observabilidade.yaml logs cloudflared"
   }
 }
-

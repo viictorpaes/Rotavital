@@ -23,6 +23,7 @@ import com.rotavital.dominio.PontoDeRede;
 import com.rotavital.dominio.RedeDistribuicao;
 import com.rotavital.dominio.RotaCalculada;
 import com.rotavital.servico.RedeDistribuicaoService;
+import com.rotavital.observabilidade.MetricasDeNegocio;
 
 @RestController
 
@@ -72,6 +73,7 @@ public class RotaController
             return ResponseEntity.status(400).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
         }
 
+        long inicio = System.nanoTime();
         try
         {
             RedeDistribuicao rede = redeService.carregarRede();
@@ -87,17 +89,20 @@ public class RotaController
                     rota.getTempoEstimadoMin(),
                     rota.isDentroDaJanela());
 
+            MetricasDeNegocio.rotaCalculada(inicio, rota.isDentroDaJanela() ? "ok" : "fora_da_janela");
             return ResponseEntity.ok(dto);
         }
         
         catch (IllegalArgumentException e)
         {
+            MetricasDeNegocio.rotaCalculada(inicio, "nao_encontrado");
             ErroDTO erro = new ErroDTO(null, "Recurso não encontrado", 404, e.getMessage(), "/api/v1/rotas");
             return ResponseEntity.status(404).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
         }
 
         catch (IllegalStateException e)
         {
+            MetricasDeNegocio.rotaCalculada(inicio, "sem_rota");
             ErroDTO erro = new ErroDTO(null, "Regra de negócio violada", 422, e.getMessage(), "/api/v1/rotas");
             return ResponseEntity.status(422).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(erro);
         }

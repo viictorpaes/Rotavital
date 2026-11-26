@@ -18,6 +18,7 @@ import com.rotavital.dominio.StatusTransferencia;
 import com.rotavital.dominio.TransferenciaDeBolsa;
 import com.rotavital.repositorio.BolsaHemocomponenteRepository;
 import com.rotavital.repositorio.TransferenciaDeBolsaRepository;
+import com.rotavital.observabilidade.MetricasDeNegocio;
 
 @Service
 public class MovimentacaoDeBolsaService
@@ -119,6 +120,7 @@ public class MovimentacaoDeBolsaService
         }
 
         transferencia.ifPresent(TransferenciaDeBolsa::cancelar);
+        MetricasDeNegocio.bolsaDescartada(categoria);
         return bolsa;
     }
 

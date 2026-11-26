@@ -1,0 +1,163 @@
+# ===================================================================
+# Rota Vital — observabilidade (RSD): métricas, logs e traces no Grafana.
+#
+# Sobe o sistema do compose.yaml + Prometheus, Grafana, Loki, Tempo, Alloy, Node Exporter,
+# cAdvisor, o gerador de carga e o túnel do Cloudflare, com um comando:
+#
+#   cp .env.example .env    # uma vez, e preencha as variáveis (inclusive as do Grafana)
+#   docker compose -f compose.yaml -f compose.observabilidade.yaml up -d --build
+#   (ou: npm run obs:up)
+#
+# Portas publicadas (só em localhost): Grafana 3000, Prometheus 9090. O /actuator do backend fica
+# na porta 8081, sem "ports": só o Prometheus alcança, pela rede interna do Docker.
+# O único serviço aberto para fora é o Grafana, pelo túnel do Cloudflare (URL em
+# "docker compose -f compose.yaml -f compose.observabilidade.yaml logs cloudflared").
+# ===================================================================
+
+services:
+  backend:
+    environment:
+      # /actuator numa porta só de gerenciamento, que não é publicada (R5)
+      MANAGEMENT_SERVER_PORT: "8081"
+      # Traces por OTLP no Tempo, 100% das requisições
+      TRACING_ENABLED: "true"
+      TRACING_SAMPLING: "1.0"
+      OTLP_TRACING_ENDPOINT: http://tempo:4318/v1/traces
+      # traceId em cada linha de log, para o Grafana ligar o log (Loki) ao trace (Tempo)
+      LOGGING_PATTERN_CORRELATION: "[traceId=%X{traceId:-} spanId=%X{spanId:-}] "
+    labels:
+      rotavital.application: rotavital-backend
+    healthcheck:
+      # O health mudou para a porta de gerenciamento
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q '\"status\":\"UP\"'"]
+
+  frontend:
+    labels:
+      rotavital.application: rotavital-frontend
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+    volumes:
+      - ./observabilidade/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - dados-prometheus:/prometheus
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      # Sem valor padrão: a senha vem do .env (fora do Git), nunca admin/admin (R5)
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Defina GRAFANA_ADMIN_PASSWORD no .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_AUTO_ASSIGN_ORG_ROLE: Viewer
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/rotavital-aplicacao.json
+      TZ: America/Recife
+    volumes:
+      - ./observabilidade/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observabilidade/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - dados-grafana:/var/lib/grafana
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    restart: unless-stopped
+
+  # Cria o usuário Viewer do professor (credenciais do .env) e termina
+  grafana-usuario-professor:
+    image: curlimages/curl:8.10.1
+    entrypoint: ["sh", "/criar-usuario-professor.sh"]
+    environment:
+      GF_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      VIEWER_USER: ${GRAFANA_VIEWER_USER:-professor}
+      VIEWER_PASSWORD: ${GRAFANA_VIEWER_PASSWORD:?Defina GRAFANA_VIEWER_PASSWORD no .env}
+    volumes:
+      - ./observabilidade/grafana/scripts/criar-usuario-professor.sh:/criar-usuario-professor.sh:ro
+    depends_on:
+      - grafana
+    restart: "no"
+
+  loki:
+    image: grafana/loki:3.1.1
+    command: ["-config.file=/etc/loki/loki-config.yaml"]
+    volumes:
+      - ./observabilidade/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - dados-loki:/loki
+    restart: unless-stopped
+
+  # Coletor de logs: lê os logs dos contêineres pelo socket do Docker e manda ao Loki
+  alloy:
+    image: grafana/alloy:v1.4.2
+    command: ["run", "--server.http.listen-addr=0.0.0.0:12345", "/etc/alloy/config.alloy"]
+    volumes:
+      - ./observabilidade/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:2.6.0
+    # O volume nasce do root; com o usuário padrão da imagem o Tempo não consegue gravar nele
+    user: "0"
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./observabilidade/tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - dados-tempo:/var/tempo
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    command:
+      - "--path.rootfs=/host"
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    privileged: true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+
+  # Mantém os gráficos com dados: chama a API em ciclos, com sucessos e erros
+  gerador-de-carga:
+    image: curlimages/curl:8.10.1
+    entrypoint: ["sh", "/gerar-carga.sh"]
+    volumes:
+      - ./observabilidade/carga/gerar-carga.sh:/gerar-carga.sh:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Acesso remoto (R7): URL HTTPS pública só para o Grafana, sem abrir portas no roteador.
+  # Sem conta: "quick tunnel" com URL *.trycloudflare.com, que muda se o contêiner reiniciar.
+  cloudflared:
+    image: cloudflare/cloudflared:2024.10.0
+    command: ["tunnel", "--no-autoupdate", "--url", "http://grafana:3000"]
+    depends_on:
+      - grafana
+    restart: unless-stopped
+
+volumes:
+  dados-prometheus:
+  dados-grafana:
+  dados-loki:
+  dados-tempo:

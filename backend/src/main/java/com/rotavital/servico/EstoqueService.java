@@ -23,6 +23,7 @@ import com.rotavital.dominio.TipoComponente;
 import com.rotavital.dominio.TipoSanguineo;
 import com.rotavital.repositorio.BancoDeSangueRepository;
 import com.rotavital.repositorio.BolsaHemocomponenteRepository;
+import com.rotavital.observabilidade.MetricasDeNegocio;
 
 @Service
 public class EstoqueService
@@ -315,7 +316,9 @@ public class EstoqueService
                 localizacao,
                 banco);
 
-        return bolsas.save(bolsa);
+        BolsaHemocomponente salva = bolsas.save(bolsa);
+        MetricasDeNegocio.bolsaCadastrada(dados.tipoComponente());
+        return salva;
     }
 
     /**
