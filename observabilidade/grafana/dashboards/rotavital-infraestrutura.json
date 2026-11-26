@@ -141,7 +141,7 @@
     },
     {
       "type": "gauge",
-      "title": "Disco em uso (/)",
+      "title": "Disco em uso (dados do Docker)",
       "description": "",
       "datasource": {
         "type": "prometheus",
@@ -189,7 +189,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * (1 - node_filesystem_avail_bytes{mountpoint=\"/\", fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{mountpoint=\"/\", fstype!~\"tmpfs|overlay\"})",
+          "expr": "100 * (1 - sum(node_filesystem_avail_bytes{fstype=~\"ext4|xfs|btrfs\", mountpoint=~\"/|/var/lib\"}) / sum(node_filesystem_size_bytes{fstype=~\"ext4|xfs|btrfs\", mountpoint=~\"/|/var/lib\"}))",
           "refId": "A"
         }
       ],

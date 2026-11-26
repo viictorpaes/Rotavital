@@ -2,6 +2,8 @@ package com.rotavital.config;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -15,12 +17,17 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * Filtro que registra no terminal todas as requisições HTTP recebidas e respondidas
  * pela API do Rota Vital, incluindo método, rota, status HTTP e tempo de resposta.
+ *
+ * Roda logo depois do filtro de observação do Spring Boot (ServerHttpObservationFilter, de ordem
+ * HIGHEST_PRECEDENCE + 1): assim a linha é escrita com o trace da requisição aberto, e o padrão
+ * de log da observabilidade (LOGGING_PATTERN_CORRELATION) inclui o traceId que o Grafana liga ao Tempo.
  */
 @Component
-
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 2)
 public class HttpLoggingFilter extends OncePerRequestFilter
 {
+    private static final Logger LOG = LoggerFactory.getLogger(HttpLoggingFilter.class);
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
     HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException
@@ -70,8 +77,8 @@ public class HttpLoggingFilter extends OncePerRequestFilter
                 icone = "ℹ️";
             }
 
-            System.out.printf("%s [HTTP %d] %-6s %s%s | %d ms%n",
-                    icone, status, metodo, uri, query, duracao);
+            LOG.info(String.format("%s [HTTP %d] %-6s %s%s | %d ms",
+                    icone, status, metodo, uri, query, duracao));
         }
     }
 }
