@@ -121,7 +121,9 @@ services:
       - "--path.rootfs=/host"
     pid: host
     volumes:
-      - /:/host:ro,rslave
+      # Sem "rslave": no Docker Desktop (Windows/macOS) a raiz da VM não é um mount compartilhado
+      # e o Docker recusa a propagação; só leitura basta para o Node Exporter.
+      - /:/host:ro
     restart: unless-stopped
 
   cadvisor:
