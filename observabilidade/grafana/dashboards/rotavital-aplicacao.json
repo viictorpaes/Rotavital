@@ -1117,8 +1117,8 @@
     },
     {
       "type": "timeseries",
-      "title": "Bolsas cadastradas (última hora)",
-      "description": "Counter rotavital.bolsas.cadastradas, por componente",
+      "title": "Bolsas cadastradas (desde a subida do backend)",
+      "description": "Counter rotavital.bolsas.cadastradas, por componente. O gerador de carga cadastra uma bolsa a cada ~3 min.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1153,7 +1153,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (componente) (increase(rotavital_bolsas_cadastradas_total{application=\"rotavital-backend\"}[1h])) or vector(0)",
+          "expr": "sum by (componente) (rotavital_bolsas_cadastradas_total{application=\"rotavital-backend\"})",
           "legendFormat": "{{componente}}",
           "refId": "A"
         }
@@ -1168,8 +1168,8 @@
     },
     {
       "type": "timeseries",
-      "title": "Bolsas descartadas (última hora)",
-      "description": "Counter rotavital.bolsas.descartadas, por motivo",
+      "title": "Bolsas descartadas (desde a subida do backend)",
+      "description": "Counter rotavital.bolsas.descartadas, por motivo. O descarte é feito por um admin na tela de Estoque.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1204,7 +1204,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (categoria) (increase(rotavital_bolsas_descartadas_total{application=\"rotavital-backend\"}[1h])) or vector(0)",
+          "expr": "sum by (categoria) (rotavital_bolsas_descartadas_total{application=\"rotavital-backend\"}) or label_replace(vector(0), \"categoria\", \"nenhuma ainda\", \"\", \"\")",
           "legendFormat": "{{categoria}}",
           "refId": "A"
         }
