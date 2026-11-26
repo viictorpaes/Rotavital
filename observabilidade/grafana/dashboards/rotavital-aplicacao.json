@@ -1153,7 +1153,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (componente) (increase(rotavital_bolsas_cadastradas_total{application=\"rotavital-backend\"}[1h]))",
+          "expr": "sum by (componente) (increase(rotavital_bolsas_cadastradas_total{application=\"rotavital-backend\"}[1h])) or vector(0)",
           "legendFormat": "{{componente}}",
           "refId": "A"
         }
@@ -1204,7 +1204,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (categoria) (increase(rotavital_bolsas_descartadas_total{application=\"rotavital-backend\"}[1h]))",
+          "expr": "sum by (categoria) (increase(rotavital_bolsas_descartadas_total{application=\"rotavital-backend\"}[1h])) or vector(0)",
           "legendFormat": "{{categoria}}",
           "refId": "A"
         }

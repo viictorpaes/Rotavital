@@ -64,7 +64,7 @@ O arquivo é [`prometheus/prometheus.yml`](./prometheus/prometheus.yml). Todos o
 | :--- | :--- | :--- |
 | `rotavital-backend` | `backend:8081/actuator/prometheus` | HTTP, JVM, Hikari e métricas de negócio |
 | `node-exporter` | `node-exporter:9100` | CPU, memória, disco, rede e load do host |
-| `cadvisor` | `cadvisor:8080` | CPU, memória e rede de cada contêiner |
+| `cadvisor` | `cadvisor:8080` | CPU, memória e disco de cada contêiner |
 | `prometheus` | `localhost:9090` | O próprio Prometheus |
 | `loki` | `loki:3100` | Saúde do Loki |
 | `tempo` | `tempo:3200` | Saúde do Tempo |
@@ -85,7 +85,7 @@ Os dashboards ficam versionados em [`grafana/dashboards/`](./grafana/dashboards/
 - **Rota Vital · Infraestrutura** (`rotavital-infraestrutura.json`):
   - medidores de CPU, memória e disco do host;
   - CPU por modo, memória, rede e load average;
-  - CPU, memória e rede por contêiner (cAdvisor);
+  - CPU, memória e disco por contêiner (cAdvisor);
   - `up` de cada job.
 
 ## Métricas de negócio (Micrometer)
@@ -131,6 +131,7 @@ sum(rate(rotavital_lotes_sugeridos_total{atendimento="completo"}[15m]))
   - As credenciais só são entregues no PDF e no Classroom, nunca no repositório.
 - O `gerador-de-carga` ([`carga/gerar-carga.sh`](./carga/gerar-carga.sh)) fica rodando o tempo todo para os painéis terem dados:
   - consultas, cálculos de rota e sugestões de lote a cada 2 s;
+  - uma bolsa nova cadastrada a cada 60 ciclos (uns 3 min);
   - a cada 3 ciclos, casos de erro (400 e 404).
 
 ## Segurança (R5)
@@ -145,3 +146,10 @@ sum(rate(rotavital_lotes_sugeridos_total{atendimento="completo"}[15m]))
 No Windows e no macOS, o Docker roda dentro de uma VM. Por isso, o Node Exporter e o cAdvisor medem **a VM do Docker Desktop**, e não o sistema operacional da máquina.
 
 Os números de CPU, memória e disco do dashboard de Infraestrutura são os dessa VM. Isso é esperado e está explicado no relatório.
+
+### cAdvisor com Docker 29
+
+A partir do Docker 29, as imagens ficam no *image store* do containerd. O modo Docker do cAdvisor (v0.49) ainda procura as camadas no layout antigo e descarta os contêineres, com o erro `failed to identify the read-write layer ID` ([google/cadvisor#3643](https://github.com/google/cadvisor/issues/3643)).
+
+Por isso, o compose sobe o cAdvisor **sem o `docker.sock`**. Assim ele lê os cgroups diretamente (`/docker/<id>`) e entrega CPU, memória e disco de cada contêiner, identificados pelo **id curto**, o mesmo que aparece em `docker ps`.
+

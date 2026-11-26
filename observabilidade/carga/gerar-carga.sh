@@ -29,6 +29,23 @@ while true; do
   curl -s -o /dev/null "$API/bancos/BS-01/sugestao-lote?tipoComponente=HEMACIAS&tipoSanguineo=O_NEGATIVO&quantidade=2"
   curl -s -o /dev/null "$API/bancos/BS-01/sugestao-lote?tipoComponente=PLAQUETAS&tipoSanguineo=A_POSITIVO&quantidade=30"
 
+  # Métrica de negócio rotavital.bolsas.cadastradas: uma bolsa nova no 1º ciclo e a cada 60 (uns 3 min),
+  # alternando o componente. Coleta ontem e validade em 5 dias (cabe no prazo de todos, até plaquetas).
+  if [ "$i" -eq 1 ] || [ $((i % 60)) -eq 0 ]; then
+    n=$((i / 60 % 4))
+    case $n in
+      0) comp=HEMACIAS;        temp=4.0 ;;
+      1) comp=PLASMA;          temp=-25.0 ;;
+      2) comp=PLAQUETAS;       temp=22.0 ;;
+      *) comp=CRIOPRECIPITADO; temp=-25.0 ;;
+    esac
+    agora=$(date +%s)
+    coleta=$(date -u -d "@$((agora - 86400))" +%Y-%m-%d)
+    validade=$(date -u -d "@$((agora + 4 * 86400))" +%Y-%m-%d)
+    curl -s -o /dev/null -X POST "$API/hemocomponentes" -H "Content-Type: application/json" \
+      -d "{\"tipoComponente\":\"$comp\",\"tipoSanguineo\":\"O_POSITIVO\",\"dataColeta\":\"$coleta\",\"dataValidade\":\"$validade\",\"loteSintetico\":\"CARGA-$agora\",\"volumeMl\":300,\"temperaturaCelsius\":$temp,\"bancoOrigemId\":\"BS-01\"}"
+  fi
+
   # Casos de erro (a cada 3 ciclos): 400, 404 e 404 de rota inexistente
   if [ $((i % 3)) -eq 0 ]; then
     curl -s -o /dev/null "$API/rotas"

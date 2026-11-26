@@ -128,14 +128,19 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
+    # Docker 29 guarda as imagens no containerd (snapshotter), e o modo Docker do cAdvisor ainda procura
+    # as camadas no layout antigo (/var/lib/docker/image/overlayfs) e descarta os contêineres
+    # ("failed to identify the read-write layer ID", google/cadvisor#3643). Sem o docker.sock, o cAdvisor
+    # lê os cgroups direto (/docker/<id>): CPU, memória e rede por contêiner, identificados pelo id.
+    command:
+      - "--docker=unix:///sem-docker.sock"
+      - "--housekeeping_interval=15s"
     privileged: true
     devices:
       - /dev/kmsg
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:ro
       - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
     restart: unless-stopped
 
   # Mantém os gráficos com dados: chama a API em ciclos, com sucessos e erros

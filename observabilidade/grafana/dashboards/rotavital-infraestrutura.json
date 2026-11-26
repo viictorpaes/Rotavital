@@ -528,7 +528,7 @@
     {
       "type": "timeseries",
       "title": "CPU por contêiner",
-      "description": "",
+      "description": "cAdvisor em modo cgroup: cada linha é um contêiner, pelo id curto (o mesmo do docker ps). Docker 29 + Docker Desktop: ver README.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -563,8 +563,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{name!=\"\"}[1m]))",
-          "legendFormat": "{{name}}",
+          "expr": "sum by (conteiner) (label_replace(rate(container_cpu_usage_seconds_total{id=~\"/docker/[0-9a-f]{64}\"}[1m]), \"conteiner\", \"$1\", \"id\", \"/docker/([0-9a-f]{12}).*\"))",
+          "legendFormat": "{{conteiner}}",
           "refId": "A"
         }
       ],
@@ -579,7 +579,7 @@
     {
       "type": "timeseries",
       "title": "Memória por contêiner",
-      "description": "",
+      "description": "cAdvisor em modo cgroup: cada linha é um contêiner, pelo id curto (o mesmo do docker ps). Docker 29 + Docker Desktop: ver README.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -614,8 +614,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (name) (container_memory_working_set_bytes{name!=\"\"})",
-          "legendFormat": "{{name}}",
+          "expr": "sum by (conteiner) (label_replace(container_memory_working_set_bytes{id=~\"/docker/[0-9a-f]{64}\"}, \"conteiner\", \"$1\", \"id\", \"/docker/([0-9a-f]{12}).*\"))",
+          "legendFormat": "{{conteiner}}",
           "refId": "A"
         }
       ],
@@ -629,8 +629,8 @@
     },
     {
       "type": "timeseries",
-      "title": "Rede por contêiner (recebido)",
-      "description": "",
+      "title": "Disco por contêiner (leitura + escrita)",
+      "description": "cAdvisor em modo cgroup: cada linha é um contêiner, pelo id curto (o mesmo do docker ps). Docker 29 + Docker Desktop: ver README.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -665,8 +665,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (name) (rate(container_network_receive_bytes_total{name!=\"\"}[1m]))",
-          "legendFormat": "{{name}}",
+          "expr": "sum by (conteiner) (label_replace(rate(container_blkio_device_usage_total{id=~\"/docker/[0-9a-f]{64}\"}[1m]), \"conteiner\", \"$1\", \"id\", \"/docker/([0-9a-f]{12}).*\"))",
+          "legendFormat": "{{conteiner}}",
           "refId": "A"
         }
       ],
@@ -681,7 +681,7 @@
     {
       "type": "stat",
       "title": "Contêineres monitorados",
-      "description": "",
+      "description": "cAdvisor em modo cgroup: cada linha é um contêiner, pelo id curto (o mesmo do docker ps). Docker 29 + Docker Desktop: ver README.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -722,7 +722,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(count by (name) (container_last_seen{name!=\"\"}))",
+          "expr": "count(container_last_seen{id=~\"/docker/[0-9a-f]{64}\"})",
           "refId": "A",
           "instant": false
         }
