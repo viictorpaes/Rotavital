@@ -18,3 +18,4 @@
     "obs:url": "docker compose -f compose.yaml -f compose.observabilidade.yaml logs cloudflared"
   }
 }
+

@@ -19,6 +19,10 @@ services:
     environment:
       # /actuator numa porta só de gerenciamento, que não é publicada (R5)
       MANAGEMENT_SERVER_PORT: "8081"
+      # health, info, metrics e prometheus (fora daqui, o padrao continua health,info)
+      ACTUATOR_EXPOSICAO: "health,info,metrics,prometheus"
+      # um span por consulta JDBC dentro do trace da requisicao
+      JDBC_OBSERVACAO: "true"
       # Traces por OTLP no Tempo, 100% das requisições
       TRACING_ENABLED: "true"
       TRACING_SAMPLING: "1.0"

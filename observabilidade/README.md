@@ -138,6 +138,11 @@ sum(rate(rotavital_lotes_sugeridos_total{atendimento="completo"}[15m]))
 
 - O `/actuator` fica numa porta própria (8081), sem mapeamento para o host. A porta 8082 de depuração da API não responde `/actuator`.
 - Só `health`, `info`, `metrics` e `prometheus` são expostos, e o `health` não mostra detalhes.
+- Fora deste compose (no `docker compose up` normal, no Render e nos testes), nada muda em relação à `main`:
+  - o backend continua expondo só `health` e `info`;
+  - o tracing e os spans de JDBC ficam desligados.
+
+  Quem liga tudo isso são as variáveis `ACTUATOR_EXPOSICAO`, `MANAGEMENT_SERVER_PORT`, `TRACING_ENABLED` e `JDBC_OBSERVACAO`, definidas em `compose.observabilidade.yaml`.
 - O Grafana tem senha de admin obrigatória vinda do `.env`. Cadastro e acesso anônimo estão desligados, e os usuários novos entram como Viewer.
 - Grafana e Prometheus só escutam em `127.0.0.1`. Para fora, só sai o Grafana, pelo túnel.
 
