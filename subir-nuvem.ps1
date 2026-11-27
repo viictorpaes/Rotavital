@@ -1,6 +1,6 @@
 param(
     [switch]$SemBuild,
-    [switch]$PermitirCadastroCarga
+    [switch]$SomenteLeitura
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,13 +30,13 @@ foreach ($reqKey in @("SUPABASE_DB_PASSWORD", "GRAFANA_ADMIN_PASSWORD", "GRAFANA
     }
 }
 
-# 2. Por padrao, evita que o gerador de carga grave bolsas sinteticas CARGA-* no Supabase compartilhado
-if ($PermitirCadastroCarga) {
-    $env:CARGA_SOMENTE_LEITURA = "false"
-    Write-Host "[Info] Gerador de carga com cadastro de bolsas HABILITADO no Supabase." -ForegroundColor Yellow
-} else {
+# 2. Por padrao, o gerador de carga cadastra bolsas normalmente (use -SomenteLeitura para desabilitar)
+if ($SomenteLeitura) {
     $env:CARGA_SOMENTE_LEITURA = "true"
-    Write-Host "[Info] Gerador de carga em modo SOMENTE LEITURA (protege o banco Supabase de bolsas sinteticas)." -ForegroundColor Green
+    Write-Host "[Info] Gerador de carga em modo SOMENTE LEITURA." -ForegroundColor Yellow
+} else {
+    $env:CARGA_SOMENTE_LEITURA = "false"
+    Write-Host "[Info] Gerador de carga com cadastro de bolsas HABILITADO por padrao." -ForegroundColor Green
 }
 
 # 3. Remover conteineres antigos parados que possam causar conflito de nome e parar banco local se estiver ligado
