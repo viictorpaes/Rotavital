@@ -143,7 +143,7 @@ sum(rate(rotavital_lotes_sugeridos_total{atendimento="completo"}[15m]))
   - o tracing e os spans de JDBC ficam desligados.
 
   Quem liga tudo isso são as variáveis `ACTUATOR_EXPOSICAO`, `MANAGEMENT_SERVER_PORT`, `TRACING_ENABLED` e `JDBC_OBSERVACAO`, definidas em `compose.observabilidade.yaml`.
-- O Grafana tem senha de admin obrigatória vinda do `.env`. Cadastro e acesso anônimo estão desligados, e os usuários novos entram como Viewer.
+- O Grafana tem senha de admin obrigatória vinda do `.env`. Cadastro e acesso anônimo estão desligados, os usuários novos entram como Viewer, e o papel Viewer pode usar o Explore (`GF_USERS_VIEWERS_CAN_EDIT=true`) para inspecionar logs/traces sem salvar alterações nos dashboards.
 - Grafana e Prometheus só escutam em `127.0.0.1`. Para fora, só sai o Grafana, pelo túnel.
 
 ## Observação sobre o Docker Desktop
