@@ -30,8 +30,8 @@ while true; do
   curl -s -o /dev/null "$API/bancos/BS-01/sugestao-lote?tipoComponente=PLAQUETAS&tipoSanguineo=A_POSITIVO&quantidade=30"
 
   # Métrica de negócio rotavital.bolsas.cadastradas: uma bolsa nova no 1º ciclo e a cada 60 (uns 3 min),
-  # alternando o componente. Coleta ontem e validade em 5 dias (cabe no prazo de todos, até plaquetas).
-  if [ "$i" -eq 1 ] || [ $((i % 60)) -eq 0 ]; then
+  # alternando o componente. Desligado quando CARGA_SOMENTE_LEITURA=true (modo Supabase na nuvem).
+  if [ "${CARGA_SOMENTE_LEITURA:-false}" != "true" ] && { [ "$i" -eq 1 ] || [ $((i % 60)) -eq 0 ]; }; then
     n=$((i / 60 % 4))
     case $n in
       0) comp=HEMACIAS;        temp=4.0 ;;

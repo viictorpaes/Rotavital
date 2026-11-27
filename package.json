@@ -15,7 +15,12 @@
     "obs:down": "docker compose -f compose.yaml -f compose.observabilidade.yaml down",
     "obs:status": "docker compose -f compose.yaml -f compose.observabilidade.yaml ps",
     "obs:logs": "docker compose -f compose.yaml -f compose.observabilidade.yaml logs -f",
-    "obs:url": "docker compose -f compose.yaml -f compose.observabilidade.yaml logs cloudflared"
+    "obs:url": "docker compose -f compose.yaml -f compose.observabilidade.yaml logs cloudflared",
+    "obs:cloud": "powershell -ExecutionPolicy Bypass -File ./subir-nuvem.ps1",
+    "obs:cloud:down": "docker compose -f compose.yaml -f compose.supabase.yaml -f compose.observabilidade.yaml down",
+    "obs:cloud:status": "docker compose -f compose.yaml -f compose.supabase.yaml -f compose.observabilidade.yaml ps",
+    "obs:cloud:logs": "docker compose -f compose.yaml -f compose.supabase.yaml -f compose.observabilidade.yaml logs -f",
+    "obs:cloud:url": "docker compose -f compose.yaml -f compose.supabase.yaml -f compose.observabilidade.yaml logs cloudflared"
   }
 }
 

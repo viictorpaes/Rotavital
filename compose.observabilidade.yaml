@@ -153,6 +153,8 @@ services:
   gerador-de-carga:
     image: curlimages/curl:8.10.1
     entrypoint: ["sh", "/gerar-carga.sh"]
+    environment:
+      CARGA_SOMENTE_LEITURA: "${CARGA_SOMENTE_LEITURA:-false}"
     volumes:
       - ./observabilidade/carga/gerar-carga.sh:/gerar-carga.sh:ro
     depends_on:
